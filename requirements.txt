@@ -4,4 +4,6 @@ pandas
 plotly
 openpyxl
 statsmodels
+pmdarima
+scipy
 gunicorn

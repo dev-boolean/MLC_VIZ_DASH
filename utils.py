@@ -1,6 +1,10 @@
+import os
 import pandas as pd
 
-DATA_PATH = "data/MLC.xlsx"
+# Ruta absoluta basada en la ubicación de este archivo (utils.py)
+# Así funciona sin importar desde qué directorio se ejecute app.py
+BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH     = os.path.join(BASE_DIR, "data", "MLC.xlsx")
 UMBRAL_ALERTA = 12
 
 
@@ -54,18 +58,18 @@ def obtener_kpis(df):
     ultima = df.iloc[-1]
     return {
         "media_desempleo": round(df["tasa_desempleo_nacional"].mean(), 2),
-        "min_desempleo": round(df["tasa_desempleo_nacional"].min(), 2),
-        "min_fecha": df.loc[df["tasa_desempleo_nacional"].idxmin(), "fecha"].strftime("%b %Y"),
-        "max_desempleo": round(df["tasa_desempleo_nacional"].max(), 2),
-        "max_fecha": df.loc[df["tasa_desempleo_nacional"].idxmax(), "fecha"].strftime("%b %Y"),
-        "obs": len(df),
+        "min_desempleo":   round(df["tasa_desempleo_nacional"].min(), 2),
+        "min_fecha":       df.loc[df["tasa_desempleo_nacional"].idxmin(), "fecha"].strftime("%b %Y"),
+        "max_desempleo":   round(df["tasa_desempleo_nacional"].max(), 2),
+        "max_fecha":       df.loc[df["tasa_desempleo_nacional"].idxmax(), "fecha"].strftime("%b %Y"),
+        "obs":             len(df),
         "ultimo_desempleo": round(ultima["tasa_desempleo_nacional"], 2),
-        "ultima_fecha": ultima["fecha"].strftime("%b %Y")
+        "ultima_fecha":     ultima["fecha"].strftime("%b %Y")
     }
 
 
 def generar_alerta(df):
-    ult = df["tasa_desempleo_nacional"].iloc[-1]
+    ult   = df["tasa_desempleo_nacional"].iloc[-1]
     fecha = df["fecha"].iloc[-1].strftime("%b %Y")
 
     if ult > UMBRAL_ALERTA + 3:

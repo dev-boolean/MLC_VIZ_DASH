@@ -34,7 +34,14 @@ def build_layout(min_date, max_date):
                         html.Div("Frecuencia: mensual"),
                         html.Div("Cobertura: mercado laboral colombiano"),
                         html.Br(),
-                        html.Div("Autores: S. Hurtado & A. Parejo")
+                        html.Div([
+                            html.Span("Autores: "),
+                            html.A("S. Hurtado", href="https://github.com/SHurtado26", target="_blank",
+                                   className="sidebar-github-link"),
+                            html.Span(" & "),
+                            html.A("A. Parejo", href="https://github.com/dev-boolean", target="_blank",
+                                   className="sidebar-github-link"),
+                        ])
                     ], className="sidebar-info")
                 ], className="sidebar")
             ], md=2),
