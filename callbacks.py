@@ -162,16 +162,17 @@ def tabla_ljungbox_html(tests: list):
 # =========================================================
 # MÓDULO SARIMA COMPLETO (tab "modelo")
 # =========================================================
-def render_modelo(df):
-    """Construye todo el contenido del tab Modelado SARIMA."""
+def render_modelo(df,
+                  _resultado_cache, _metricas_cache, _lb_tests_cache,
+                  _resid_data_cache, _df_comp_cache, _fechas_h, _obs_h, _ajust_h):
+    """Construye todo el contenido del tab Modelado SARIMA usando caches precalculados."""
 
-    # Ajustar modelo (sobre serie completa, igual que Shiny)
-    resultado = fit_modelo_final(df)
-    metricas  = metricas_modelo(resultado)
-    lb_tests  = ljung_box_tests(resultado)
-    resid_data = datos_residuos(resultado)
-    df_comp   = comparar_modelos(df)
-    fechas_h, obs_h, ajust_h = serie_ajustada(resultado, df)
+    resultado  = _resultado_cache
+    metricas   = _metricas_cache
+    lb_tests   = _lb_tests_cache
+    resid_data = _resid_data_cache
+    df_comp    = _df_comp_cache
+    fechas_h, obs_h, ajust_h = _fechas_h, _obs_h, _ajust_h
 
     return html.Div([
         # ── Header del módulo (igual al Shiny) ──────────────────────────────
@@ -369,12 +370,16 @@ def render_modelo(df):
 # =========================================================
 def register_callbacks(app, df):
 
-    # ── Ajustar modelo una sola vez al iniciar (igual que reactive() en Shiny) ─
+    # ── Precalcular TODO al arrancar — evita cálculos pesados en callbacks ────
     import warnings
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        _resultado_cache  = fit_modelo_final(df)
-        _fechas_h, _obs_h, _ = serie_ajustada(_resultado_cache, df)
+        _resultado_cache              = fit_modelo_final(df)
+        _fechas_h, _obs_h, _ajust_h  = serie_ajustada(_resultado_cache, df)
+        _metricas_cache               = metricas_modelo(_resultado_cache)
+        _lb_tests_cache               = ljung_box_tests(_resultado_cache)
+        _resid_data_cache             = datos_residuos(_resultado_cache)
+        _df_comp_cache                = comparar_modelos(df)
 
     # ── Callback principal: renderiza el tab seleccionado ────────────────────
     @app.callback(
@@ -710,7 +715,11 @@ def register_callbacks(app, df):
             # ── TAB SARIMA ──────────────────────────────────────────────────
             return dcc.Loading(
                 type="circle",
-                children=render_modelo(df)   # usa df completo (no filtrado)
+                children=render_modelo(
+                        df,
+                        _resultado_cache, _metricas_cache, _lb_tests_cache,
+                        _resid_data_cache, _df_comp_cache, _fechas_h, _obs_h, _ajust_h
+                    )  # usa caches precalculados al arrancar
             )
 
         elif tab == "conclusiones":
