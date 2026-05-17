@@ -19,6 +19,9 @@ app = dash.Dash(
     suppress_callback_exceptions=True,
     title="Mercado Laboral Colombiano"
 )
+@app.server.route('/health')
+def health():
+    return "ok", 200
 
 server = app.server
 
