@@ -35,12 +35,21 @@ def build_layout(min_date, max_date):
                         html.Div("Cobertura: mercado laboral colombiano"),
                         html.Br(),
                         html.Div([
-                            html.Span("Autores: "),
-                            html.A("S. Hurtado", href="https://github.com/SHurtado26", target="_blank",
-                                   className="sidebar-github-link"),
-                            html.Span(" & "),
-                            html.A("A. Parejo", href="https://github.com/dev-boolean", target="_blank",
-                                   className="sidebar-github-link"),
+                            html.Div("Autores", className="sidebar-authors-label"),
+                            html.Div(className="sidebar-author-row", children=[
+                                html.A("S. Hurtado", href="https://github.com/SHurtado26", target="_blank",
+                                       className="sidebar-github-link", title="GitHub"),
+                                html.A("", href="https://www.linkedin.com/in/santiago-hurtado-369687291/",
+                                       target="_blank", className="sidebar-linkedin-link",
+                                       title="LinkedIn de Santiago Hurtado"),
+                            ]),
+                            html.Div(className="sidebar-author-row", children=[
+                                html.A("A. Parejo", href="https://github.com/dev-boolean", target="_blank",
+                                       className="sidebar-github-link", title="GitHub"),
+                                html.A("", href="https://www.linkedin.com/in/andres-parejo-40a653168/",
+                                       target="_blank", className="sidebar-linkedin-link",
+                                       title="LinkedIn de Andrés Parejo"),
+                            ]),
                         ])
                     ], className="sidebar-info")
                 ], className="sidebar")

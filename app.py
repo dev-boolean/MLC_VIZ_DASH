@@ -38,12 +38,16 @@ html.Div(className="hero-header", children=[
             className="hero-subtitle"
         ),
         html.Div([
-            html.Span("Autores: ", style={"marginRight": "4px"}),
+            html.Span("Autores: ", style={"marginRight": "6px"}),
             html.A("Andrés Parejo", href="https://github.com/dev-boolean", target="_blank",
                    className="github-author-link"),
-            html.Span(" & ", style={"margin": "0 4px"}),
+            html.A("", href="https://www.linkedin.com/in/andres-parejo-40a653168/", target="_blank",
+                   className="linkedin-author-link", title="LinkedIn de Andrés Parejo"),
+            html.Span(" & ", style={"margin": "0 6px"}),
             html.A("Santiago Hurtado", href="https://github.com/SHurtado26", target="_blank",
                    className="github-author-link"),
+            html.A("", href="https://www.linkedin.com/in/santiago-hurtado-369687291/", target="_blank",
+                   className="linkedin-author-link", title="LinkedIn de Santiago Hurtado"),
         ], className="hero-authors")
     ])
 ]),

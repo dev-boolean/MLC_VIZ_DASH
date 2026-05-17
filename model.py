@@ -200,6 +200,47 @@ def resumen_modelo_texto(resultado) -> str:
     return str(resultado.summary())
 
 
+def resumen_modelo_estructurado(resultado) -> dict:
+    """
+    Extrae los datos clave del summary de statsmodels en un dict estructurado
+    para renderizar una tarjeta moderna en lugar del html.Pre crudo.
+    """
+    try:
+        params      = resultado.params
+        pvalues     = resultado.pvalues
+        conf_int    = resultado.conf_int()
+        bse         = resultado.bse
+
+        coef_rows = []
+        for name in params.index:
+            coef_rows.append({
+                "nombre":  name,
+                "coef":    round(float(params[name]), 4),
+                "se":      round(float(bse[name]), 4),
+                "pvalue":  round(float(pvalues[name]), 4),
+                "ci_low":  round(float(conf_int.loc[name, 0]), 4),
+                "ci_high": round(float(conf_int.loc[name, 1]), 4),
+                "sig":     (
+                    "***" if float(pvalues[name]) < 0.001 else
+                    "**"  if float(pvalues[name]) < 0.01  else
+                    "*"   if float(pvalues[name]) < 0.05  else
+                    "·"   if float(pvalues[name]) < 0.1   else ""
+                ),
+            })
+
+        info = {
+            "aic":    round(float(resultado.aic),  2),
+            "bic":    round(float(resultado.bic),  2),
+            "llf":    round(float(resultado.llf),  2),
+            "nobs":   int(resultado.nobs),
+            "orden":  "SARIMA(2,1,2)(1,1,1)[12]",
+        }
+
+        return {"coeficientes": coef_rows, "info": info}
+    except Exception:
+        return None
+
+
 def tabla_pronostico_df(fc_dict: dict, nivel: str = "both") -> pd.DataFrame:
     """
     Construye el DataFrame de pronósticos para la DataTable

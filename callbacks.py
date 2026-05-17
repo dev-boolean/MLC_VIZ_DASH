@@ -19,13 +19,99 @@ from charts import (
 from model import (
     fit_modelo_final, comparar_modelos, metricas_modelo,
     ljung_box_tests, datos_residuos, pronostico,
-    serie_ajustada, resumen_modelo_texto, tabla_pronostico_df,
+    serie_ajustada, resumen_modelo_texto, resumen_modelo_estructurado,
+    tabla_pronostico_df,
 )
 
 
 # =========================================================
 # COMPONENTES AUXILIARES (sin cambios del Dash original)
 # =========================================================
+# ── Helper: tarjeta moderna de resumen del modelo ──────────────
+def _render_model_summary_card(data):
+    """Renderiza el resumen SARIMA como tarjeta visual moderna."""
+    if data is None:
+        return html.Div("No se pudo parsear el resumen del modelo.", className="interpretacion-box")
+
+    info  = data["info"]
+    coefs = data["coeficientes"]
+
+    # KPI chips superiores
+    kpi_chips = html.Div(className="model-summary-kpis", children=[
+        html.Div(className="model-kpi-chip", children=[
+            html.Span("AIC", className="model-kpi-label"),
+            html.Span(str(info["aic"]), className="model-kpi-value"),
+        ]),
+        html.Div(className="model-kpi-chip", children=[
+            html.Span("BIC", className="model-kpi-label"),
+            html.Span(str(info["bic"]), className="model-kpi-value"),
+        ]),
+        html.Div(className="model-kpi-chip", children=[
+            html.Span("Log-Lik", className="model-kpi-label"),
+            html.Span(str(info["llf"]), className="model-kpi-value"),
+        ]),
+        html.Div(className="model-kpi-chip", children=[
+            html.Span("Obs.", className="model-kpi-label"),
+            html.Span(str(info["nobs"]), className="model-kpi-value"),
+        ]),
+        html.Div(className="model-kpi-chip model-kpi-chip--purple", children=[
+            html.Span("Orden", className="model-kpi-label"),
+            html.Span(info["orden"], className="model-kpi-value model-kpi-value--small"),
+        ]),
+    ])
+
+    # Tabla de coeficientes
+    header_row = html.Tr([
+        html.Th("Parámetro"),
+        html.Th("Coef."),
+        html.Th("Std. Err"),
+        html.Th("p-valor"),
+        html.Th("IC 95%"),
+        html.Th("Sig."),
+    ], className="model-coef-header-row")
+
+    data_rows = []
+    for row in coefs:
+        sig = row["sig"]
+        sig_class = (
+            "sig-strong"   if sig == "***" else
+            "sig-mid"      if sig in ("**", "*") else
+            "sig-weak"     if sig == "·" else
+            "sig-none"
+        )
+        p_class = "pval-low" if row["pvalue"] < 0.05 else "pval-high"
+        data_rows.append(html.Tr([
+            html.Td(html.Code(row["nombre"], className="param-name")),
+            html.Td(f"{row['coef']:+.4f}", className="coef-val"),
+            html.Td(str(row["se"])),
+            html.Td(str(row["pvalue"]), className=p_class),
+            html.Td(f"[{row['ci_low']:.4f},  {row['ci_high']:.4f}]", className="ci-range"),
+            html.Td(sig, className=sig_class),
+        ]))
+
+    coef_table = html.Div(className="model-coef-table-wrap", children=[
+        html.Table(className="model-coef-table", children=[
+            html.Thead(header_row),
+            html.Tbody(data_rows),
+        ])
+    ])
+
+    legend = html.Div(
+        "Significancia: *** p<0.001  ** p<0.01  * p<0.05  · p<0.1",
+        className="model-sig-legend"
+    )
+
+    return html.Div(className="model-summary-card", children=[
+        html.Div(className="model-summary-title", children=[
+            html.Span("📊", style={"marginRight": "8px"}),
+            "Parámetros estimados del modelo",
+        ]),
+        kpi_chips,
+        coef_table,
+        legend,
+    ])
+
+
 def table_component(df, page_size=10):
     return dash_table.DataTable(
         data=df.to_dict("records"),
@@ -263,11 +349,7 @@ def render_modelo(df,
                         ]),
                         html.Br(),
                         html.H4("Resumen del modelo", className="subsection-title"),
-                        html.Pre(resumen_modelo_texto(resultado),
-                                 style={"background": "#f8fafc", "color": "#1a1a2e",
-                                        "border": "1px solid #e0e4ea", "borderRadius": "6px",
-                                        "fontSize": "12px", "padding": "16px",
-                                        "overflowX": "auto", "whiteSpace": "pre-wrap"})
+                        _render_model_summary_card(resumen_modelo_estructurado(resultado))
                     ])
                 ]),
 
