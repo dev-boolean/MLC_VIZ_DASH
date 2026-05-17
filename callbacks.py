@@ -2,6 +2,7 @@ from dash import html, dcc, dash_table, Input, Output, State
 import dash_bootstrap_components as dbc
 import pandas as pd
 import numpy as np
+from functools import lru_cache
 
 from utils import filtrar_por_fecha, obtener_kpis, generar_alerta, transformar_a_largo
 from stats import (
@@ -462,6 +463,26 @@ def register_callbacks(app, df):
         _lb_tests_cache               = ljung_box_tests(_resultado_cache)
         _resid_data_cache             = datos_residuos(_resultado_cache)
         _df_comp_cache                = comparar_modelos(df)
+         # ── Cache del EDA por rango de fechas ────────────────────────────────────
+    @lru_cache(maxsize=32)
+    def _eda_cache(start_date, end_date):
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            _dff     = filtrar_por_fecha(df, start_date, end_date)
+            _df_long = transformar_a_largo(_dff)
+            return {
+                "dff":        _dff,
+                "df_long":    _df_long,
+                "kpis":       obtener_kpis(_dff),
+                "alerta":     generar_alerta(_dff),
+                "corr":       matriz_corr(_dff),
+                "adf":        prueba_adf(_dff),
+                "decomp":     descomposicion_desempleo(_dff),
+                "acf_pacf":   acf_pacf_data(_dff),
+                "tabla_desc": tabla_descriptiva(_dff),
+                "tabla_car":  tabla_caracteristicas(_dff),
+            }
 
     # ── Callback principal: renderiza el tab seleccionado ────────────────────
     @app.callback(
@@ -620,12 +641,15 @@ def register_callbacks(app, df):
             ])
 
         elif tab == "eda":
-            kpis    = obtener_kpis(dff)
-            alerta  = generar_alerta(dff)
-            corr    = matriz_corr(dff)
-            adf     = prueba_adf(dff)
-            decomp  = descomposicion_desempleo(dff)
-            acf_vals, pacf_vals = acf_pacf_data(dff)
+            _cached = _eda_cache(start_date, end_date)
+            dff     = _cached["dff"]
+            df_long = _cached["df_long"]
+            kpis    = _cached["kpis"]
+            alerta  = _cached["alerta"]
+            corr    = _cached["corr"]
+            adf     = _cached["adf"]
+            decomp  = _cached["decomp"]
+            acf_vals, pacf_vals = _cached["acf_pacf"]
 
             return html.Div([
                 html.Div(className=f"alerta-box {alerta['clase']}", children=[
@@ -682,7 +706,7 @@ def register_callbacks(app, df):
                             html.Div(className="content-box", children=[
                                 section_title("Inspección inicial", "Resumen descriptivo del conjunto de datos"),
                                 html.P("Esta tabla resume medidas centrales y de dispersión de las variables laborales incluidas en el análisis."),
-                                table_component(tabla_descriptiva(dff))
+                                table_component(_cached["tabla_desc"])
                             ])
                         ]),
 
@@ -709,7 +733,7 @@ def register_callbacks(app, df):
                             html.Div(className="content-box", children=[
                                 section_title("Análisis univariado: variables explicativas"),
                                 html.P("Además del desempleo, resulta importante estudiar el comportamiento individual de las variables que describen participación y ocupación."),
-                                table_component(tabla_caracteristicas(dff)),
+                                table_component(_cached["tabla_car"]),
                                 html.Div(style={"height": "18px"}),
                                 graph_card(fig_boxplots_caracteristicas(df_long), height=540),
                                 interpretacion(
