@@ -51,7 +51,13 @@ html.Div(className="hero-header", children=[
                    className="github-author-link"),
             html.A("", href="https://www.linkedin.com/in/santiago-hurtado-369687291/", target="_blank",
                    className="linkedin-author-link", title="LinkedIn de Santiago Hurtado"),
-        ], className="hero-authors")
+        ], className="hero-authors"),
+        html.A([
+            html.Span(className="yt-icon"),
+            html.Span("Video Explicativo")
+        ], href="https://www.youtube.com/watch?v=2pBUO-to_KM",
+           target="_blank", className="hero-youtube-link",
+           title="Mira nuestro video en youtube!")
     ])
 ]),
 
