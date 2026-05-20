@@ -109,7 +109,7 @@ app.layout = html.Div([
     }),
 
     # ── APP PRINCIPAL ─────────────────────────────────────────────
-    html.Div(id="main-app", style={"opacity": "0"}, children=[
+    html.Div(id="main-app", style={"opacity": "0", "minHeight": "100vh"}, children=[
 
         dbc.Container(fluid=True, className="app-container", children=[
 

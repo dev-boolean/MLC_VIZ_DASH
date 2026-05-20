@@ -1,19 +1,21 @@
 (function () {
+
   function init() {
-    var splash    = document.getElementById('splash');
-    var video     = document.getElementById('intro-video');
-    var flying    = document.getElementById('flying-logo');
-    var white     = document.getElementById('splash-white');
-    var mainApp   = document.getElementById('main-app');
-    var target    = document.getElementById('logo-target');
-    var skipBtn   = document.getElementById('skip-intro');
+    var splash  = document.getElementById('splash');
+    var video   = document.getElementById('intro-video');
+    var flying  = document.getElementById('flying-logo');
+    var white   = document.getElementById('splash-white');
+    var mainApp = document.getElementById('main-app');
+    var target  = document.getElementById('logo-target');
+    var skipBtn = document.getElementById('skip-intro');
 
-    // Si por alguna razón no existe el splash, no hacer nada
-    if (!splash || !mainApp) return;
+    // Si Dash aún no montó los elementos, reintentar
+    if (!splash || !mainApp || !target || !flying || !white) {
+      setTimeout(init, 150);
+      return;
+    }
 
-    // Ocultar el logo del header mientras vuela
-    if (target) target.style.opacity = '0';
-
+    target.style.opacity = '0';
     var hasTransitioned = false;
     document.body.style.overflow = 'hidden';
 
@@ -45,16 +47,14 @@
         flying.style.transform = 'translate(-50%, -50%)';
       });
 
-      // Revelar el dashboard
       mainApp.style.transition = 'opacity 0.8s ease 0.1s';
-      mainApp.style.opacity = '1';
+      mainApp.style.opacity    = '1';
 
-      // Limpiar después de la animación
       setTimeout(function () {
         if (target) target.style.opacity = '1';
         flying.style.opacity = '0';
         splash.style.transition = 'opacity 0.4s ease';
-        splash.style.opacity = '0';
+        splash.style.opacity    = '0';
         setTimeout(function () {
           splash.style.display = 'none';
           document.body.style.overflow = '';
@@ -63,36 +63,40 @@
     }
 
     function startTransition() {
+      if (hasTransitioned) return;   // evitar doble llamada
       if (video) video.style.opacity = '0';
-      white.style.opacity = '1';
-      splash.style.background = '#ffffff';
+      white.style.opacity       = '1';
+      splash.style.background   = '#ffffff';
       if (skipBtn) skipBtn.style.opacity = '0';
-
-      // Mostrar logo volador en el centro brevemente
       flying.style.opacity = '1';
       setTimeout(function () { flyToTarget(false); }, 260);
     }
 
-    // ── Eventos del video ────────────────────────────────────────
+    // ── Video ────────────────────────────────────────────────────
     if (video) {
       video.addEventListener('ended', startTransition);
       video.addEventListener('error', startTransition);
 
-      // Fallback: si el video demora más de 8s, disparar transición
+      // Fallback: si el video tarda más de 7s en terminar, pasar igual
       var fallback = setTimeout(function () {
         if (!hasTransitioned) startTransition();
-      }, 8000);
+      }, 7000);
 
       var playPromise = video.play();
       if (playPromise !== undefined) {
-        playPromise.catch(function () {
-          // Autoplay bloqueado por el navegador → pasar directo
-          clearTimeout(fallback);
-          setTimeout(startTransition, 600);
-        });
+        playPromise
+          .then(function () {
+            // Video corriendo OK — el evento 'ended' disparará startTransition
+          })
+          .catch(function () {
+            // Autoplay bloqueado → saltar al dashboard de inmediato
+            clearTimeout(fallback);
+            startTransition();
+            flyToTarget(true);
+          });
       }
     } else {
-      // No hay video → ir directo
+      // No hay video en absoluto
       setTimeout(startTransition, 400);
     }
 
@@ -103,14 +107,13 @@
         startTransition();
         flyToTarget(true);
       });
-
       skipBtn.addEventListener('mouseover', function () {
-        skipBtn.style.background = 'rgba(0,0,0,0.85)';
-        skipBtn.style.transform = 'translateY(-1px)';
+        skipBtn.style.background  = 'rgba(0,0,0,0.85)';
+        skipBtn.style.transform   = 'translateY(-1px)';
       });
       skipBtn.addEventListener('mouseout', function () {
-        skipBtn.style.background = 'rgba(0,0,0,0.60)';
-        skipBtn.style.transform = 'translateY(0)';
+        skipBtn.style.background  = 'rgba(0,0,0,0.60)';
+        skipBtn.style.transform   = 'translateY(0)';
       });
     }
 
@@ -124,12 +127,7 @@
     });
   }
 
-  // Esperar a que Dash termine de montar el DOM
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(init, 200);
-    });
-  } else {
-    setTimeout(init, 300);
-  }
+  // Arrancar con polling hasta que Dash haya montado el DOM
+  setTimeout(init, 300);
+
 })();
