@@ -54,10 +54,10 @@ html.Div(className="hero-header", children=[
         ], className="hero-authors"),
         html.A([
             html.Span(className="yt-icon"),
-            html.Span("Mira nuestro video en youtube!")
+            html.Span("Mira nuestro video de Youtube!")
         ], href="https://www.youtube.com/watch?v=2pBUO-to_KM",
            target="_blank", className="hero-youtube-link",
-           title="Mira nuestro video en youtube!")
+           title="Mira nuestro video de Youtube!")
     ])
 ]),
 
