@@ -4,6 +4,7 @@ import dash_bootstrap_components as dbc
 
 from utils import cargar_datos
 from callbacks import register_callbacks
+from chatbot import chatbot_bp, init_chatbot
 
 # =========================
 # CARGA DE DATOS
@@ -25,6 +26,10 @@ def health():
     return "ok", 200
 
 server = app.server
+
+# Chatbot
+app.server.register_blueprint(chatbot_bp)
+init_chatbot(df)
 
 # =========================
 # LAYOUT
@@ -133,11 +138,15 @@ app.layout = html.Div([
                                className="github-author-link"),
                         html.A("", href="https://www.linkedin.com/in/andres-parejo-40a653168/", target="_blank",
                                className="linkedin-author-link", title="LinkedIn de Andrés Parejo"),
+                        html.A("", href="mailto:aeparejo@uninorte.edu.co",
+                               className="email-author-link", title="aeparejo@uninorte.edu.co"),
                         html.Span(" & ", style={"margin": "0 6px"}),
                         html.A("Santiago Hurtado", href="https://github.com/SHurtado26", target="_blank",
                                className="github-author-link"),
                         html.A("", href="https://www.linkedin.com/in/santiago-hurtado-369687291/", target="_blank",
                                className="linkedin-author-link", title="LinkedIn de Santiago Hurtado"),
+                        html.A("", href="mailto:hurtadosantiago@uninorte.edu.co",
+                               className="email-author-link", title="hurtadosantiago@uninorte.edu.co"),
                     ], className="hero-authors"),
                     html.A([
                         html.Span(className="yt-icon"),
