@@ -158,12 +158,11 @@ def llamar_gemini(messages: list, contexto: str) -> str:
     groq_messages = [{"role": "system", "content": contexto}] + messages
 
     payload = {
-        "model": "llama-3.1-8b-instant",
-        "messages": groq_messages,
-        "max_tokens": 600,
-        "temperature": 0.4,
+    "model": "openai/gpt-oss-20b",  # ← reemplaza llama-3.1-8b-instant
+    "messages": groq_messages,
+    "max_tokens": 600,
+    "temperature": 0.4,
     }
-
     try:
         resp = requests.post(
             "https://api.groq.com/openai/v1/chat/completions",
