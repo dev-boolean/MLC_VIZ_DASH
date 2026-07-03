@@ -472,12 +472,25 @@ def fig_ajuste(fechas_hist, obs, ajust, n_obs_hist=300):
                        text="COVID-19", showarrow=False,
                        font=dict(color="#6b7280", size=10))
     fig.update_layout(
+        title={
+            "text": "Serie observada vs. valores ajustados — SARIMA(2,1,2)(1,1,1)[12]",
+            "x": 0.02,
+            "xanchor": "left",
+            "y": 0.97,
+            "yanchor": "top",
+            "font": {"size": 16, "family": "Inter, Segoe UI", "color": "#0f172a"}
+        },
+        paper_bgcolor="rgba(255,255,255,0.0)",
+        plot_bgcolor="rgba(248,250,252,0.92)",
+        font=dict(family="Inter, Segoe UI", size=13, color="#334155"),
         xaxis_title="",
         yaxis=dict(ticksuffix="%"),
-        legend=dict(orientation="h", y=1.12, x=0),
-        margin=dict(l=50, r=30, t=80, b=60),
+        legend=dict(orientation="h", y=-0.18, x=0, yanchor="top"),
+        margin=dict(l=50, r=30, t=70, b=110),
+        hoverlabel=dict(bgcolor="white", font_size=13, font_family="Inter"),
+        hovermode="x unified",
     )
-    return aplicar_estilo(fig, "Serie observada vs. valores ajustados — SARIMA(2,1,2)(1,1,1)[12]")
+    return fig
 
 
 def fig_residuos_diagnostico(resid_data: dict):
