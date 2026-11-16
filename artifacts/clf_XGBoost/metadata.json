@@ -1,0 +1,200 @@
+{
+  "artifact": "clf_XGBoost",
+  "task": "clasificacion",
+  "model": "XGBoost",
+  "balancing": "smote",
+  "optimizer": "grid",
+  "source_run_id": "clf_XGBoost_smote_grid",
+  "target": "Categoría de la tasa de desempleo nacional del mes siguiente (0 = Bajo, 1 = Medio, 2 = Alto)",
+  "classes": {
+    "0": "Bajo",
+    "1": "Medio",
+    "2": "Alto"
+  },
+  "seed": 42,
+  "hyperparameters": {
+    "n_estimators": 50,
+    "max_depth": 5,
+    "learning_rate": 0.001,
+    "subsample": 1.0,
+    "colsample_bytree": 0.5
+  },
+  "final_search": {
+    "optimizer": "grid",
+    "inner_cv": "TimeSeriesSplit(n_splits=3, gap=1)",
+    "budget": {
+      "grid_max_combinations": 40,
+      "random_n_iter": 40,
+      "bayes_n_trials": 40,
+      "genetic_population": 8,
+      "genetic_budget": 40
+    },
+    "n_evaluations": 40,
+    "best_inner_score": 0.6518124865519636,
+    "wall_time_s": 21.338460600000005
+  },
+  "training": {
+    "n_observations": 288,
+    "first_feature_month": "2001-12-31",
+    "last_feature_month": "2025-11-30",
+    "fit_time_s": 0.10360149999999635
+  },
+  "input_schema": [
+    {
+      "name": "td_nacional_lag1",
+      "dtype": "float64",
+      "min": 7.02,
+      "max": 21.972
+    },
+    {
+      "name": "td_nacional_lag2",
+      "dtype": "float64",
+      "min": 7.5631,
+      "max": 21.972
+    },
+    {
+      "name": "td_nacional_lag3",
+      "dtype": "float64",
+      "min": 7.5631,
+      "max": 21.972
+    },
+    {
+      "name": "td_nacional_lag6",
+      "dtype": "float64",
+      "min": 7.5631,
+      "max": 21.972
+    },
+    {
+      "name": "td_nacional_lag12",
+      "dtype": "float64",
+      "min": 7.5631,
+      "max": 21.972
+    },
+    {
+      "name": "td_nacional_rollmean3",
+      "dtype": "float64",
+      "min": 7.796666666666666,
+      "max": 21.081933333333335
+    },
+    {
+      "name": "td_nacional_rollstd3",
+      "dtype": "float64",
+      "min": 0.025166114780765393,
+      "max": 4.70437420174035
+    },
+    {
+      "name": "td_nacional_rollmean6",
+      "dtype": "float64",
+      "min": 8.229999999999999,
+      "max": 19.577766666666665
+    },
+    {
+      "name": "td_nacional_rollstd6",
+      "dtype": "float64",
+      "min": 0.1811077027624795,
+      "max": 4.776742227781044
+    },
+    {
+      "name": "td_nacional_rollmean12",
+      "dtype": "float64",
+      "min": 8.993333333333334,
+      "max": 17.37125
+    },
+    {
+      "name": "td_nacional_rollstd12",
+      "dtype": "float64",
+      "min": 0.5429501921323098,
+      "max": 4.871208334290433
+    },
+    {
+      "name": "mes_sin",
+      "dtype": "float64",
+      "min": -1.0,
+      "max": 1.0
+    },
+    {
+      "name": "mes_cos",
+      "dtype": "float64",
+      "min": -1.0,
+      "max": 1.0
+    },
+    {
+      "name": "trend_idx",
+      "dtype": "int64",
+      "min": 11.0,
+      "max": 298.0
+    },
+    {
+      "name": "tasa_global_participacion_area",
+      "dtype": "float64",
+      "min": 55.088,
+      "max": 72.1479
+    },
+    {
+      "name": "tasa_desempleo_area",
+      "dtype": "float64",
+      "min": 7.27,
+      "max": 25.7887
+    },
+    {
+      "name": "tasa_ocupacion_area",
+      "dtype": "float64",
+      "min": 41.658,
+      "max": 64.6097
+    }
+  ],
+  "outer_cv_metrics": {
+    "f1_macro": {
+      "mean": 0.551706802715968,
+      "std": 0.1421562965599233
+    },
+    "accuracy": {
+      "mean": 0.7625,
+      "std": 0.1416666666666666
+    },
+    "precision_macro": {
+      "mean": 0.6016040100250626,
+      "std": 0.2126471304470583
+    },
+    "recall_macro": {
+      "mean": 0.5623580132046951,
+      "std": 0.1331188617096277
+    },
+    "auc_ovr": {
+      "mean": 0.860257753482254,
+      "std": 0.085903006118366
+    }
+  },
+  "selection": {
+    "primary_metric": "f1_macro",
+    "rank_in_task": 5,
+    "is_global_best": false,
+    "in_statistical_finalists": true,
+    "finalist_criterion": "Friedman sobre la mejor variante de cada modelo (5 pliegues): chi2 = 3.68, p = 0.7194; no se rechaza la igualdad, todos son finalistas",
+    "reason": "Mayor f1_macro medio del bucle externo entre las 16 variantes de XGBoost"
+  },
+  "roundtrip_test": {
+    "passed": true,
+    "n_rows": 288,
+    "exact": true
+  },
+  "file": {
+    "name": "model.joblib",
+    "size_mb": 0.072,
+    "sha256": "9bfa8a6840cd36612681b884ccf7d4b2df27c5a90062752a02cbe54f210d3c32",
+    "compress": 3
+  },
+  "libraries": {
+    "python": "3.9.0",
+    "numpy": "2.0.2",
+    "pandas": "2.3.3",
+    "scikit-learn": "1.6.1",
+    "xgboost": "2.1.4",
+    "imbalanced-learn": "0.12.4",
+    "joblib": "1.5.3",
+    "optuna": "5.0.0",
+    "deap": "1.4.3",
+    "scipy": "1.13.1"
+  },
+  "created_utc": "2026-11-04T18:18:03+00:00"
+}

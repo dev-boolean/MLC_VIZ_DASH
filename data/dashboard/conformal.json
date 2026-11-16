@@ -1,0 +1,101 @@
+{
+  "Ridge": {
+    "halfwidth_90": 1.8158162984849113,
+    "nominal": 0.9,
+    "forward": {
+      "coverage": 0.9270833333333334,
+      "mean_width": 3.8409646704691176,
+      "n": 192
+    }
+  },
+  "SVR": {
+    "halfwidth_90": 1.9421270763628247,
+    "nominal": 0.9,
+    "forward": {
+      "coverage": 0.921875,
+      "mean_width": 3.9869719517050846,
+      "n": 192
+    }
+  },
+  "KNN": {
+    "halfwidth_90": 1.6893426582828983,
+    "nominal": 0.9,
+    "forward": {
+      "coverage": 0.9270833333333334,
+      "mean_width": 3.780734973291446,
+      "n": 192
+    }
+  },
+  "XGBoost": {
+    "halfwidth_90": 1.797002220153809,
+    "nominal": 0.9,
+    "forward": {
+      "coverage": 0.890625,
+      "mean_width": 3.212900233560781,
+      "n": 192
+    }
+  },
+  "RandomForest": {
+    "halfwidth_90": 1.6610406249999983,
+    "nominal": 0.9,
+    "forward": {
+      "coverage": 0.890625,
+      "mean_width": 3.238596506926161,
+      "n": 192
+    }
+  },
+  "DecisionTree": {
+    "halfwidth_90": 2.2093245988903387,
+    "nominal": 0.9,
+    "forward": {
+      "coverage": 0.9270833333333334,
+      "mean_width": 4.4612160903820675,
+      "n": 192
+    }
+  },
+  "Lasso": {
+    "halfwidth_90": 2.8539644517932636,
+    "nominal": 0.9,
+    "forward": {
+      "coverage": 0.9583333333333334,
+      "mean_width": 6.29145536037636,
+      "n": 192
+    }
+  },
+  "ALEE": {
+    "halfwidth_90": 1.1778967867713597,
+    "nominal": 0.9,
+    "forward": {
+      "coverage": 0.9375,
+      "mean_width": 2.5549200359151527,
+      "n": 192
+    }
+  },
+  "BayesianRidge": {
+    "halfwidth_90": 2.3787609956766396,
+    "nominal": 0.9,
+    "forward": {
+      "coverage": 0.9375,
+      "mean_width": 4.939674566334902,
+      "n": 192
+    }
+  },
+  "SVR_RBF": {
+    "halfwidth_90": 2.0292836236823497,
+    "nominal": 0.9,
+    "forward": {
+      "coverage": 0.9166666666666666,
+      "mean_width": 4.1070763548100855,
+      "n": 192
+    }
+  },
+  "LightGBM": {
+    "halfwidth_90": 2.175095428502834,
+    "nominal": 0.9,
+    "forward": {
+      "coverage": 0.859375,
+      "mean_width": 3.306323191468793,
+      "n": 192
+    }
+  }
+}

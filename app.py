@@ -1,211 +1,112 @@
+"""Punto de entrada del dashboard: crea la aplicación multipágina y expone ``server``.
+
+El diseño (video de entrada, encabezado, pestañas y asistente) viene del
+dashboard del primer entregable, MLC_VIZ_DASH; el contenido es el del proyecto
+de machine learning.
+
+Local:   python app.py                  (http://127.0.0.1:8050)
+Render:  gunicorn app:server
+"""
 import dash
-from dash import dcc, html
 import dash_bootstrap_components as dbc
+from dash import Input, Output, dcc, html
 
-from utils import cargar_datos
-from callbacks import register_callbacks
-from chatbot import chatbot_bp, init_chatbot
+from src import dash_data as D
+from src import dash_plots  # noqa: F401  (registra la plantilla de las figuras)
+from src.chatbot import chatbot_bp
 
-# =========================
-# CARGA DE DATOS
-# =========================
-df = cargar_datos()
-
-# =========================
-# APP
-# =========================
 app = dash.Dash(
     __name__,
+    use_pages=True,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
+    title="Mercado Laboral Colombiano · Machine Learning",
     suppress_callback_exceptions=True,
-    title="Mercado Laboral Colombiano"
+    meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
 )
+server = app.server
+server.register_blueprint(chatbot_bp)
 
-@app.server.route('/health')
+
+@server.route("/health")
 def health():
     return "ok", 200
 
-server = app.server
 
-# Chatbot
-app.server.register_blueprint(chatbot_bp)
-init_chatbot(df)
+# Carga única de datos y modelos al iniciar el servidor (no en cada interacción).
+D.dataset()
+for _name in D.artifact_names():
+    D.model(_name)
 
-# =========================
-# LAYOUT
-# =========================
-app.layout = html.Div([
+AUTHORS = [
+    ("Andrés Parejo", "https://github.com/dev-boolean", "https://www.linkedin.com/in/andres-parejo-40a653168/",
+     "mailto:aeparejo@uninorte.edu.co"),
+    ("Santiago Hurtado", "https://github.com/SHurtado26", "https://www.linkedin.com/in/santiago-hurtado-369687291/",
+     "mailto:hurtadosantiago@uninorte.edu.co"),
+    ("Juan Marín", None, None, None),
+]
+PAGES = [("Contexto", "/"), ("EDA", "/eda"), ("Modelos", "/modelos"), ("Resultados", "/resultados"),
+         ("Conclusiones", "/conclusiones")]
 
-    # ── SPLASH / INTRO ────────────────────────────────────────────
-    html.Div(id="splash", children=[
 
-        html.Video(
-            id="intro-video",
-            src="/assets/intro.mp4",
-            autoPlay=True,
-            muted=True,
-            playsInline=True,
-            style={
-                "position": "absolute",
-                "inset": "0",
-                "width": "100%",
-                "height": "100%",
-                "objectFit": "cover",
-                "transition": "opacity 0.6s ease",
-            }
-        ),
+def author_links():
+    out = [html.Span("Autores: ", style={"marginRight": "6px"})]
+    for i, (name, gh, li, mail) in enumerate(AUTHORS):
+        if i:
+            out.append(html.Span(" · ", style={"margin": "0 6px"}))
+        out.append(html.A(name, href=gh, target="_blank", className="github-author-link") if gh else html.Span(name))
+        if li:
+            out.append(html.A("", href=li, target="_blank", className="linkedin-author-link", title=f"LinkedIn de {name}"))
+        if mail:
+            out.append(html.A("", href=mail, className="email-author-link", title=mail.replace("mailto:", "")))
+    return out
 
-        # Overlay blanco para la transición
-        html.Div(id="splash-white", style={
-            "position": "absolute",
-            "inset": "0",
-            "background": "#fff",
-            "opacity": "0",
-            "transition": "opacity 0.5s ease",
-            "pointerEvents": "none",
-        }),
 
-        # Logo volador — parte del centro y vuela al header
-        html.Img(
-            id="flying-logo",
-            src="/assets/logo.png",
-            style={
-                "position": "fixed",
-                "left": "50%",
-                "top": "50%",
-                "transform": "translate(-50%, -50%)",
-                "width": "220px",
-                "maxWidth": "60vw",
-                "height": "auto",
-                "opacity": "0",
-                "zIndex": "10000",
-                "filter": "drop-shadow(0 10px 30px rgba(0,0,0,0.25))",
-                "pointerEvents": "none",
-                "transition": "all 1.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                "willChange": "left, top, width, transform",
-            }
-        ),
+splash = html.Div(id="splash", children=[
+    html.Video(id="intro-video", src=dash.get_asset_url("intro.mp4"), autoPlay=True, muted=True, playsInline=True,
+               className="splash-video"),
+    html.Div(id="splash-white", className="splash-white"),
+    html.Img(id="flying-logo", src=dash.get_asset_url("logo.png"), alt="", className="flying-logo"),
+    html.Button("Saltar intro ▶", id="skip-intro", className="skip-intro"),
+], className="splash")
 
-        # Botón saltar
-        html.Button("Saltar intro ▶", id="skip-intro", style={
-            "position": "absolute",
-            "bottom": "24px",
-            "right": "24px",
-            "background": "rgba(0,0,0,0.60)",
-            "backdropFilter": "blur(8px)",
-            "color": "#fff",
-            "border": "1px solid rgba(255,255,255,0.25)",
-            "padding": "10px 20px",
-            "borderRadius": "999px",
-            "fontSize": "14px",
-            "fontWeight": "500",
-            "cursor": "pointer",
-            "zIndex": "10001",
-            "transition": "all 0.2s",
-        }),
-
-    ], style={
-        "position": "fixed",
-        "inset": "0",
-        "zIndex": "9999",
-        "background": "#000",
-        "overflow": "hidden",
-        "transition": "opacity 0.5s ease",
-    }),
-
-    # ── APP PRINCIPAL ─────────────────────────────────────────────
-    html.Div(id="main-app", style={"opacity": "0", "minHeight": "100vh"}, children=[
-
-        dbc.Container(fluid=True, className="app-container", children=[
-
-            html.Div(className="hero-header", children=[
-                html.Div(className="hero-left", children=[
-                    html.Img(
-                        id="logo-target",
-                        src="/assets/logo.png",
-                        className="hero-logo"
-                    )
-                ]),
-                html.Div(className="hero-right", children=[
-                    html.Div("Mercado Laboral Colombiano", className="hero-title"),
-                    html.Div(
-                        "Análisis estadístico, exploratorio y temporal del desempleo, la ocupación y la participación laboral en Colombia.",
-                        className="hero-subtitle"
-                    ),
-                    html.Div([
-                        html.Span("Autores: ", style={"marginRight": "6px"}),
-                        html.A("Andrés Parejo", href="https://github.com/dev-boolean", target="_blank",
-                               className="github-author-link"),
-                        html.A("", href="https://www.linkedin.com/in/andres-parejo-40a653168/", target="_blank",
-                               className="linkedin-author-link", title="LinkedIn de Andrés Parejo"),
-                        html.A("", href="mailto:aeparejo@uninorte.edu.co",
-                               className="email-author-link", title="aeparejo@uninorte.edu.co"),
-                        html.Span(" & ", style={"margin": "0 6px"}),
-                        html.A("Santiago Hurtado", href="https://github.com/SHurtado26", target="_blank",
-                               className="github-author-link"),
-                        html.A("", href="https://www.linkedin.com/in/santiago-hurtado-369687291/", target="_blank",
-                               className="linkedin-author-link", title="LinkedIn de Santiago Hurtado"),
-                        html.A("", href="mailto:hurtadosantiago@uninorte.edu.co",
-                               className="email-author-link", title="hurtadosantiago@uninorte.edu.co"),
-                    ], className="hero-authors"),
-                    html.A([
-                        html.Span(className="yt-icon"),
-                        html.Span("Mira nuestro video de Youtube!")
-                    ], href="https://www.youtube.com/watch?v=2pBUO-to_KM",
-                       target="_blank", className="hero-youtube-link",
-                       title="Mira nuestro video de Youtube!")
-                ])
-            ]),
-
-            html.Div(className="filter-bar", id="filter-bar-global", children=[
-                html.Div([
-                    html.Div("Filtro temporal", className="filter-title"),
-                    html.Div(
-                        "Selecciona el rango de fechas para explorar el comportamiento del mercado laboral. Este filtro aplica a todas las visualizaciones del módulo EDA.",
-                        className="filter-sub"
-                    )
-                ]),
-                dcc.DatePickerRange(
-                    id="rango-fecha",
-                    start_date=df["fecha"].min(),
-                    end_date=df["fecha"].max(),
-                    display_format="YYYY-MM-DD",
-                    minimum_nights=0,
-                    clearable=False,
-                    style={"borderRadius": "16px"}
-                )
-            ]),
-
-            dcc.Tabs(
-                id="main-tabs",
-                value="componentes",
-                className="custom-tabs",
-                children=[
-                    dcc.Tab(label="Componentes",     value="componentes"),
-                    dcc.Tab(label="EDA",             value="eda"),
-                    dcc.Tab(label="Modelado SARIMA", value="modelo"),
-                    dcc.Tab(label="Conclusiones",    value="conclusiones"),
-                    dcc.Tab(label="Referencias",     value="referencias"),
-                ]
-            ),
-
-            dcc.Loading(
-                id="loading-main",
-                type="circle",
-                fullscreen=False,
-                children=html.Div(id="main-content")
-            )
-        ])
-    ])
+hero = html.Div(className="hero-header", children=[
+    html.Div(className="hero-left", children=[
+        html.Img(id="logo-target", src=dash.get_asset_url("logo.png"), alt="Logo del proyecto", className="hero-logo"),
+    ]),
+    html.Div(className="hero-right", children=[
+        html.Div("Mercado Laboral Colombiano", className="hero-title"),
+        html.Div("Pronóstico de la tasa de desempleo con machine learning y un modelo original, ALEE, evaluado en "
+                 "Colombia y ocho países más.", className="hero-subtitle"),
+        html.Div(author_links(), className="hero-authors"),
+        html.A([html.Span(className="yt-icon"), html.Span("Mira nuestro video de YouTube")],
+               href="https://www.youtube.com/watch?v=2pBUO-to_KM", target="_blank", className="hero-youtube-link"),
+    ]),
 ])
 
-# =========================
-# CALLBACKS
-# =========================
-register_callbacks(app, df)
+app.layout = html.Div([
+    dcc.Location(id="url"),
+    splash,
+    html.Div(id="main-app", className="main-app", children=[
+        dbc.Container(fluid=True, className="app-container", children=[
+            hero,
+            html.Nav(id="main-nav", className="custom-tabs page-tabs"),
+            html.Div(dash.page_container, className="mlc-page"),
+            html.Footer([
+                html.Span("Andrés Parejo, Santiago Hurtado y Juan Marín · Proyecto de Machine Learning, Universidad del "
+                          "Norte · "),
+                html.Span("Datos: DANE (GEIH), vía Banco de la República, y OCDE, FRED y Eurostat para los países adicionales."),
+            ], className="mlc-footer"),
+        ]),
+    ]),
+])
 
-# =========================
-# RUN
-# =========================
+
+@app.callback(Output("main-nav", "children"), Input("url", "pathname"))
+def update_nav(path):
+    path = path or "/"
+    return [dcc.Link(label, href=href, className="tab tab--selected" if path == href else "tab")
+            for label, href in PAGES]
+
+
 if __name__ == "__main__":
     app.run(debug=True)
