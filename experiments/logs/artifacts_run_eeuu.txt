@@ -1,0 +1,18 @@
+[15:59:25] eeuu: serie 1948-01 a 2026-10 (946 meses), 934 filas, 14 variables
+[15:59:33] referencias listas
+[16:00:29]   ALEE: errores de expertos precalculados en 57s
+[16:00:30]   ALEE: diferencia máxima vs ModeloOriginal.fit() = 0.00e+00
+[16:01:13]   ALEE pliegue 0: {'bandwidth': 0.9467315604749842, 'half_life': 6.046343914646277, 'lam': 0.0050805156452057455}
+[16:02:35]   ALEE pliegue 1: {'bandwidth': 0.41353370792143623, 'half_life': 10.048590532620974, 'lam': 0.03832981468229218}
+[16:05:41]   ALEE pliegue 2: {'bandwidth': 0.2853212544152711, 'half_life': 58.02340885323854, 'lam': 0.0016448797279206592}
+[16:08:53]   ALEE pliegue 3: {'bandwidth': 0.7048559548702492, 'half_life': 8.16264598822511, 'lam': 0.0028909804991974456}
+[16:10:44]   ALEE pliegue 4: {'bandwidth': 0.2649745139444219, 'half_life': 6.521383446206718, 'lam': 0.06453791430662502}
+[16:10:53]   Ridge: 8s
+[16:10:55]   Lasso: 2s
+[16:10:58]   KNN: 3s
+[16:10:59]   DecisionTree: 1s
+[16:11:58]   RandomForest: 59s
+[16:12:19]   XGBoost: 21s
+[16:13:09]   SVR: 50s
+[16:13:17]   LightGBM: 8s
+[16:13:17] terminado

@@ -1,0 +1,6 @@
+[K3_sin_ridge] expertos=('estacional', 'nucleo_cambio', 'persistencia')
+  RMSE medio de pliegues: 0.8173 +/- 0.2937   RMSE agrupado: 0.8685   tiempo: 207.8s
+[K2_estacional_nucleo] expertos=('estacional', 'nucleo_cambio')
+  RMSE medio de pliegues: 0.8244 +/- 0.2896   RMSE agrupado: 0.8738   tiempo: 149.9s
+[K2_estacional_persistencia] expertos=('estacional', 'persistencia')
+  RMSE medio de pliegues: 0.8184 +/- 0.2922   RMSE agrupado: 0.8690   tiempo: 140.5s

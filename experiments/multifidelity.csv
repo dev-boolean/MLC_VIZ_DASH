@@ -1,0 +1,37 @@
+tarea,modelo,semilla,metodo,metrica,costo_arboles_por_pliegue,metrica_externa,tiempo_busqueda_s,evaluaciones
+clf,RandomForest,1,Successive Halving,f1_macro,3582.0,0.4864326699791321,18.6368681,200
+clf,RandomForest,1,Random (mismo costo),f1_macro,3600.0,0.4952633674616537,17.411399000000003,20
+clf,RandomForest,1,Random (40 evaluaciones),f1_macro,,0.48658094086198334,103.7412029,200
+clf,RandomForest,2,Successive Halving,f1_macro,3582.0,0.4960005712137,20.030236000000002,200
+clf,RandomForest,2,Random (mismo costo),f1_macro,3600.0,0.47291478909206053,17.63271549999999,20
+clf,RandomForest,2,Random (40 evaluaciones),f1_macro,,0.48478197708892556,115.35468579999997,200
+clf,RandomForest,3,Successive Halving,f1_macro,3582.0,0.49405916113503495,16.720128600000123,200
+clf,RandomForest,3,Random (mismo costo),f1_macro,3600.0,0.48521411242759627,14.768096200000002,20
+clf,RandomForest,3,Random (40 evaluaciones),f1_macro,,0.47693510749498547,87.91221339999993,200
+clf,XGBoost,1,Successive Halving,f1_macro,3582.0,0.5151431114016927,13.542004900000052,200
+clf,XGBoost,1,Random (mismo costo),f1_macro,3600.0,0.5001472368959411,4.995441000000085,20
+clf,XGBoost,1,Random (40 evaluaciones),f1_macro,,0.5389018720790233,35.25660700000003,200
+clf,XGBoost,2,Successive Halving,f1_macro,3582.0,0.49493015351426084,12.59808059999989,200
+clf,XGBoost,2,Random (mismo costo),f1_macro,3600.0,0.48483576089983405,6.887778000000026,20
+clf,XGBoost,2,Random (40 evaluaciones),f1_macro,,0.5415070292475057,36.25165149999998,200
+clf,XGBoost,3,Successive Halving,f1_macro,3582.0,0.5274628659767979,12.600198700000078,200
+clf,XGBoost,3,Random (mismo costo),f1_macro,3600.0,0.5228137692910879,5.5746176000000105,20
+clf,XGBoost,3,Random (40 evaluaciones),f1_macro,,0.5024637019900178,35.61081330000002,200
+reg,RandomForest,1,Successive Halving,rmse,3582.0,1.2651456816435334,14.979178100000013,200
+reg,RandomForest,1,Random (mismo costo),rmse,3600.0,1.3932394905951635,13.327782999999954,20
+reg,RandomForest,1,Random (40 evaluaciones),rmse,,1.2932864039734453,80.82456069999989,200
+reg,RandomForest,2,Successive Halving,rmse,3582.0,1.2771723487844961,14.337298900000064,200
+reg,RandomForest,2,Random (mismo costo),rmse,3600.0,1.2826144019419454,12.987374999999815,20
+reg,RandomForest,2,Random (40 evaluaciones),rmse,,1.300498941066442,82.80637000000002,200
+reg,RandomForest,3,Successive Halving,rmse,3582.0,1.2669684359698943,14.51417339999989,200
+reg,RandomForest,3,Random (mismo costo),rmse,3600.0,1.445070054525082,12.843695499999967,20
+reg,RandomForest,3,Random (40 evaluaciones),rmse,,1.2914850313607933,73.15234669999995,200
+reg,XGBoost,1,Successive Halving,rmse,3582.0,1.3197623505356102,8.224451699999918,200
+reg,XGBoost,1,Random (mismo costo),rmse,3600.0,1.3702206548621052,3.8687753999998904,20
+reg,XGBoost,1,Random (40 evaluaciones),rmse,,1.2559264787900901,31.504436299999952,200
+reg,XGBoost,2,Successive Halving,rmse,3582.0,1.2890689726606785,7.188127100000088,200
+reg,XGBoost,2,Random (mismo costo),rmse,3600.0,1.3626512054866224,7.244320900000162,20
+reg,XGBoost,2,Random (40 evaluaciones),rmse,,1.3314154629463752,34.162101599999914,200
+reg,XGBoost,3,Successive Halving,rmse,3582.0,1.3228428109095245,7.481938600000603,200
+reg,XGBoost,3,Random (mismo costo),rmse,3600.0,1.3560415829810504,6.393721700000015,20
+reg,XGBoost,3,Random (40 evaluaciones),rmse,,1.3314391505949013,32.954763000000185,200

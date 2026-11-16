@@ -1,0 +1,16 @@
+{
+  "statistic": 3.6833976833976845,
+  "p_value": 0.7194308684190794,
+  "df": 6,
+  "n_blocks": 5,
+  "avg_ranks": {
+    "KNN": 2.6,
+    "RandomForest": 3.5,
+    "DecisionTree": 4.2,
+    "SVM": 4.2,
+    "NaiveBayes": 4.2,
+    "LogisticRegression": 4.6,
+    "XGBoost": 4.7
+  },
+  "cd": 4.028172008255962
+}

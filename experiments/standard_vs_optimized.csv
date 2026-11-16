@@ -1,0 +1,15 @@
+modelo,variante,complejidad_entrenamiento,complejidad_inferencia,entrenamiento_s,inferencia_s,memoria_pico_mb,desempeño,aceleracion_entrenamiento
+KNN,estándar (exhaustivo),O(1) (perezoso),O(n·p) por consulta con búsqueda exhaustiva; O(p·log n) con índices en árbol (baja dimensión),0.0007445000000245727,0.14196210000000065,0.02734375,0.9585,1.0
+KNN,optimizado (KD-Tree),O(1) (perezoso),O(n·p) por consulta con búsqueda exhaustiva; O(p·log n) con índices en árbol (baja dimensión),0.028225700000007237,0.13536240000001953,0.0234375,0.9585,0.02637667090716552
+KNN,optimizado (FAISS aproximado),O(1) (perezoso),O(n·p) por consulta con búsqueda exhaustiva; O(p·log n) con índices en árbol (baja dimensión),0.00530109999999695,0.023285900000018955,0.01953125,0.9575,0.14044254966422084
+Ridge,estándar (Cholesky),O(n·p² + p³) con solver directo; O(n·p·iter) con SAGA,O(p),0.022168550000003506,0.00022899999999026477,15.28125,10.243980100542474,1.0
+Ridge,optimizado (SAGA),O(n·p² + p³) con solver directo; O(n·p·iter) con SAGA,O(p),0.18586600000003273,0.00017719999999599167,15.28125,10.24386891658465,0.11927167959712698
+Naive Bayes,estándar (fit completo),O(n·p),O(p),0.9726183000000219,0.00023700000002691013,508.15234375,,1.0
+Naive Bayes,optimizado (partial_fit),O(n·p),O(p),0.9135326500000076,0.0001880000000369364,8.890625,,1.0646782027987876
+XGBoost,estándar (exacto),O(B·n·p·log n) exacto; O(B·n·p) con histogramas,O(B·profundidad),38.7254633,0.014297499999997854,12.40625,0.9815,1.0
+XGBoost,optimizado (histogramas),O(B·n·p·log n) exacto; O(B·n·p) con histogramas,O(B·profundidad),2.475277250000005,0.01161899999999605,16.40234375,0.981,15.644899293604352
+SVM,estándar (núcleo RBF),O(n²·p) a O(n³) con núcleo; O(n·p) con LinearSVC o SGD,O(n_vs·p) con núcleo; O(p) lineal,0.9115684999999871,0.432636500000001,34.92578125,0.9245,1.0
+SVM,optimizado (LinearSVC),O(n²·p) a O(n³) con núcleo; O(n·p) con LinearSVC o SGD,O(n_vs·p) con núcleo; O(p) lineal,0.03151180000003251,0.0002986000000078093,2.72265625,0.839,28.927846076677522
+SVM,optimizado (SGD hinge),O(n²·p) a O(n³) con núcleo; O(n·p) con LinearSVC o SGD,O(n_vs·p) con núcleo; O(p) lineal,0.027408300000018926,0.0003470999999990454,0.01953125,0.816,33.25884859693442
+Random Forest,estándar (1 núcleo),O(B·n·p·log n),O(B·profundidad),6.571268250000003,0.029719999999997526,12.53515625,0.9315,1.0
+Random Forest,optimizado (n_jobs=-1),O(B·n·p·log n),O(B·profundidad),0.8685320500000273,0.026319700000044577,15.41796875,0.9315,7.565947911766521

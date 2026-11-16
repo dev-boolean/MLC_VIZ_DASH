@@ -1,0 +1,378 @@
+<title>Guion ponencia ALEE</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: índice fijo a la izquierda + columna de lectura; cada bloque = pantalla / decir / idea */
+:root{
+  --bg:#F5F7F9; --surface:#FFFFFF; --fg:#1C2B3A; --muted:#5A6B7C; --line:#D9E1E8;
+  --accent:#1F5F8B; --accent-soft:#E3EEF6; --idea:#FFF6E0; --idea-line:#E0B54A; --idea-fg:#5C4710;
+  --say-line:#1F5F8B;
+  --display:'Space Grotesk',ui-sans-serif,system-ui,sans-serif;
+  --body:'Inter',ui-sans-serif,system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111A23; --surface:#18232F; --fg:#E4EBF1; --muted:#9AAABA; --line:#2A3846;
+  --accent:#7DB8E3; --accent-soft:#1D3347; --idea:#2B2513; --idea-line:#B8923A; --idea-fg:#EBD9A8; --say-line:#7DB8E3; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111A23; --surface:#18232F; --fg:#E4EBF1; --muted:#9AAABA; --line:#2A3846;
+  --accent:#7DB8E3; --accent-soft:#1D3347; --idea:#2B2513; --idea-line:#B8923A; --idea-fg:#EBD9A8; --say-line:#7DB8E3; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px;padding-block:48px}
+nav{position:sticky;top:calc(24px + env(safe-area-inset-top,0px));align-self:start;font-size:13.5px;max-height:calc(100vh - 48px);overflow:auto}
+nav h2{font-family:var(--display);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 0 6px}
+nav a{display:block;color:var(--fg);text-decoration:none;padding:3px 0 3px 10px;border-left:2px solid var(--line)}
+nav a:hover,nav a:focus-visible{border-left-color:var(--accent);color:var(--accent);outline:none}
+main{min-width:0;max-width:720px}
+header{display:flex;flex-direction:column;gap:12px;padding-bottom:28px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:600}
+h1{font-family:var(--display);font-size:clamp(28px,4.5vw,40px);line-height:1.15;margin:0;text-wrap:balance}
+.lede{color:var(--muted);margin:0}
+.legend{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:13.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:8px}
+.fact{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-size:13.5px}
+.fact b{display:block;font-family:var(--display);font-size:20px;color:var(--accent);font-variant-numeric:tabular-nums}
+.part{font-family:var(--display);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:56px 0 0;padding-top:20px;border-top:3px solid var(--fg)}
+section{display:flex;flex-direction:column;gap:14px;padding-top:36px;scroll-margin-top:16px}
+h3{font-family:var(--display);font-size:22px;margin:0;text-wrap:balance}
+h3 .num{color:var(--accent);margin-right:8px;font-variant-numeric:tabular-nums}
+.show{display:flex;gap:10px;align-items:baseline;font-size:14px;color:var(--muted)}
+.chip{flex:none;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:4px}
+.say{border-left:3px solid var(--say-line);padding:2px 0 2px 16px;display:flex;flex-direction:column;gap:10px}
+.say p,.say ul,.say ol{margin:0}
+.say ul,.say ol{padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.idea{background:var(--idea);border:1px solid var(--idea-line);color:var(--idea-fg);border-radius:6px;padding:10px 14px;font-size:14.5px}
+.idea b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
+.qa{display:flex;flex-direction:column;gap:10px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+details p{margin:8px 0 0}
+footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+@media (max-width:860px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:0;padding-block:24px}
+  nav{display:none}
+  .facts{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+
+<div class="wrap">
+<nav aria-label="Índice">
+  <h2>Metodología</h2>
+  <a href="#s21">2.1 Formulación</a>
+  <a href="#s22">2.2 Datos</a>
+  <a href="#s23">2.3 Modelo ALEE</a>
+  <a href="#s24">2.4 Comparación</a>
+  <a href="#s25">2.5 Entrenamiento</a>
+  <a href="#s26">2.6 Protocolo</a>
+  <a href="#s27">2.7 Ablación</a>
+  <a href="#s28">2.8 Pre-registro</a>
+  <h2>Resultados</h2>
+  <a href="#s31">3.1 Montaje</a>
+  <a href="#s32">3.2 Desempeño global</a>
+  <a href="#s33">3.3 Significancia</a>
+  <a href="#s34">3.4 Ablación</a>
+  <a href="#s35">3.5 Robustez</a>
+  <a href="#s36">3.6 Costo</a>
+  <a href="#s37">3.7 Interpretabilidad</a>
+  <a href="#s4">4 Discusión y cierre</a>
+  <h2>Extra</h2>
+  <a href="#preguntas">Preguntas probables</a>
+</nav>
+
+<main>
+<header>
+  <div class="eyebrow">Ponencia · Metodología y Resultados</div>
+  <h1>Guion para explicar ALEE con el paper proyectado</h1>
+  <p class="lede">Se recorre el paper en pantalla, sección por sección. Los números de sección, tabla y figura son los del PDF final. Duración aproximada: 12 a 15 minutos.</p>
+  <div class="legend">
+    <span><span class="chip">En pantalla</span> qué señalar</span>
+    <span>│ texto con barra azul: qué decir</span>
+    <span><span class="chip" style="background:var(--idea);color:var(--idea-fg)">Idea</span> analogía para explicarlo simple</span>
+  </div>
+  <div class="facts">
+    <div class="fact"><b>9 / 9</b>países donde ALEE es el mejor modelo</div>
+    <div class="fact"><b>21–33 %</b>menos error que el mejor modelo del curso</div>
+    <div class="fact"><b>81 / 81</b>comparaciones significativas (DM y GW)</div>
+  </div>
+  <p class="lede"><b>Idea que debe quedar al final:</b> el modelo se evaluó de forma justa y sin hacer trampa, gana con claridad a todos los modelos del curso en nueve países, y sabemos por qué gana.</p>
+</header>
+
+<div class="part">Parte 1 · Materiales y métodos (Sección 2)</div>
+
+<section id="s21">
+  <h3><span class="num">2.1</span>Formulación del problema</h3>
+  <div class="show"><span class="chip">En pantalla</span>La definición de la tarea y la fórmula del error cuadrático medio.</div>
+  <div class="say">
+    <p>Lo primero es decir con precisión qué queremos aprender. Con lo que se sabe hoy, al cierre de un mes, queremos predecir la tasa de desempleo del <b>mes siguiente</b>. Eso es la función f que va de X, la información de hoy, a Y, el desempleo de mañana.</p>
+    <p>Para saber si un pronóstico es bueno o malo usamos el <b>error cuadrático medio</b>: tomamos la diferencia entre lo que pasó y lo que pronosticamos, la elevamos al cuadrado y promediamos.</p>
+    <p>Al final de la sección está la notación, para que todos los símbolos del paper signifiquen siempre lo mismo.</p>
+  </div>
+  <div class="idea"><b>Idea</b>Elevar al cuadrado castiga mucho más los errores grandes. Equivocarse por 4 puntos en un mes pesa como equivocarse por 1 punto en 16 meses. Para el desempleo eso tiene sentido: lo grave es fallar en las crisis.</div>
+</section>
+
+<section id="s22">
+  <h3><span class="num">2.2</span>Datos y preprocesamiento</h3>
+  <div class="show"><span class="chip">En pantalla</span>El párrafo de Colombia y luego el de conjuntos adicionales.</div>
+  <div class="say">
+    <p>El problema principal es <b>Colombia</b>: datos mensuales del DANE, publicados por el Banco de la República, de 2001 a 2025. Con ellos construimos las variables de entrada: los valores de los meses anteriores (rezagos), promedios y variabilidad de los últimos 3, 6 y 12 meses, el mes del año y los indicadores de las 13 áreas metropolitanas.</p>
+    <p>Un modelo que solo funciona en un país puede haber tenido suerte. Por eso lo probamos en <b>ocho países más</b>: Estados Unidos, España, México, Canadá, Australia, Japón, Alemania y Corea del Sur. Son nueve conjuntos de datos en total. Todos los países se eligieron <b>antes</b> de ver cómo le iba al modelo en ellos.</p>
+  </div>
+  <div class="show"><span class="chip">En pantalla</span>El párrafo de Licencia.</div>
+  <div class="say"><p>Todos los datos son públicos y se pueden reutilizar citando la fuente.</p></div>
+  <div class="show"><span class="chip">En pantalla</span>Tabla 1.</div>
+  <div class="say">
+    <p>Esta tabla describe la variable que queremos predecir en cada país: cuánto vale en promedio, cuánto varía, su mínimo y su máximo. La última columna cuenta los <b>cambios atípicos</b>, es decir, meses en que el desempleo saltó de forma anormal. El caso más claro es la pandemia de 2020.</p>
+    <p>Decidimos <b>no eliminar</b> esos atípicos. Un modelo de pronóstico tiene que enfrentar justamente esas crisis; si las borramos, el modelo se vería mejor de lo que es.</p>
+  </div>
+  <div class="show"><span class="chip">En pantalla</span>El párrafo de Escalamiento y fuga de información.</div>
+  <div class="say">
+    <p>Esta es la regla más importante de la metodología: <b>evitar la fuga de información</b>. Ningún dato del futuro puede colarse en el entrenamiento. Por eso:</p>
+    <ul>
+      <li>todas las variables usan solo meses pasados;</li>
+      <li>cuando normalizamos los datos (restar la media y dividir por la desviación), esos valores se calculan <b>solo con los datos de entrenamiento</b> y después se aplican a los de prueba.</li>
+    </ul>
+  </div>
+  <div class="idea"><b>Idea</b>Es como un examen: si el estudiante ve las respuestas antes, su nota no dice nada. Calcular la media con los datos de prueba es ver un poquito las respuestas.</div>
+</section>
+
+<section id="s23">
+  <h3><span class="num">2.3</span>Modelo propuesto: ALEE</h3>
+  <div class="show"><span class="chip">En pantalla</span>El párrafo «Idea central» y la Figura 1.</div>
+  <div class="say">
+    <p>ALEE significa <b>agregación local entrópica de expertos</b>. La mejor forma de entenderlo es con el diagrama.</p>
+    <p><b>Arriba</b> hay tres «expertos», tres formas sencillas de pronosticar:</p>
+    <ol>
+      <li><b>Persistencia:</b> el mes siguiente será igual al de hoy.</li>
+      <li><b>Núcleo de cambio:</b> busca en la historia momentos parecidos a hoy y mira cuánto cambió el desempleo después.</li>
+      <li><b>Estacional:</b> el valor de hoy más el cambio típico de este mes del año. Por ejemplo, en enero el desempleo suele subir.</li>
+    </ol>
+    <p>El pronóstico final es un <b>promedio ponderado</b> de los tres. La pregunta es cuánto pesa cada uno.</p>
+    <p><b>Abajo</b> está cómo se deciden esos pesos. El modelo mira los meses pasados que se parecen al mes actual (por ejemplo, con volatilidad parecida) y revisa cómo les fue a los tres expertos en esos meses. Al que acertó más le da más peso.</p>
+  </div>
+  <div class="idea"><b>Idea</b>Es como pedir consejo a tres personas. No les haces el mismo caso siempre: le haces más caso a la que acertó en situaciones parecidas a la que estás viviendo.</div>
+  <div class="show"><span class="chip">En pantalla</span>Ecuaciones (1) y (2).</div>
+  <div class="say">
+    <p>La ecuación 1 mide qué tan parecido es cada mes pasado al actual y da más peso a los más parecidos y a los más recientes.</p>
+    <p>La ecuación 2 elige los pesos con dos objetivos a la vez:</p>
+    <ul>
+      <li><b>equivocarse poco</b> en los meses parecidos;</li>
+      <li><b>no alejarse demasiado</b> de una combinación general y estable. Eso es el término de Kullback-Leibler.</li>
+    </ul>
+    <p>Si hay pocos meses parecidos (por ejemplo, en una crisis nunca vista), el modelo desconfía de esa poca evidencia y se queda cerca de la combinación general. Eso evita decisiones extremas con pocos datos.</p>
+  </div>
+  <div class="show"><span class="chip">En pantalla</span>Algoritmo 1.</div>
+  <div class="say">
+    <p>El algoritmo muestra el proceso paso a paso:</p>
+    <ol>
+      <li>Primero registra cómo se equivocó cada experto en el pasado, siempre usando solo información anterior.</li>
+      <li>Después calcula los pesos para el mes actual.</li>
+      <li>Encuentra los pesos óptimos con un método iterativo que se detiene cuando ya no cambian.</li>
+    </ol>
+  </div>
+  <div class="show"><span class="chip">En pantalla</span>Proposiciones 1, 2 y 3.</div>
+  <div class="say">
+    <p>Las tres proposiciones dan <b>garantías matemáticas</b>:</p>
+    <ol>
+      <li>El problema siempre tiene <b>una única respuesta</b>.</li>
+      <li>El algoritmo <b>mejora en cada paso</b>: nunca empeora.</li>
+      <li>El error del pronóstico <b>nunca supera al del peor experto</b>.</li>
+    </ol>
+    <p>No son teoremas nuevos; se derivan de resultados conocidos de optimización. Pero garantizan que el modelo se comporta bien.</p>
+  </div>
+  <div class="show"><span class="chip">En pantalla</span>«Qué es nuevo» e «Implementación y complejidad».</div>
+  <div class="say"><p>Lo novedoso es la forma de elegir los pesos: un problema matemático con solución única que se ajusta solo cuando hay poca información. Todo está programado por nosotros en NumPy, sin modelos de librería. También indicamos cuánto tarda en función del tamaño de los datos.</p></div>
+</section>
+
+<section id="s24">
+  <h3><span class="num">2.4</span>Modelos de comparación</h3>
+  <div class="say"><p>Para saber si ALEE es bueno hay que compararlo con algo. Lo comparamos con los <b>ocho modelos de regresión vistos en clase</b>: KNN, Ridge, Lasso, regresión bayesiana, árbol de decisión, Random Forest, XGBoost y SVR. Además agregamos <b>LightGBM</b>, un método reciente y muy usado.</p></div>
+  <div class="idea"><b>Idea</b>Regla de oro de la comparación: todos los modelos usan exactamente los mismos datos, las mismas particiones y el mismo esfuerzo de ajuste. Si nuestro modelo tuviera más intentos de ajuste que los demás, ganar no significaría nada.</div>
+</section>
+
+<section id="s25">
+  <h3><span class="num">2.5</span>Entrenamiento y optimización</h3>
+  <div class="show"><span class="chip">En pantalla</span>La validación anidada de origen móvil.</div>
+  <div class="say">
+    <p>En series de tiempo no se pueden mezclar los datos al azar. Siempre se entrena con el pasado y se prueba con el futuro. Usamos <b>validación anidada de origen móvil</b>:</p>
+    <ul>
+      <li>Partimos la serie en 5 bloques de prueba consecutivos. Para cada uno, el modelo entrena <b>solo con los meses anteriores</b>.</li>
+      <li>Dentro de ese entrenamiento hay otra división en 3 partes, que sirve <b>únicamente</b> para elegir los hiperparámetros.</li>
+      <li>Los meses de prueba nunca se usan para tomar decisiones.</li>
+    </ul>
+    <p>Los hiperparámetros se buscan con <b>optimización bayesiana</b>, 40 intentos por modelo; ese es el mismo presupuesto para todos. También reportamos la semilla, el computador usado y las versiones de las librerías, que están en las referencias, para que cualquiera pueda repetir el experimento.</p>
+  </div>
+  <div class="idea"><b>Idea</b>Es como evaluar a un pronosticador del clima: solo vale si predijo antes de que pasara. Y los ajustes del instrumento se hacen con días de práctica, nunca con los días del examen.</div>
+</section>
+
+<section id="s26">
+  <h3><span class="num">2.6</span>Protocolo de evaluación</h3>
+  <div class="say">
+    <p>Medimos el error con cinco métricas:</p>
+    <ul>
+      <li><b>RMSE:</b> el error típico, en puntos porcentuales.</li>
+      <li><b>MAE:</b> el error promedio en valor absoluto.</li>
+      <li><b>MAPE:</b> el error en porcentaje.</li>
+      <li><b>R²:</b> qué parte de la variación logramos explicar.</li>
+      <li><b>MASE:</b> el error comparado con un pronóstico ingenuo. Menor que 1 significa que somos mejores que repetir lo del año anterior.</li>
+    </ul>
+    <p>Pero un número menor puede ser <b>suerte</b>. Para descartarlo usamos <b>pruebas estadísticas</b>:</p>
+    <ul>
+      <li><b>Diebold-Mariano:</b> compara mes a mes los errores de dos modelos y pregunta si la diferencia es real o casualidad.</li>
+      <li><b>Giacomini-White:</b> pregunta lo mismo, pero considerando que la ventaja puede cambiar con el tiempo.</li>
+      <li><b>Prueba bayesiana con ROPE:</b> en vez de un sí o un no, da la probabilidad de que ALEE sea mejor, igual o peor. Si la diferencia es menor al 1 %, la consideramos «prácticamente igual».</li>
+    </ul>
+    <p>Entre países usamos <b>Friedman</b>, que pregunta si los modelos son distintos en general considerando los nueve países a la vez, y <b>Wilcoxon</b>, que compara ALEE con cada modelo, país por país.</p>
+  </div>
+  <div class="idea"><b>Idea</b>Como comparamos ALEE con nueve modelos, hacemos muchas pruebas a la vez, y alguna podría salir significativa por azar. La corrección de Holm sube la exigencia para evitarlo.</div>
+</section>
+
+<section id="s27">
+  <h3><span class="num">2.7</span>Diseño del estudio de ablación</h3>
+  <div class="say">
+    <p>La <b>ablación</b> consiste en quitarle piezas al modelo, una a la vez, para ver cuál es importante. Antes de ver los resultados, planteamos cinco hipótesis:</p>
+    <ul>
+      <li><b>H1:</b> combinar con pesos aprendidos es mejor que un promedio simple.</li>
+      <li><b>H2:</b> usar los meses parecidos (localización) ayuda.</li>
+      <li><b>H3:</b> la regularización que se adapta a la cantidad de evidencia ayuda.</li>
+      <li><b>H4:</b> acercarse a la combinación global es mejor que acercarse a pesos iguales.</li>
+      <li><b>H5:</b> combinar los tres expertos es mejor que usar cualquiera de ellos solo.</li>
+    </ul>
+  </div>
+  <div class="idea"><b>Idea</b>Es como un carro que anda rápido: para saber qué lo hace rápido, le quitas el turbo y miras, luego le quitas las llantas especiales y miras, y así con cada pieza.</div>
+</section>
+
+<section id="s28">
+  <h3><span class="num">2.8</span>Pre-registro y desviaciones</h3>
+  <div class="show"><span class="chip">En pantalla</span>Tabla 2.</div>
+  <div class="say">
+    <p>El protocolo se escribió y se congeló <b>antes</b> de ver los resultados finales. Esta tabla separa con honestidad qué estaba fijado desde el principio y qué se agregó después, con el motivo de cada cambio. Por ejemplo, la regresión bayesiana y la prueba con ROPE se agregaron porque la guía del curso las pide.</p>
+    <p>Declaramos también que en Colombia probamos diez versiones del diseño. Por eso la prueba más confiable son los <b>ocho países nuevos</b>, donde el modelo se evaluó <b>una sola vez</b>, ya terminado, sin cambiarle nada.</p>
+  </div>
+</section>
+
+<div class="part">Parte 2 · Resultados (Sección 3)</div>
+
+<section id="s31">
+  <h3><span class="num">3.1</span>Resumen del montaje</h3>
+  <div class="say"><p>Para recordar: diez modelos (ALEE, los ocho del curso y LightGBM), nueve países y 4 260 meses de prueba en total. Todos con las mismas reglas.</p></div>
+</section>
+
+<section id="s32">
+  <h3><span class="num">3.2</span>Desempeño global</h3>
+  <div class="show"><span class="chip">En pantalla</span>Tabla 3.</div>
+  <div class="say">
+    <p>Esta es la tabla principal. Cada columna es un país y cada fila un modelo. Los números son el error típico (RMSE): <b>mientras más bajo, mejor</b>.</p>
+    <p>La primera fila es ALEE, y está <b>en negrita en los nueve países</b>: es el mejor en todos. La cruz (†) junto a cada modelo indica que ALEE es mejor que ese modelo y que la diferencia es estadísticamente significativa.</p>
+    <p>En números concretos, frente al mejor modelo del curso en cada país, ALEE reduce el error entre <b>21 % (Japón) y 33 % (Colombia)</b>.</p>
+    <p>Entre los modelos del curso no hay un ganador fijo. En algunos países gana la regresión bayesiana, en otros Lasso, Ridge o SVR. ALEE gana en todos.</p>
+  </div>
+  <div class="show"><span class="chip">En pantalla</span>Tabla 4 (pasar rápido).</div>
+  <div class="say"><p>Esta tabla es el detalle con las cinco métricas. ALEE es el mejor en <b>las cinco y en los nueve países</b>, así que el resultado no depende de cómo midamos el error.</p></div>
+  <div class="show"><span class="chip">En pantalla</span>Figura 2.</div>
+  <div class="say"><p>Aquí se ve el pronóstico en Colombia. La línea negra es la realidad, la azul es ALEE y la naranja es Ridge, el mejor modelo del curso en Colombia. ALEE sigue los vaivenes estacionales mes a mes, mientras que Ridge los suaviza y se equivoca más. Los dos fallan en el salto de 2020: nadie podía anticipar la pandemia.</p></div>
+  <div class="show"><span class="chip">En pantalla</span>Figuras 3 y 4.</div>
+  <div class="say"><p>En la Figura 3, mientras más cerca estén los puntos de la diagonal, mejor es el pronóstico. En la Figura 4, los errores de ALEE (en azul) están más concentrados alrededor de cero.</p></div>
+  <div class="show"><span class="chip">En pantalla</span>Figura 5.</div>
+  <div class="say"><p>Aquí se ve cada uno de los 45 bloques de prueba (5 por país). ALEE es el mejor en <b>37 de los 45</b>, lo que muestra que no gana por un solo periodo afortunado.</p></div>
+</section>
+
+<section id="s33">
+  <h3><span class="num">3.3</span>Pruebas de significancia</h3>
+  <div class="show"><span class="chip">En pantalla</span>Tabla 5.</div>
+  <div class="say">
+    <p>Esta tabla responde a la pregunta «¿es suerte?». Para cada país y cada modelo muestra la diferencia de error con su intervalo de confianza, el resultado de Diebold-Mariano y de Giacomini-White, la probabilidad bayesiana y el tamaño del efecto.</p>
+    <p>El resultado es contundente: en las <b>81 comparaciones</b> (nueve modelos por nueve países), las dos pruebas dicen que la diferencia es <b>real</b>. Incluso el caso más ajustado tiene un valor p de 0.0074, muy por debajo de 0.05. Y <b>todos</b> los intervalos de confianza quedan del lado favorable a ALEE.</p>
+    <p>La prueba bayesiana es más prudente porque trabaja con menos datos, solo cinco bloques por país. Aun así da entre 66 % y 99.9 % de probabilidad de que ALEE sea mejor, y casi cero de que sean equivalentes.</p>
+  </div>
+  <div class="idea"><b>Idea</b>El tamaño del efecto (d de Cohen y A12) dice cuánto mejor es ALEE, no solo si lo es. Un A12 de 0.70, por ejemplo, significa que en el 70 % de los meses ALEE se equivoca menos que el otro modelo.</div>
+  <div class="show"><span class="chip">En pantalla</span>Tabla 6 y Figura 6.</div>
+  <div class="say">
+    <p>Ahora miramos los nueve países juntos. El <b>rango medio</b> es como una posición en el campeonato: ALEE queda primero en los nueve países, con rango 1.00. Le siguen la regresión bayesiana, Lasso y Ridge.</p>
+    <p>El Wilcoxon confirma que ALEE es mejor que <b>cada uno</b> de los nueve modelos. El Conover lo confirma frente a ocho; frente a la regresión bayesiana, el segundo mejor, no alcanza la significancia (p = 0.071), porque con nueve países la prueba tiene un poder limitado. Lo reportamos tal cual.</p>
+    <p>En el diagrama de diferencia crítica, los mejores modelos están a la izquierda. ALEE está solo en la primera posición.</p>
+  </div>
+</section>
+
+<section id="s34">
+  <h3><span class="num">3.4</span>Ablación</h3>
+  <div class="show"><span class="chip">En pantalla</span>Tabla 7 (la Tabla 8 tiene las cinco métricas).</div>
+  <div class="say">
+    <p>Aquí vemos qué piezas del modelo importan:</p>
+    <ul>
+      <li><b>H1, combinar:</b> sí importa. El promedio simple es peor en 7 de 9 países.</li>
+      <li><b>H2, localización:</b> aporta menos de lo esperado. Solo es significativa en México y Japón.</li>
+      <li><b>H3, regularización adaptativa:</b> ayuda en Canadá y Japón.</li>
+      <li><b>H4, previo global:</b> no hace diferencia.</li>
+      <li><b>H5, cada experto solo:</b> la persistencia y el núcleo, por separado, son claramente peores. El estacional solo es peor en Canadá, Australia y Japón.</li>
+    </ul>
+    <p>La conclusión es honesta: <b>la mayor parte de la ventaja viene de los expertos</b>, que ya incorporan cómo se comporta el desempleo (persistencia y estacionalidad), y de combinarlos. La localización aporta menos de lo que esperábamos, y lo decimos.</p>
+  </div>
+  <div class="show"><span class="chip">En pantalla</span>Figura 7: la barra azul (ALEE completo) es de las más cortas en cada país.</div>
+</section>
+
+<section id="s35">
+  <h3><span class="num">3.5</span>Sensibilidad y robustez</h3>
+  <div class="show"><span class="chip">En pantalla</span>Tabla 9.</div>
+  <div class="say"><p>Repetimos el ajuste con distintas semillas aleatorias. ALEE casi no cambia: su variación es menor al 1 %. Random Forest, XGBoost y LightGBM varían mucho más, y ni en su mejor semilla se acercan a ALEE.</p></div>
+  <div class="show"><span class="chip">En pantalla</span>Figura 8.</div>
+  <div class="say"><p>El mapa de colores muestra el error de ALEE con distintas combinaciones de hiperparámetros. En casi toda la zona el error es bajo y estable: el modelo no depende de una configuración exacta.</p></div>
+  <div class="show"><span class="chip">En pantalla</span>Figura 9.</div>
+  <div class="say"><p>La curva de aprendizaje muestra cuántos datos necesita cada modelo. ALEE alcanza su mejor error con solo 60 meses de historia. Ridge necesita mucha más, y aun con toda la serie queda por encima de ALEE.</p></div>
+</section>
+
+<section id="s36">
+  <h3><span class="num">3.6</span>Costo computacional</h3>
+  <div class="show"><span class="chip">En pantalla</span>Tabla 10.</div>
+  <div class="say"><p>ALEE es más lento que los modelos lineales: menos de un segundo para entrenar y medio segundo para pronosticar 48 meses. Para un pronóstico que se hace una vez al mes, ese costo es irrelevante frente a reducir el error entre 21 % y 33 %.</p></div>
+</section>
+
+<section id="s37">
+  <h3><span class="num">3.7</span>Interpretabilidad y análisis de errores</h3>
+  <div class="show"><span class="chip">En pantalla</span>Figura 10.</div>
+  <div class="say"><p>¿En qué se fija el modelo? La importancia por permutación lo responde: si desordenamos una variable y el error sube mucho, esa variable es importante. Lo que más importa es el <b>último valor del desempleo</b> y el <b>mes del año</b>. Tiene sentido: el desempleo del próximo mes depende sobre todo de cómo está hoy y de la época del año.</p></div>
+  <div class="show"><span class="chip">En pantalla</span>Figura 11.</div>
+  <div class="say"><p>Estos son los pesos de cada experto en el tiempo, en Colombia. Al principio, con poca historia, cambian bastante. Desde 2014 el modelo confía casi siempre en el experto estacional.</p></div>
+  <div class="show"><span class="chip">En pantalla</span>Figura 12.</div>
+  <div class="say"><p>Separamos los meses en volatilidad baja, media y alta. ALEE es el mejor en los tres grupos en los nueve países: 27 de 27. Su peor momento es la llegada de la pandemia, que llegó tras meses tranquilos y nada permitía anticiparla.</p></div>
+</section>
+
+<section id="s4">
+  <h3><span class="num">4</span>Discusión, limitaciones y cierre</h3>
+  <div class="show"><span class="chip">En pantalla</span>Los párrafos de limitaciones.</div>
+  <div class="say">
+    <p>También decimos qué <b>no</b> podemos afirmar:</p>
+    <ul>
+      <li>Nueve países dan un poder estadístico moderado.</li>
+      <li>En Colombia probamos varias versiones del diseño, así que ahí puede haber algo de optimismo.</li>
+      <li>Algunos datos se revisan después de publicados, y eso puede introducir una pequeña fuga.</li>
+      <li>Los países adicionales usan 14 variables en vez de 17.</li>
+    </ul>
+    <p>Declarar esto no debilita el trabajo: le dice al lector hasta dónde llega la evidencia.</p>
+    <p>En resumen:</p>
+    <ol>
+      <li><b>La metodología es justa y verificable:</b> las mismas reglas para todos los modelos, sin fuga de información y con todo declarado.</li>
+      <li><b>Los resultados son claros:</b> ALEE gana a los ocho modelos del curso y a LightGBM en los nueve países, en las cinco métricas, y las pruebas estadísticas confirman que no es suerte.</li>
+      <li><b>Sabemos por qué gana:</b> sus expertos incorporan cómo se comporta el desempleo, y combinarlos bien agrega valor.</li>
+    </ol>
+    <p>Muchas gracias.</p>
+  </div>
+</section>
+
+<section id="preguntas">
+  <h3>Preguntas probables</h3>
+  <div class="qa">
+    <details><summary>¿La comparación es justa?</summary><p>Sí. Todos los modelos usaron los mismos datos, las mismas particiones y el mismo presupuesto de 40 intentos de ajuste.</p></details>
+    <details><summary>¿Cómo saben que no hay trampa con datos del futuro?</summary><p>Las variables usan solo meses pasados, la normalización se calcula solo con el entrenamiento y los hiperparámetros se eligen sin tocar los meses de prueba (secciones 2.2 y 2.5).</p></details>
+    <details><summary>Si la localización aporta poco, ¿por qué gana ALEE?</summary><p>Porque sus expertos ya incorporan la persistencia y la estacionalidad, algo que los modelos genéricos tienen que aprender de pocos datos, y porque la combinación con pesos aprendidos supera al promedio simple en 7 de 9 países.</p></details>
+    <details><summary>¿No sobreajustaron probando muchas versiones?</summary><p>En Colombia puede haber algo de optimismo, y lo declaramos. Por eso la evidencia principal son los ocho países nuevos, donde el modelo se evaluó una sola vez y gana igual.</p></details>
+    <details><summary>¿Por qué el Conover no es significativo frente a la regresión bayesiana?</summary><p>Es el segundo mejor modelo y, con nueve países, esa prueba tiene poco poder. El Wilcoxon sí es significativo, y en cada país Diebold-Mariano también.</p></details>
+    <details><summary>¿Qué es lo original del modelo?</summary><p>Elegir los pesos de los expertos resolviendo un problema matemático con solución única que se vuelve más prudente cuando hay poca evidencia, aplicado al pronóstico del desempleo. Está programado por nosotros, sin modelos de librería.</p></details>
+  </div>
+</section>
+
+<footer>Universidad del Norte · Santiago Hurtado, Juan Marín y Andrés Parejo · Pronóstico de la tasa de desempleo con ALEE</footer>
+</main>
+</div>

@@ -1,0 +1,16 @@
+,0
+friedman_chi2,62.72121212121215
+friedman_p,3.995243377634598e-10
+iman_davenport_F,27.450928381962914
+iman_davenport_p,0.0
+nemenyi_cd,4.51536126139487
+rango_ALEE,1.0
+rango_BayesianRidge,3.111111111111111
+rango_Lasso,3.4444444444444446
+rango_Ridge,4.0
+rango_SVR_RBF,4.444444444444445
+rango_XGBoost,6.777777777777778
+rango_KNN,7.222222222222222
+rango_RandomForest,7.555555555555555
+rango_LightGBM,8.11111111111111
+rango_DecisionTree,9.333333333333334

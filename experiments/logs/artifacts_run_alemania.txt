@@ -1,0 +1,18 @@
+[22:23:04] alemania: serie 1991-01 a 2026-09 (429 meses), 417 filas, 14 variables
+[22:23:08] referencias listas
+[22:23:12]   ALEE: errores de expertos precalculados en 4s
+[22:23:13]   ALEE: diferencia máxima vs ModeloOriginal.fit() = 0.00e+00
+[22:23:22]   ALEE pliegue 0: {'bandwidth': 0.19313504812740903, 'half_life': 7.041579179888639, 'lam': 93.31466280278296}
+[22:23:37]   ALEE pliegue 1: {'bandwidth': 0.580063229993336, 'half_life': 9.574942651769849, 'lam': 0.0060252157362038605}
+[22:24:03]   ALEE pliegue 2: {'bandwidth': 0.15265149321695395, 'half_life': 9.861892473249192, 'lam': 0.006214125862601978}
+[22:24:51]   ALEE pliegue 3: {'bandwidth': 1.3156903910346567, 'half_life': 6.971398076026315, 'lam': 0.0015266511354372356}
+[22:25:36]   ALEE pliegue 4: {'bandwidth': 0.15816938496037766, 'half_life': 6.877718795347418, 'lam': 0.022525811012062275}
+[22:25:46]   Ridge: 10s
+[22:25:49]   Lasso: 3s
+[22:25:51]   KNN: 2s
+[22:25:52]   DecisionTree: 1s
+[22:26:51]   RandomForest: 59s
+[22:27:03]   XGBoost: 12s
+[22:28:07]   SVR: 64s
+[22:28:13]   LightGBM: 6s
+[22:28:13] terminado

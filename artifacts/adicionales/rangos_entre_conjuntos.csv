@@ -1,0 +1,5 @@
+,ALEE,DecisionTree,Estacional,EstacionalALEE,KNN,Lasso,LightGBM,Persistencia,RandomForest,Ridge,SARIMA,SVR,XGBoost
+colombia,2.0,11.0,13.0,1.0,6.0,12.0,10.0,7.0,9.0,4.0,3.0,5.0,8.0
+eeuu,2.0,11.0,13.0,3.0,12.0,5.0,9.0,4.0,10.0,6.0,1.0,7.0,8.0
+espana,3.0,13.0,12.0,2.0,9.0,5.0,11.0,4.0,10.0,6.0,1.0,7.0,8.0
+mexico,2.0,13.0,12.0,3.0,9.0,5.0,11.0,4.0,8.0,6.0,1.0,7.0,10.0

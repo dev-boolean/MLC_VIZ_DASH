@@ -1,0 +1,180 @@
+{
+  "artifact": "reg_Lasso",
+  "task": "regresion",
+  "model": "Lasso",
+  "balancing": "none",
+  "optimizer": "random",
+  "source_run_id": "reg_Lasso_none_random",
+  "target": "Tasa de desempleo nacional del mes siguiente (%)",
+  "classes": null,
+  "seed": 42,
+  "hyperparameters": {
+    "alpha": 0.11462107403425033
+  },
+  "final_search": {
+    "optimizer": "random",
+    "inner_cv": "TimeSeriesSplit(n_splits=3, gap=1)",
+    "budget": {
+      "grid_max_combinations": 40,
+      "random_n_iter": 40,
+      "bayes_n_trials": 40,
+      "genetic_population": 8,
+      "genetic_budget": 40
+    },
+    "n_evaluations": 40,
+    "best_inner_score": -1.4831699744092453,
+    "wall_time_s": 0.9965345999999897
+  },
+  "training": {
+    "n_observations": 288,
+    "first_feature_month": "2001-12-31",
+    "last_feature_month": "2025-11-30",
+    "fit_time_s": 0.002503099999998426
+  },
+  "input_schema": [
+    {
+      "name": "td_nacional_lag1",
+      "dtype": "float64",
+      "min": 7.02,
+      "max": 21.972
+    },
+    {
+      "name": "td_nacional_lag2",
+      "dtype": "float64",
+      "min": 7.5631,
+      "max": 21.972
+    },
+    {
+      "name": "td_nacional_lag3",
+      "dtype": "float64",
+      "min": 7.5631,
+      "max": 21.972
+    },
+    {
+      "name": "td_nacional_lag6",
+      "dtype": "float64",
+      "min": 7.5631,
+      "max": 21.972
+    },
+    {
+      "name": "td_nacional_lag12",
+      "dtype": "float64",
+      "min": 7.5631,
+      "max": 21.972
+    },
+    {
+      "name": "td_nacional_rollmean3",
+      "dtype": "float64",
+      "min": 7.796666666666666,
+      "max": 21.081933333333335
+    },
+    {
+      "name": "td_nacional_rollstd3",
+      "dtype": "float64",
+      "min": 0.025166114780765393,
+      "max": 4.70437420174035
+    },
+    {
+      "name": "td_nacional_rollmean6",
+      "dtype": "float64",
+      "min": 8.229999999999999,
+      "max": 19.577766666666665
+    },
+    {
+      "name": "td_nacional_rollstd6",
+      "dtype": "float64",
+      "min": 0.1811077027624795,
+      "max": 4.776742227781044
+    },
+    {
+      "name": "td_nacional_rollmean12",
+      "dtype": "float64",
+      "min": 8.993333333333334,
+      "max": 17.37125
+    },
+    {
+      "name": "td_nacional_rollstd12",
+      "dtype": "float64",
+      "min": 0.5429501921323098,
+      "max": 4.871208334290433
+    },
+    {
+      "name": "mes_sin",
+      "dtype": "float64",
+      "min": -1.0,
+      "max": 1.0
+    },
+    {
+      "name": "mes_cos",
+      "dtype": "float64",
+      "min": -1.0,
+      "max": 1.0
+    },
+    {
+      "name": "trend_idx",
+      "dtype": "int64",
+      "min": 11.0,
+      "max": 298.0
+    },
+    {
+      "name": "tasa_global_participacion_area",
+      "dtype": "float64",
+      "min": 55.088,
+      "max": 72.1479
+    },
+    {
+      "name": "tasa_desempleo_area",
+      "dtype": "float64",
+      "min": 7.27,
+      "max": 25.7887
+    },
+    {
+      "name": "tasa_ocupacion_area",
+      "dtype": "float64",
+      "min": 41.658,
+      "max": 64.6097
+    }
+  ],
+  "outer_cv_metrics": {
+    "rmse": {
+      "mean": 1.510029727586837,
+      "std": 0.7625958738256137
+    },
+    "mae": {
+      "mean": 1.1713959365035815,
+      "std": 0.5244218889261261
+    }
+  },
+  "selection": {
+    "primary_metric": "rmse",
+    "rank_in_task": 7,
+    "is_global_best": false,
+    "in_statistical_finalists": true,
+    "finalist_criterion": "MCS sobre los 28 modelos (alfa = 0.1, bloques de 12 meses): 28 de 28 en el conjunto de confianza",
+    "reason": "Menor rmse medio del bucle externo entre las 4 variantes de Lasso"
+  },
+  "roundtrip_test": {
+    "passed": true,
+    "n_rows": 288,
+    "exact": true
+  },
+  "file": {
+    "name": "model.joblib",
+    "size_mb": 0.001,
+    "sha256": "6d19c144fff45f600521f4d99c5bfb55c5a2b240bcd5f339880666b020e93235",
+    "compress": 3
+  },
+  "libraries": {
+    "python": "3.9.0",
+    "numpy": "2.0.2",
+    "pandas": "2.3.3",
+    "scikit-learn": "1.6.1",
+    "xgboost": "2.1.4",
+    "imbalanced-learn": "0.12.4",
+    "joblib": "1.5.3",
+    "optuna": "5.0.0",
+    "deap": "1.4.3",
+    "scipy": "1.13.1"
+  },
+  "created_utc": "2026-11-04T18:18:44+00:00"
+}

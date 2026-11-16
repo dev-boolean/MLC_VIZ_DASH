@@ -1,0 +1,65 @@
+tarea,modelo,balanceo,optimizador,semilla,metrica,valor,mejores_hiperparametros_ultimo_pliegue
+clf,KNN,smote,grid,42,f1_macro,0.6668154514697432,"{'n_neighbors': 12, 'weights': 'distance', 'p': 1}"
+clf,KNN,smote,random,1,f1_macro,0.7083806349355063,"{'n_neighbors': 9, 'weights': 'distance', 'p': 1}"
+clf,KNN,smote,random,2,f1_macro,0.5564667321406451,"{'n_neighbors': 3, 'weights': 'uniform', 'p': 1}"
+clf,KNN,smote,random,3,f1_macro,0.626025330945662,"{'n_neighbors': 7, 'weights': 'uniform', 'p': 1}"
+clf,KNN,smote,random,4,f1_macro,0.6546158725829121,"{'n_neighbors': 8, 'weights': 'distance', 'p': 1}"
+clf,KNN,smote,random,5,f1_macro,0.6446690710713472,"{'n_neighbors': 7, 'weights': 'uniform', 'p': 1}"
+clf,KNN,smote,bayesian,1,f1_macro,0.7078070605814588,"{'n_neighbors': 9, 'weights': 'distance', 'p': 1}"
+clf,KNN,smote,bayesian,2,f1_macro,0.5564667321406451,"{'n_neighbors': 3, 'weights': 'distance', 'p': 1}"
+clf,KNN,smote,bayesian,3,f1_macro,0.626025330945662,"{'n_neighbors': 7, 'weights': 'uniform', 'p': 1}"
+clf,KNN,smote,bayesian,4,f1_macro,0.6441083849195175,"{'n_neighbors': 5, 'weights': 'uniform', 'p': 1}"
+clf,KNN,smote,bayesian,5,f1_macro,0.5779852010687383,"{'n_neighbors': 6, 'weights': 'uniform', 'p': 1}"
+clf,KNN,smote,genetic,1,f1_macro,0.6063536760327413,"{'n_neighbors': 8, 'weights': 'distance', 'p': 1}"
+clf,KNN,smote,genetic,2,f1_macro,0.5234836964614271,"{'n_neighbors': 3, 'weights': 'distance', 'p': 1}"
+clf,KNN,smote,genetic,3,f1_macro,0.6244143923947355,"{'n_neighbors': 9, 'weights': 'distance', 'p': 1}"
+clf,KNN,smote,genetic,4,f1_macro,0.6434651409326155,"{'n_neighbors': 5, 'weights': 'distance', 'p': 1}"
+clf,KNN,smote,genetic,5,f1_macro,0.6438244769938698,"{'n_neighbors': 7, 'weights': 'distance', 'p': 1}"
+clf,DecisionTree,none,grid,42,f1_macro,0.46725817894488875,"{'max_depth': 8, 'min_samples_split': 8, 'min_samples_leaf': 7, 'criterion': 'entropy'}"
+clf,DecisionTree,none,random,1,f1_macro,0.5000835499386224,"{'max_depth': 9, 'min_samples_split': 5, 'min_samples_leaf': 7, 'criterion': 'entropy'}"
+clf,DecisionTree,none,random,2,f1_macro,0.5250088800481689,"{'max_depth': 8, 'min_samples_split': 12, 'min_samples_leaf': 2, 'criterion': 'gini'}"
+clf,DecisionTree,none,random,3,f1_macro,0.5060327714413286,"{'max_depth': 9, 'min_samples_split': 2, 'min_samples_leaf': 1, 'criterion': 'entropy'}"
+clf,DecisionTree,none,random,4,f1_macro,0.500524425935054,"{'max_depth': 10, 'min_samples_split': 9, 'min_samples_leaf': 7, 'criterion': 'entropy'}"
+clf,DecisionTree,none,random,5,f1_macro,0.543061351757004,"{'max_depth': 4, 'min_samples_split': 6, 'min_samples_leaf': 7, 'criterion': 'entropy'}"
+clf,DecisionTree,none,bayesian,1,f1_macro,0.5411244108040447,"{'max_depth': 18, 'min_samples_split': 3, 'min_samples_leaf': 1, 'criterion': 'entropy'}"
+clf,DecisionTree,none,bayesian,2,f1_macro,0.5250088800481689,"{'max_depth': 13, 'min_samples_split': 12, 'min_samples_leaf': 2, 'criterion': 'gini'}"
+clf,DecisionTree,none,bayesian,3,f1_macro,0.5307482112732046,"{'max_depth': 8, 'min_samples_split': 20, 'min_samples_leaf': 2, 'criterion': 'gini'}"
+clf,DecisionTree,none,bayesian,4,f1_macro,0.44768983436649606,"{'max_depth': 12, 'min_samples_split': 11, 'min_samples_leaf': 7, 'criterion': 'entropy'}"
+clf,DecisionTree,none,bayesian,5,f1_macro,0.541493683846625,"{'max_depth': 2, 'min_samples_split': 5, 'min_samples_leaf': 7, 'criterion': 'gini'}"
+clf,DecisionTree,none,genetic,1,f1_macro,0.4906954571745706,"{'max_depth': 11, 'min_samples_split': 10, 'min_samples_leaf': 7, 'criterion': 'entropy'}"
+clf,DecisionTree,none,genetic,2,f1_macro,0.5436794284462327,"{'max_depth': 19, 'min_samples_split': 19, 'min_samples_leaf': 2, 'criterion': 'gini'}"
+clf,DecisionTree,none,genetic,3,f1_macro,0.5488685174292371,"{'max_depth': 13, 'min_samples_split': 3, 'min_samples_leaf': 1, 'criterion': 'entropy'}"
+clf,DecisionTree,none,genetic,4,f1_macro,0.4958570858625902,"{'max_depth': 6, 'min_samples_split': 4, 'min_samples_leaf': 5, 'criterion': 'gini'}"
+clf,DecisionTree,none,genetic,5,f1_macro,0.45660845198076583,"{'max_depth': 7, 'min_samples_split': 12, 'min_samples_leaf': 7, 'criterion': 'entropy'}"
+reg,Ridge,none,grid,42,rmse,1.3184150139635695,{'alpha': 10.0}
+reg,Ridge,none,random,1,rmse,1.226103038099068,{'alpha': 63.74812448657215}
+reg,Ridge,none,random,2,rmse,1.1860978570299407,{'alpha': 57.786278543324556}
+reg,Ridge,none,random,3,rmse,1.2016540800229119,{'alpha': 48.07160108233731}
+reg,Ridge,none,random,4,rmse,1.1852808842257239,{'alpha': 52.21988554554207}
+reg,Ridge,none,random,5,rmse,1.194177923454561,{'alpha': 47.543101892009076}
+reg,Ridge,none,bayesian,1,rmse,1.212560143461584,{'alpha': 65.43020535473337}
+reg,Ridge,none,bayesian,2,rmse,1.212188303381136,{'alpha': 64.93999446789677}
+reg,Ridge,none,bayesian,3,rmse,1.2193154413019744,{'alpha': 66.41767607837885}
+reg,Ridge,none,bayesian,4,rmse,1.2171541518547775,{'alpha': 62.50228249331873}
+reg,Ridge,none,bayesian,5,rmse,1.2129616228139717,{'alpha': 65.19839321014824}
+reg,Ridge,none,genetic,1,rmse,1.212373823341243,{'alpha': 63.07859134753111}
+reg,Ridge,none,genetic,2,rmse,1.249615562767931,{'alpha': 67.71060208114986}
+reg,Ridge,none,genetic,3,rmse,1.192586538426364,{'alpha': 53.861784062091544}
+reg,Ridge,none,genetic,4,rmse,1.180762406742163,{'alpha': 63.85029000028817}
+reg,Ridge,none,genetic,5,rmse,1.2356602463569304,{'alpha': 59.04204526508543}
+reg,KNN,none,grid,42,rmse,1.2557891237926448,"{'n_neighbors': 3, 'weights': 'distance', 'p': 1}"
+reg,KNN,none,random,1,rmse,1.2719435908923507,"{'n_neighbors': 6, 'weights': 'uniform', 'p': 1}"
+reg,KNN,none,random,2,rmse,1.2569930467733443,"{'n_neighbors': 4, 'weights': 'uniform', 'p': 1}"
+reg,KNN,none,random,3,rmse,1.2546511707992416,"{'n_neighbors': 4, 'weights': 'distance', 'p': 1}"
+reg,KNN,none,random,4,rmse,1.276589982850575,"{'n_neighbors': 8, 'weights': 'distance', 'p': 1}"
+reg,KNN,none,random,5,rmse,1.2838553721424373,"{'n_neighbors': 5, 'weights': 'uniform', 'p': 1}"
+reg,KNN,none,bayesian,1,rmse,1.2564338304625902,"{'n_neighbors': 4, 'weights': 'distance', 'p': 1}"
+reg,KNN,none,bayesian,2,rmse,1.254068630848853,"{'n_neighbors': 4, 'weights': 'distance', 'p': 1}"
+reg,KNN,none,bayesian,3,rmse,1.2515449017179772,"{'n_neighbors': 4, 'weights': 'distance', 'p': 1}"
+reg,KNN,none,bayesian,4,rmse,1.2521700512647418,"{'n_neighbors': 4, 'weights': 'uniform', 'p': 1}"
+reg,KNN,none,bayesian,5,rmse,1.254068630848853,"{'n_neighbors': 4, 'weights': 'distance', 'p': 1}"
+reg,KNN,none,genetic,1,rmse,1.2571748999301167,"{'n_neighbors': 4, 'weights': 'distance', 'p': 1}"
+reg,KNN,none,genetic,2,rmse,1.2561997160798757,"{'n_neighbors': 4, 'weights': 'uniform', 'p': 1}"
+reg,KNN,none,genetic,3,rmse,1.2571748999301167,"{'n_neighbors': 4, 'weights': 'distance', 'p': 1}"
+reg,KNN,none,genetic,4,rmse,1.2045833534836083,"{'n_neighbors': 5, 'weights': 'distance', 'p': 1}"
+reg,KNN,none,genetic,5,rmse,1.260847859901714,"{'n_neighbors': 7, 'weights': 'distance', 'p': 1}"

@@ -1,0 +1,17 @@
+\begin{tabular}{lccccccccc}
+\toprule
+Modelo & Colombia & EE.UU. & España & México & Canadá & Australia & Japón & Alemania & Corea del Sur \\
+\midrule
+ALEE & \textbf{0.817} & \textbf{0.380} & \textbf{0.280} & \textbf{0.281} & \textbf{0.437} & \textbf{0.240} & \textbf{0.149} & \textbf{0.226} & \textbf{0.325} \\
+\midrule
+KNN & 1.251$^{\dagger}$ & 0.820$^{\dagger}$ & 1.613$^{\dagger}$ & 0.533$^{\dagger}$ & 1.052$^{\dagger}$ & 0.656$^{\dagger}$ & 0.510$^{\dagger}$ & 0.816$^{\dagger}$ & 0.789$^{\dagger}$ \\
+Ridge & \underline{1.219}$^{\dagger}$ & 0.555$^{\dagger}$ & 0.581$^{\dagger}$ & 0.386$^{\dagger}$ & 0.731$^{\dagger}$ & 0.468$^{\dagger}$ & 0.199$^{\dagger}$ & 0.345$^{\dagger}$ & 0.472$^{\dagger}$ \\
+Lasso & 1.601$^{\dagger}$ & \underline{0.541}$^{\dagger}$ & \underline{0.369}$^{\dagger}$ & 0.373$^{\dagger}$ & \underline{0.601}$^{\dagger}$ & 0.359$^{\dagger}$ & 0.198$^{\dagger}$ & 0.298$^{\dagger}$ & 0.464$^{\dagger}$ \\
+Regresión bayesiana & 1.289$^{\dagger}$ & 0.551$^{\dagger}$ & 0.556$^{\dagger}$ & 0.386$^{\dagger}$ & 0.631$^{\dagger}$ & \underline{0.342}$^{\dagger}$ & \underline{0.188}$^{\dagger}$ & \underline{0.288}$^{\dagger}$ & \underline{0.438}$^{\dagger}$ \\
+Árbol de decisión & 1.475$^{\dagger}$ & 0.748$^{\dagger}$ & 3.333$^{\dagger}$ & 0.738$^{\dagger}$ & 1.090$^{\dagger}$ & 0.702$^{\dagger}$ & 0.616$^{\dagger}$ & 0.864$^{\dagger}$ & 0.728$^{\dagger}$ \\
+Random Forest & 1.298$^{\dagger}$ & 0.737$^{\dagger}$ & 1.735$^{\dagger}$ & 0.524$^{\dagger}$ & 0.953$^{\dagger}$ & 0.686$^{\dagger}$ & 0.521$^{\dagger}$ & 0.852$^{\dagger}$ & 0.786$^{\dagger}$ \\
+XGBoost & 1.284$^{\dagger}$ & 0.611$^{\dagger}$ & 1.569$^{\dagger}$ & 0.542$^{\dagger}$ & 0.862$^{\dagger}$ & 0.606$^{\dagger}$ & 0.562$^{\dagger}$ & 0.731$^{\dagger}$ & 0.805$^{\dagger}$ \\
+SVR (RBF) & 1.283$^{\dagger}$ & 0.712$^{\dagger}$ & 0.820$^{\dagger}$ & \underline{0.369}$^{\dagger}$ & 0.730$^{\dagger}$ & 0.440$^{\dagger}$ & 0.337$^{\dagger}$ & 0.395$^{\dagger}$ & 0.503$^{\dagger}$ \\
+LightGBM & 1.452$^{\dagger}$ & 0.720$^{\dagger}$ & 1.854$^{\dagger}$ & 0.549$^{\dagger}$ & 0.799$^{\dagger}$ & 0.647$^{\dagger}$ & 0.542$^{\dagger}$ & 0.858$^{\dagger}$ & 0.832$^{\dagger}$ \\
+\bottomrule
+\end{tabular}

@@ -1,0 +1,18 @@
+[22:12:57] australia: serie 1978-02 a 2026-09 (584 meses), 572 filas, 14 variables
+[22:13:01] referencias listas
+[22:13:17]   ALEE: errores de expertos precalculados en 16s
+[22:13:18]   ALEE: diferencia máxima vs ModeloOriginal.fit() = 0.00e+00
+[22:13:45]   ALEE pliegue 0: {'bandwidth': 0.7983313727950889, 'half_life': 6.3717334776945656, 'lam': 0.001805715219145792}
+[22:14:38]   ALEE pliegue 1: {'bandwidth': 0.6825704673742918, 'half_life': 10.551649908629527, 'lam': 0.0029587599178254715}
+[22:15:55]   ALEE pliegue 2: {'bandwidth': 0.5792352525393409, 'half_life': 7.088355320249479, 'lam': 0.0026306388613886967}
+[22:17:27]   ALEE pliegue 3: {'bandwidth': 0.2634970680102834, 'half_life': 47.261086386232755, 'lam': 0.003815434609330524}
+[22:20:52]   ALEE pliegue 4: {'bandwidth': 0.4105410738776578, 'half_life': 35.39161446259616, 'lam': 0.0017070728830306638}
+[22:21:06]   Ridge: 14s
+[22:21:10]   Lasso: 4s
+[22:21:13]   KNN: 3s
+[22:21:15]   DecisionTree: 2s
+[22:22:02]   RandomForest: 47s
+[22:22:24]   XGBoost: 21s
+[22:22:48]   SVR: 24s
+[22:22:54]   LightGBM: 6s
+[22:22:54] terminado

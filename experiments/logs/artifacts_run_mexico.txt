@@ -1,0 +1,24 @@
+[15:58:13] mexico: serie 2000-01 a 2026-09 (321 meses), 309 filas, 14 variables
+[15:58:32] referencias listas
+[15:58:36]   ALEE: errores de expertos precalculados en 3s
+[15:58:39]   ALEE: diferencia máxima vs ModeloOriginal.fit() = 0.00e+00
+[15:58:52]   ALEE pliegue 0: {'bandwidth': 0.17818288597086346, 'half_life': 6.121959355314937, 'lam': 0.7259363425754887}
+[15:59:47]   ALEE pliegue 1: {'bandwidth': 1.5708845384954717, 'half_life': 14.063948843763088, 'lam': 0.021837553895873923}
+[16:00:23]   ALEE pliegue 2: {'bandwidth': 0.10473173405850528, 'half_life': 47.51441462851929, 'lam': 0.013562296947237356}
+[16:01:06]   ALEE pliegue 3: {'bandwidth': 0.5472510127147565, 'half_life': 6.361957039499969, 'lam': 0.10197486478501464}
+[16:02:36]   ALEE pliegue 4: {'bandwidth': 0.4105410738776578, 'half_life': 35.39161446259616, 'lam': 0.0017070728830306638}
+[16:02:48]   Ridge: 11s
+C:\Users\elfue\Downloads\EDA\ALEE_proyecto\MLC_entregable3\.venv\Lib\site-packages\sklearn\linear_model\_coordinate_descent.py:842: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations, check the scale of the features or consider increasing regularisation. Duality gap: 1.620982e-04, tolerance: 1.144e-04
+  model = cd_fast.enet_coordinate_descent(
+C:\Users\elfue\Downloads\EDA\ALEE_proyecto\MLC_entregable3\.venv\Lib\site-packages\sklearn\linear_model\_coordinate_descent.py:842: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations, check the scale of the features or consider increasing regularisation. Duality gap: 1.623588e-04, tolerance: 1.144e-04
+  model = cd_fast.enet_coordinate_descent(
+C:\Users\elfue\Downloads\EDA\ALEE_proyecto\MLC_entregable3\.venv\Lib\site-packages\sklearn\linear_model\_coordinate_descent.py:842: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations, check the scale of the features or consider increasing regularisation. Duality gap: 2.361949e-04, tolerance: 1.144e-04
+  model = cd_fast.enet_coordinate_descent(
+[16:02:50]   Lasso: 2s
+[16:02:52]   KNN: 2s
+[16:02:53]   DecisionTree: 1s
+[16:04:11]   RandomForest: 78s
+[16:04:34]   XGBoost: 23s
+[16:05:05]   SVR: 31s
+[16:05:10]   LightGBM: 5s
+[16:05:10] terminado

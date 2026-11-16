@@ -1,0 +1,71 @@
+# Book settings
+# Learn more at https://jupyterbook.org/customize/config.html
+
+title: Mercado Laboral Colombiano
+author: Andrés Parejo, Santiago Hurtado, Juan Marín
+copyright: "2026"
+logo: logo.png
+
+# Los capítulos nuevos del tercer entregable se ejecutan al construir el libro con el kernel "mlc-ml" (el entorno de
+# requirements.txt; ver el capítulo 10). Los capítulos 2 y 3 son los cuadernos de los entregables anteriores: ya traen
+# sus salidas y no se vuelven a ejecutar (la búsqueda de los 140 modelos tarda cerca de una hora).
+# See https://jupyterbook.org/content/execute.html
+execute:
+  execute_notebooks: "force"
+  timeout: 600
+  exclude_patterns:
+    - "02_datos.ipynb"
+    - "03_benchmarks.ipynb"
+
+# Define the name of the latex output file for PDF builds
+latex:
+  latex_documents:
+    targetname: book.tex
+
+# Add a bibtex file so that we can create citations
+bibtex_bibfiles:
+  - references.bib
+
+# Information about where the book exists on the web
+repository:
+  url: https://github.com/executablebooks/jupyter-book  # Online location of your book
+  path_to_book: docs  # Optional path to your book, relative to the repository root
+  branch: master  # Which branch of the repository should be used when creating links (optional)
+
+# Add GitHub buttons to your book
+# See https://jupyterbook.org/customize/config.html#add-a-link-to-your-repository
+html:
+  use_issues_button: true
+  use_repository_button: true
+  # El capítulo de machine learning tiene secciones muy largas (con sus tablas y figuras) y, en los navegadores basados
+  # en Chromium, el seguimiento de la sección activa del índice de la derecha ignora las secciones más altas que diez
+  # veces la zona de lectura: el índice no se resalta ni despliega sus subsecciones. Con el umbral 0 las detecta.
+  # Además, en pantallas angostas el índice es un cajón que se queda abierto tapando la página después de elegir una
+  # sección; aquí se cierra al hacer clic en una de sus entradas.
+  extra_footer: |
+    <script>
+      document.body.setAttribute('data-bs-threshold', '0,0.1,0.5,1');
+      document.addEventListener('click', function (e) {
+        var enlace = e.target.closest ? e.target.closest('.bd-sidebar-secondary a[href^="#"]') : null;
+        var casilla = document.getElementById('__secondary');
+        if (enlace && casilla) { casilla.checked = false; }
+      });
+    </script>
+
+# Carpetas y archivos del proyecto que no forman parte del libro
+exclude_patterns:
+  - ".venv/**"
+  - "src/**"
+  - "experiments/**"
+  - "scripts/**"
+  - "capitulo_ml/**"
+  - ".git/**"
+  - "_sources/**"
+  - "_static/**"
+  - "_images/**"
+  - "_sphinx_design_static/**"
+  - "README.md"
+  - "GUION_SUSTENTACION.md"
+  - "markdown.md"
+  - "markdown-notebooks.md"
+  - "_referencias_e2.md"

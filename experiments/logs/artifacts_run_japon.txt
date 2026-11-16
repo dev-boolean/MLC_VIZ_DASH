@@ -1,0 +1,18 @@
+[22:12:57] japon: serie 1955-01 a 2026-09 (861 meses), 849 filas, 14 variables
+[22:13:01] referencias listas
+[22:13:40]   ALEE: errores de expertos precalculados en 39s
+[22:13:42]   ALEE: diferencia máxima vs ModeloOriginal.fit() = 0.00e+00
+[22:14:26]   ALEE pliegue 0: {'bandwidth': 1.229661415292785, 'half_life': 119.52872764525354, 'lam': 0.004366704404149482}
+[22:16:03]   ALEE pliegue 1: {'bandwidth': 0.5905875822963894, 'half_life': 96.27850152864055, 'lam': 0.0010502397870506028}
+[22:19:06]   ALEE pliegue 2: {'bandwidth': 0.42398089865058863, 'half_life': 24.83991734078106, 'lam': 0.0020392944682784955}
+[22:23:23]   ALEE pliegue 3: {'bandwidth': 0.38428535871150354, 'half_life': 83.93615651885516, 'lam': 0.0012770480039654218}
+[22:25:09]   ALEE pliegue 4: {'bandwidth': 1.3039798015281343, 'half_life': 20.53559213813827, 'lam': 0.043558977234941544}
+[22:25:17]   Ridge: 8s
+[22:25:19]   Lasso: 2s
+[22:25:20]   KNN: 2s
+[22:25:21]   DecisionTree: 1s
+[22:26:25]   RandomForest: 64s
+[22:26:44]   XGBoost: 19s
+[22:27:51]   SVR: 67s
+[22:27:58]   LightGBM: 7s
+[22:27:58] terminado

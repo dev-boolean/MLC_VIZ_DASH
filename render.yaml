@@ -1,0 +1,15 @@
+services:
+  - type: web                     # aplicación web
+    name: mlc-ml-final            # nombre del servicio en Render
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-dash.txt
+    # Un solo proceso: los modelos se cargan una vez en memoria y el plan gratuito tiene 512 MB.
+    startCommand: gunicorn app:server --workers 1 --threads 4 --timeout 120
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      # Clave del asistente (chatbot). Se escribe a mano en el panel de Render; sin ella el resto funciona igual.
+      - key: GROQ_API_KEY
+        sync: false

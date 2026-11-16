@@ -1,0 +1,13 @@
+comparacion,conjuntos_ALEE_mejor,p,p_holm
+ALEE vs DecisionTree,4,0.125,1.0
+ALEE vs Estacional,4,0.125,1.0
+ALEE vs EstacionalALEE,2,1.0,1.0
+ALEE vs KNN,4,0.125,1.0
+ALEE vs Lasso,4,0.125,1.0
+ALEE vs LightGBM,4,0.125,1.0
+ALEE vs Persistencia,4,0.125,1.0
+ALEE vs RandomForest,4,0.125,1.0
+ALEE vs Ridge,4,0.125,1.0
+ALEE vs SARIMA,1,0.25,1.0
+ALEE vs SVR,4,0.125,1.0
+ALEE vs XGBoost,4,0.125,1.0

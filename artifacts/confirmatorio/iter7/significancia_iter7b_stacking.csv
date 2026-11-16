@@ -1,0 +1,4 @@
+candidato,referencia,rmse_candidato,rmse_referencia,dm_hln,p_value,mean_loss_diff,direccion,d_cohen,d_cohen_label,cliffs_delta,cliffs_delta_label
+Stacking (ridge walk-forward),Estacional aislado,0.8692383716399154,0.8355535350372063,0.6353595030563282,0.5258018140799516,0.0574256368180397,empate,-0.0321106860112945,muy pequeño,-0.033125,insignificante
+Stacking (ridge walk-forward),SARIMA,0.8692383716399154,0.9953989375373585,-1.362148018682172,0.1744335610069716,-0.2352436981192908,empate,-0.026401472273017645,muy pequeño,0.035451388888888886,insignificante
+Stacking (ridge walk-forward),ALEE-3 (canónico),0.8692383716399154,0.8685021109199075,0.013429838450244964,0.9892960651030096,0.0012794300588762594,empate,-0.08072483364031066,muy pequeño,-0.04909722222222222,insignificante

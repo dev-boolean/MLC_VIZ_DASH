@@ -1,0 +1,22 @@
+\begin{tabular}{lcccc}
+\toprule
+Modelo & Colombia & EE.UU. & España & México \\
+\midrule
+ALEE & \underline{0.817 $\pm$ 0.328} & \underline{0.380 $\pm$ 0.292} & 0.280 $\pm$ 0.096 & \underline{0.281 $\pm$ 0.089} \\
+\midrule
+KNN & 1.251 $\pm$ 0.633$^{\dagger}$ & 0.820 $\pm$ 0.552$^{\dagger}$ & 1.613 $\pm$ 0.762$^{\dagger}$ & 0.533 $\pm$ 0.165$^{\dagger}$ \\
+Ridge & 1.219 $\pm$ 0.638$^{\dagger}$ & 0.555 $\pm$ 0.297$^{\dagger}$ & 0.581 $\pm$ 0.601$^{\dagger}$ & 0.386 $\pm$ 0.136$^{\dagger}$ \\
+Lasso & 1.601 $\pm$ 1.027$^{\dagger}$ & 0.541 $\pm$ 0.274$^{\dagger}$ & 0.369 $\pm$ 0.073$^{\dagger}$ & 0.373 $\pm$ 0.142$^{\dagger}$ \\
+Regresión bayesiana & 1.289 $\pm$ 0.834$^{\dagger}$ & 0.551 $\pm$ 0.316$^{\dagger}$ & 0.556 $\pm$ 0.623$^{\dagger}$ & 0.386 $\pm$ 0.134$^{\dagger}$ \\
+Árbol de decisión & 1.475 $\pm$ 1.049$^{\dagger}$ & 0.748 $\pm$ 0.458$^{\dagger}$ & 3.333 $\pm$ 3.992$^{\dagger}$ & 0.738 $\pm$ 0.257$^{\dagger}$ \\
+Random Forest & 1.298 $\pm$ 0.826$^{\dagger}$ & 0.737 $\pm$ 0.484$^{\dagger}$ & 1.735 $\pm$ 1.010$^{\dagger}$ & 0.524 $\pm$ 0.164$^{\dagger}$ \\
+XGBoost & 1.284 $\pm$ 1.004$^{\dagger}$ & 0.611 $\pm$ 0.413$^{\dagger}$ & 1.569 $\pm$ 1.058$^{\dagger}$ & 0.542 $\pm$ 0.224$^{\dagger}$ \\
+SVR (RBF) & 1.283 $\pm$ 0.655$^{\dagger}$ & 0.712 $\pm$ 0.345$^{\dagger}$ & 0.820 $\pm$ 0.642$^{\dagger}$ & 0.369 $\pm$ 0.116$^{\dagger}$ \\
+\midrule
+LightGBM & 1.452 $\pm$ 0.997$^{\dagger}$ & 0.720 $\pm$ 0.501$^{\dagger}$ & 1.854 $\pm$ 1.027$^{\dagger}$ & 0.549 $\pm$ 0.197$^{\dagger}$ \\
+SARIMA & 0.818 $\pm$ 0.634 & \textbf{0.366 $\pm$ 0.328} & \textbf{0.216 $\pm$ 0.044}$^{\ddagger}$ & \textbf{0.253 $\pm$ 0.071}$^{\ddagger}$ \\
+Persistencia & 1.273 $\pm$ 0.257$^{\dagger}$ & 0.536 $\pm$ 0.218$^{\dagger}$ & 0.325 $\pm$ 0.095$^{\dagger}$ & 0.361 $\pm$ 0.097$^{\dagger}$ \\
+Estacional ingenuo & 1.651 $\pm$ 1.463$^{\dagger}$ & 1.252 $\pm$ 0.577$^{\dagger}$ & 1.976 $\pm$ 0.884$^{\dagger}$ & 0.582 $\pm$ 0.196$^{\dagger}$ \\
+Experto estacional & \textbf{0.780 $\pm$ 0.334} & 0.391 $\pm$ 0.294 & \underline{0.279 $\pm$ 0.096} & 0.283 $\pm$ 0.073 \\
+\bottomrule
+\end{tabular}

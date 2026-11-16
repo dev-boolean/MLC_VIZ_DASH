@@ -1,0 +1,18 @@
+[22:12:57] canada: serie 1955-01 a 2026-10 (862 meses), 850 filas, 14 variables
+[22:13:00] referencias listas
+[22:13:39]   ALEE: errores de expertos precalculados en 39s
+[22:13:40]   ALEE: diferencia máxima vs ModeloOriginal.fit() = 0.00e+00
+[22:13:53]   ALEE pliegue 0: {'bandwidth': 0.31483911693994615, 'half_life': 6.029028283130934, 'lam': 8.976857424664875}
+[22:14:57]   ALEE pliegue 1: {'bandwidth': 0.22759051783130396, 'half_life': 6.337915827852465, 'lam': 0.0015572626947401695}
+[22:16:02]   ALEE pliegue 2: {'bandwidth': 0.49160023443871875, 'half_life': 6.357255105084, 'lam': 0.1298389994911902}
+[22:19:41]   ALEE pliegue 3: {'bandwidth': 0.4055875801045405, 'half_life': 11.193905133896594, 'lam': 0.005844757496280038}
+[22:21:05]   ALEE pliegue 4: {'bandwidth': 0.12673652683242456, 'half_life': 36.4023492594062, 'lam': 0.8349105590511584}
+[22:21:18]   Ridge: 12s
+[22:21:19]   Lasso: 2s
+[22:21:22]   KNN: 2s
+[22:21:23]   DecisionTree: 1s
+[22:22:08]   RandomForest: 45s
+[22:22:25]   XGBoost: 17s
+[22:23:03]   SVR: 38s
+[22:23:10]   LightGBM: 8s
+[22:23:10] terminado

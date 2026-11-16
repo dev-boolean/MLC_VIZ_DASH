@@ -1,0 +1,93 @@
+\begin{longtable}{llcccccc}
+\caption{Ablación con todas las métricas (media entre pliegues) y $p$ de Diebold-Mariano-HLN frente a ALEE completo, ajustado por Holm dentro de cada conjunto.}\label{tab:ablacion_completa}\\
+\toprule
+Conjunto & Variante & RMSE & MAE & MAPE (\%) & $R^2$ & MASE & DM $p_{\mathrm{Holm}}$ \\
+\midrule
+\endfirsthead
+\toprule
+Conjunto & Variante & RMSE & MAE & MAPE (\%) & $R^2$ & MASE & DM $p_{\mathrm{Holm}}$ \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Colombia & ALEE completo & 0.817 & 0.586 & 5.15 & 0.660 & 0.550 & --- \\
+ & Sin localización & 0.797 & 0.567 & 4.98 & 0.674 & 0.535 & 1.000 \\
+ & Sin $\lambda$ adaptativa & 0.825 & 0.587 & 5.16 & 0.644 & 0.552 & 1.000 \\
+ & Previo uniforme & 0.822 & 0.586 & 5.15 & 0.659 & 0.551 & 1.000 \\
+ & Promedio simple & 1.035 & 0.745 & 6.45 & 0.464 & 0.710 & $2.2\times10^{-5}$ \\
+ & Solo persistencia & 1.273 & 0.905 & 7.82 & 0.163 & 0.862 & $2.6\times10^{-7}$ \\
+ & Solo núcleo & 1.252 & 0.888 & 7.68 & 0.190 & 0.845 & $4.8\times10^{-7}$ \\
+ & Solo estacional & 0.780 & 0.564 & 4.98 & 0.702 & 0.532 & 0.562 \\
+\midrule
+EE.UU. & ALEE completo & 0.380 & 0.210 & 3.65 & 0.901 & 0.220 & --- \\
+ & Sin localización & 0.382 & 0.211 & 3.67 & 0.900 & 0.220 & 0.888 \\
+ & Sin $\lambda$ adaptativa & 0.383 & 0.211 & 3.66 & 0.900 & 0.221 & 0.888 \\
+ & Previo uniforme & 0.382 & 0.210 & 3.63 & 0.901 & 0.219 & 0.888 \\
+ & Promedio simple & 0.444 & 0.263 & 4.53 & 0.874 & 0.273 & $5.2\times10^{-6}$ \\
+ & Solo persistencia & 0.536 & 0.340 & 5.89 & 0.825 & 0.352 & $9.6\times10^{-14}$ \\
+ & Solo núcleo & 0.532 & 0.341 & 5.95 & 0.828 & 0.352 & $8.3\times10^{-13}$ \\
+ & Solo estacional & 0.391 & 0.220 & 3.85 & 0.897 & 0.231 & 0.132 \\
+\midrule
+España & ALEE completo & 0.280 & 0.218 & 1.49 & 0.989 & 0.134 & --- \\
+ & Sin localización & 0.280 & 0.218 & 1.49 & 0.989 & 0.134 & 1.000 \\
+ & Sin $\lambda$ adaptativa & 0.280 & 0.218 & 1.48 & 0.989 & 0.134 & 1.000 \\
+ & Previo uniforme & 0.281 & 0.219 & 1.49 & 0.989 & 0.134 & 1.000 \\
+ & Promedio simple & 0.304 & 0.238 & 1.61 & 0.987 & 0.145 & $1.9\times10^{-6}$ \\
+ & Solo persistencia & 0.325 & 0.252 & 1.72 & 0.984 & 0.154 & $2.6\times10^{-8}$ \\
+ & Solo núcleo & 0.330 & 0.260 & 1.76 & 0.984 & 0.158 & $9.4\times10^{-11}$ \\
+ & Solo estacional & 0.279 & 0.216 & 1.47 & 0.989 & 0.132 & 1.000 \\
+\midrule
+México & ALEE completo & 0.281 & 0.220 & 5.57 & 0.628 & 0.490 & --- \\
+ & Sin localización & 0.285 & 0.223 & 5.67 & 0.609 & 0.496 & 0.019 \\
+ & Sin $\lambda$ adaptativa & 0.280 & 0.218 & 5.52 & 0.631 & 0.486 & 0.765 \\
+ & Previo uniforme & 0.282 & 0.220 & 5.59 & 0.627 & 0.491 & 0.735 \\
+ & Promedio simple & 0.310 & 0.233 & 5.84 & 0.562 & 0.519 & 0.002 \\
+ & Solo persistencia & 0.361 & 0.277 & 7.04 & 0.413 & 0.618 & $1.3\times10^{-7}$ \\
+ & Solo núcleo & 0.362 & 0.278 & 7.06 & 0.405 & 0.620 & $5.6\times10^{-8}$ \\
+ & Solo estacional & 0.283 & 0.222 & 5.68 & 0.606 & 0.494 & 0.765 \\
+\midrule
+Canadá & ALEE completo & 0.437 & 0.313 & 4.23 & 0.880 & 0.354 & --- \\
+ & Sin localización & 0.438 & 0.315 & 4.28 & 0.877 & 0.356 & 1.000 \\
+ & Sin $\lambda$ adaptativa & 0.439 & 0.315 & 4.26 & 0.879 & 0.356 & $1.7\times10^{-5}$ \\
+ & Previo uniforme & 0.437 & 0.312 & 4.22 & 0.877 & 0.353 & 1.000 \\
+ & Promedio simple & 0.469 & 0.336 & 4.50 & 0.860 & 0.381 & $8.6\times10^{-5}$ \\
+ & Solo persistencia & 0.591 & 0.427 & 5.68 & 0.793 & 0.482 & $<10^{-15}$ \\
+ & Solo núcleo & 0.577 & 0.417 & 5.55 & 0.800 & 0.470 & $<10^{-15}$ \\
+ & Solo estacional & 0.513 & 0.387 & 5.34 & 0.842 & 0.433 & $3.4\times10^{-12}$ \\
+\midrule
+Australia & ALEE completo & 0.240 & 0.193 & 3.26 & 0.914 & 0.226 & --- \\
+ & Sin localización & 0.240 & 0.193 & 3.24 & 0.913 & 0.225 & 1.000 \\
+ & Sin $\lambda$ adaptativa & 0.241 & 0.193 & 3.24 & 0.913 & 0.225 & 1.000 \\
+ & Previo uniforme & 0.239 & 0.192 & 3.23 & 0.914 & 0.224 & 1.000 \\
+ & Promedio simple & 0.279 & 0.219 & 3.55 & 0.886 & 0.250 & $7.0\times10^{-6}$ \\
+ & Solo persistencia & 0.343 & 0.271 & 4.38 & 0.820 & 0.307 & $1.2\times10^{-14}$ \\
+ & Solo núcleo & 0.339 & 0.268 & 4.36 & 0.824 & 0.304 & $2.1\times10^{-14}$ \\
+ & Solo estacional & 0.251 & 0.203 & 3.45 & 0.902 & 0.238 & $1.5\times10^{-5}$ \\
+\midrule
+Japón & ALEE completo & 0.149 & 0.118 & 4.50 & 0.884 & 0.554 & --- \\
+ & Sin localización & 0.154 & 0.121 & 4.64 & 0.876 & 0.567 & 0.003 \\
+ & Sin $\lambda$ adaptativa & 0.151 & 0.119 & 4.56 & 0.882 & 0.560 & $1.5\times10^{-5}$ \\
+ & Previo uniforme & 0.148 & 0.117 & 4.48 & 0.887 & 0.550 & 0.297 \\
+ & Promedio simple & 0.142 & 0.113 & 4.19 & 0.898 & 0.530 & 0.060 \\
+ & Solo persistencia & 0.167 & 0.129 & 4.90 & 0.860 & 0.607 & 0.001 \\
+ & Solo núcleo & 0.165 & 0.129 & 4.90 & 0.864 & 0.608 & 0.003 \\
+ & Solo estacional & 0.174 & 0.133 & 5.12 & 0.832 & 0.625 & $1.4\times10^{-11}$ \\
+\midrule
+Alemania & ALEE completo & 0.226 & 0.180 & 3.53 & 0.867 & 0.252 & --- \\
+ & Sin localización & 0.222 & 0.178 & 3.47 & 0.869 & 0.248 & 0.764 \\
+ & Sin $\lambda$ adaptativa & 0.223 & 0.179 & 3.51 & 0.869 & 0.251 & 0.738 \\
+ & Previo uniforme & 0.223 & 0.179 & 3.50 & 0.869 & 0.250 & 0.764 \\
+ & Promedio simple & 0.244 & 0.197 & 3.70 & 0.862 & 0.276 & 0.075 \\
+ & Solo persistencia & 0.271 & 0.219 & 4.02 & 0.836 & 0.306 & $3.4\times10^{-5}$ \\
+ & Solo núcleo & 0.270 & 0.220 & 4.05 & 0.837 & 0.307 & $2.0\times10^{-5}$ \\
+ & Solo estacional & 0.231 & 0.184 & 3.67 & 0.849 & 0.258 & 0.764 \\
+\midrule
+Corea del Sur & ALEE completo & 0.325 & 0.234 & 6.47 & 0.709 & 0.477 & --- \\
+ & Sin localización & 0.328 & 0.235 & 6.51 & 0.705 & 0.482 & 0.152 \\
+ & Sin $\lambda$ adaptativa & 0.325 & 0.233 & 6.47 & 0.707 & 0.477 & 0.928 \\
+ & Previo uniforme & 0.328 & 0.236 & 6.52 & 0.709 & 0.485 & 0.632 \\
+ & Promedio simple & 0.348 & 0.249 & 6.84 & 0.667 & 0.514 & $5.8\times10^{-5}$ \\
+ & Solo persistencia & 0.393 & 0.282 & 7.74 & 0.559 & 0.573 & $5.1\times10^{-9}$ \\
+ & Solo núcleo & 0.387 & 0.279 & 7.63 & 0.577 & 0.568 & $2.9\times10^{-8}$ \\
+ & Solo estacional & 0.318 & 0.232 & 6.51 & 0.718 & 0.470 & 0.928 \\
+\end{longtable}

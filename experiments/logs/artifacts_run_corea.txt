@@ -1,0 +1,22 @@
+[22:23:18] corea: serie 1989-01 a 2026-09 (453 meses), 441 filas, 14 variables
+[22:23:21] referencias listas
+[22:23:24]   ALEE: errores de expertos precalculados en 4s
+[22:23:25]   ALEE: diferencia máxima vs ModeloOriginal.fit() = 0.00e+00
+[22:23:42]   ALEE pliegue 0: {'bandwidth': 0.06388626550326854, 'half_life': 89.41870000072842, 'lam': 0.01261638657305366}
+[22:24:20]   ALEE pliegue 1: {'bandwidth': 0.5448475956852569, 'half_life': 7.354045020808437, 'lam': 0.0012891051570782031}
+[22:25:34]   ALEE pliegue 2: {'bandwidth': 2.331836637156565, 'half_life': 6.1285114939730185, 'lam': 0.012982009861574514}
+[22:27:37]   ALEE pliegue 3: {'bandwidth': 0.4139784119985305, 'half_life': 116.21510015290829, 'lam': 0.0042482664267469725}
+[22:28:08]   ALEE pliegue 4: {'bandwidth': 0.06965721925813875, 'half_life': 6.131012196174064, 'lam': 32.5373312032908}
+[22:28:19]   Ridge: 11s
+C:\Users\elfue\Downloads\EDA\ALEE_proyecto\MLC_entregable3\.venv\Lib\site-packages\sklearn\linear_model\_coordinate_descent.py:842: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations, check the scale of the features or consider increasing regularisation. Duality gap: 8.981303e-02, tolerance: 4.382e-02
+  model = cd_fast.enet_coordinate_descent(
+C:\Users\elfue\Downloads\EDA\ALEE_proyecto\MLC_entregable3\.venv\Lib\site-packages\sklearn\linear_model\_coordinate_descent.py:842: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations, check the scale of the features or consider increasing regularisation. Duality gap: 4.937849e-02, tolerance: 4.439e-02
+  model = cd_fast.enet_coordinate_descent(
+[22:28:20]   Lasso: 2s
+[22:28:22]   KNN: 1s
+[22:28:23]   DecisionTree: 1s
+[22:28:56]   RandomForest: 33s
+[22:29:09]   XGBoost: 13s
+[22:29:38]   SVR: 30s
+[22:29:43]   LightGBM: 5s
+[22:29:43] terminado

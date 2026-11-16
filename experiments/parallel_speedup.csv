@@ -1,0 +1,10 @@
+parte,backend,trabajadores,tiempo_s,aceleracion,eficiencia,resultado_identico
+A: entre combinaciones,serie,1,73.4371012,1.0,1.0,True
+A: entre combinaciones,loky,2,42.5591673,1.7255295594094013,0.8627647797047007,True
+A: entre combinaciones,loky,4,23.6654951,3.1031297207046387,0.7757824301761597,True
+A: entre combinaciones,loky,8,17.805039299999976,4.124512165496883,0.5155640206871104,True
+A: entre combinaciones,loky,12,16.91245040000001,4.342191667270164,0.361849305605847,True
+A: entre combinaciones,threading,4,83.62170510000001,0.8782062158644023,0.21955155396610057,False
+A: entre combinaciones,threading,8,88.06359430000003,0.8339098782389804,0.10423873477987255,False
+B: entre pliegues (Random Forest),serie,1,93.10019310000001,1.0,1.0,True
+B: entre pliegues (Random Forest),loky,5,25.678049299999998,3.6256723403050723,0.7251344680610144,True

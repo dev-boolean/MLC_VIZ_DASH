@@ -1,0 +1,182 @@
+{
+  "artifact": "reg_LightGBM",
+  "task": "regresion",
+  "model": "LightGBM",
+  "balancing": "none",
+  "optimizer": "bayesian",
+  "status": "modelo de comparación del paper",
+  "target": "Tasa de desempleo nacional del mes siguiente (%)",
+  "classes": null,
+  "seed": 42,
+  "hyperparameters": {
+    "n_estimators": 230,
+    "max_depth": 5,
+    "learning_rate": 0.2835290954533265,
+    "subsample": 0.7193277269584675,
+    "colsample_bytree": 0.8692722728401414,
+    "num_leaves": 63
+  },
+  "final_search": {
+    "optimizer": "bayesian",
+    "inner_cv": "TimeSeriesSplit(n_splits=3, gap=1)",
+    "budget": {
+      "grid_max_combinations": 40,
+      "random_n_iter": 40,
+      "bayes_n_trials": 40,
+      "genetic_population": 8,
+      "genetic_budget": 40
+    },
+    "n_evaluations": 40,
+    "best_inner_score": -1.311141837458875,
+    "wall_time_s": 2.158808900000004
+  },
+  "training": {
+    "n_observations": 288,
+    "first_feature_month": "2001-12-31",
+    "last_feature_month": "2025-11-30",
+    "fit_time_s": 0.03033430000000692
+  },
+  "input_schema": [
+    {
+      "name": "td_nacional_lag1",
+      "dtype": "float64",
+      "min": 7.02,
+      "max": 21.972
+    },
+    {
+      "name": "td_nacional_lag2",
+      "dtype": "float64",
+      "min": 7.5631,
+      "max": 21.972
+    },
+    {
+      "name": "td_nacional_lag3",
+      "dtype": "float64",
+      "min": 7.5631,
+      "max": 21.972
+    },
+    {
+      "name": "td_nacional_lag6",
+      "dtype": "float64",
+      "min": 7.5631,
+      "max": 21.972
+    },
+    {
+      "name": "td_nacional_lag12",
+      "dtype": "float64",
+      "min": 7.5631,
+      "max": 21.972
+    },
+    {
+      "name": "td_nacional_rollmean3",
+      "dtype": "float64",
+      "min": 7.796666666666666,
+      "max": 21.081933333333335
+    },
+    {
+      "name": "td_nacional_rollstd3",
+      "dtype": "float64",
+      "min": 0.025166114780765393,
+      "max": 4.70437420174035
+    },
+    {
+      "name": "td_nacional_rollmean6",
+      "dtype": "float64",
+      "min": 8.229999999999999,
+      "max": 19.577766666666665
+    },
+    {
+      "name": "td_nacional_rollstd6",
+      "dtype": "float64",
+      "min": 0.1811077027624795,
+      "max": 4.776742227781044
+    },
+    {
+      "name": "td_nacional_rollmean12",
+      "dtype": "float64",
+      "min": 8.993333333333334,
+      "max": 17.37125
+    },
+    {
+      "name": "td_nacional_rollstd12",
+      "dtype": "float64",
+      "min": 0.5429501921323098,
+      "max": 4.871208334290433
+    },
+    {
+      "name": "mes_sin",
+      "dtype": "float64",
+      "min": -1.0,
+      "max": 1.0
+    },
+    {
+      "name": "mes_cos",
+      "dtype": "float64",
+      "min": -1.0,
+      "max": 1.0
+    },
+    {
+      "name": "trend_idx",
+      "dtype": "int64",
+      "min": 11.0,
+      "max": 298.0
+    },
+    {
+      "name": "tasa_global_participacion_area",
+      "dtype": "float64",
+      "min": 55.088,
+      "max": 72.1479
+    },
+    {
+      "name": "tasa_desempleo_area",
+      "dtype": "float64",
+      "min": 7.27,
+      "max": 25.7887
+    },
+    {
+      "name": "tasa_ocupacion_area",
+      "dtype": "float64",
+      "min": 41.658,
+      "max": 64.6097
+    }
+  ],
+  "outer_cv_metrics": {
+    "rmse": {
+      "mean": 1.4521544352573783,
+      "std": 0.996522858125677
+    },
+    "mae": {
+      "mean": 1.0480466389919054,
+      "std": 0.5402226603034417
+    }
+  },
+  "selection": {
+    "primary_metric": "rmse",
+    "reason": "Método reciente fijado en el protocolo"
+  },
+  "roundtrip_test": {
+    "passed": true,
+    "n_rows": 288,
+    "exact": true
+  },
+  "file": {
+    "name": "model.joblib",
+    "size_mb": 0.062,
+    "sha256": "1e671e3f7403b6d2d5bc6c43b050cde555bbfc3d0033b781f1209bda437f3746",
+    "compress": 3
+  },
+  "libraries": {
+    "python": "3.9.0",
+    "numpy": "2.0.2",
+    "pandas": "2.3.3",
+    "scikit-learn": "1.6.1",
+    "xgboost": "2.1.4",
+    "lightgbm": "4.6.0",
+    "imbalanced-learn": "0.12.4",
+    "joblib": "1.5.3",
+    "optuna": "5.0.0",
+    "deap": "1.4.3",
+    "scipy": "1.13.1"
+  },
+  "created_utc": "2026-11-16T02:23:06+00:00"
+}

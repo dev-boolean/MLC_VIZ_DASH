@@ -1,0 +1,6 @@
+  [iter7.1] pliegue 0: rmse=0.9040 params={'bandwidth': 0.33162704882830674, 'half_life': 20.02448336579511, 'lam': 0.001770962913029711}
+  [iter7.1] pliegue 1: rmse=0.5979 params={'bandwidth': 0.2710037372926668, 'half_life': 6.1485295758817005, 'lam': 0.0014844118395137844}
+  [iter7.1] pliegue 2: rmse=0.6131 params={'bandwidth': 0.4105410738776578, 'half_life': 35.39161446259616, 'lam': 0.0017070728830306638}
+  [iter7.1] pliegue 3: rmse=1.3362 params={'bandwidth': 0.7785754188964205, 'half_life': 7.561742465186258, 'lam': 0.06538553065438038}
+  [iter7.1] pliegue 4: rmse=0.6101 params={'bandwidth': 0.429678316157126, 'half_life': 10.873654173238553, 'lam': 0.009823256121619564}
+[iter7_1_estado_salto] RMSE medio de pliegues: 0.8123 +/- 0.2862   RMSE agrupado: 0.8612   tiempo: 85.9s

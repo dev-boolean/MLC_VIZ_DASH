@@ -1,0 +1,56 @@
+{
+ "KNN": {
+  "n_neighbors": 4,
+  "weights": "distance",
+  "p": 1
+ },
+ "Ridge": {
+  "alpha": 61.218042935435804
+ },
+ "Lasso": {
+  "alpha": 0.06419397991071188
+ },
+ "DecisionTree": {
+  "max_depth": 7,
+  "min_samples_split": 2,
+  "min_samples_leaf": 4
+ },
+ "RandomForest": {
+  "n_estimators": 124,
+  "max_depth": 14,
+  "min_samples_leaf": 1,
+  "max_features": "log2"
+ },
+ "XGBoost": {
+  "n_estimators": 89,
+  "max_depth": 2,
+  "learning_rate": 0.13983740016490973,
+  "subsample": 0.8005575058716043,
+  "colsample_bytree": 0.8540362888980227
+ },
+ "BayesianRidge": {
+  "alpha_1": 0.00021499711797850506,
+  "alpha_2": 0.0067203444458078495,
+  "lambda_1": 0.008466627314508113,
+  "lambda_2": 2.146587021215009e-06
+ },
+ "SVR_RBF": {
+  "C": 59.19822235593607,
+  "gamma": 0.00011478467036290622,
+  "epsilon": 0.01118935179028285
+ },
+ "LightGBM": {
+  "n_estimators": 99,
+  "max_depth": 5,
+  "learning_rate": 0.2867849168473407,
+  "subsample": 0.8119804829438839,
+  "colsample_bytree": 0.9443072859463508,
+  "num_leaves": 63
+ },
+ "ALEE": {
+  "bandwidth": 0.36912404927960174,
+  "half_life": 9.475988728306966,
+  "lam": 0.01137130667483804
+ },
+ "SARIMA": {}
+}

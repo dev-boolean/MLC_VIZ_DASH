@@ -1,0 +1,9 @@
+pliegue 0: lam*=0.0011  bandwidth*=0.062  half_life*=9.43  ridge_alpha*=141.55  RMSE_fold=0.8938
+pliegue 1: lam*=0.0012  bandwidth*=0.338  half_life*=6.59  ridge_alpha*=130.88  RMSE_fold=0.5789
+pliegue 2: lam*=0.0365  bandwidth*=0.154  half_life*=8.19  ridge_alpha*=79.23  RMSE_fold=0.5289
+pliegue 3: lam*=0.0774  bandwidth*=1.038  half_life*=12.48  ridge_alpha*=0.12  RMSE_fold=1.9441
+pliegue 4: lam*=0.3851  bandwidth*=0.580  half_life*=13.08  ridge_alpha*=225.79  RMSE_fold=0.6027
+
+RMSE medio de los pliegues (primario, protocolo): 0.9097 +/- 0.5327
+RMSE agrupado (secundario): 1.0542
+tiempo total: 151.4s

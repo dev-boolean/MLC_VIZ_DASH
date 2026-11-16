@@ -1,0 +1,4 @@
+Se comparan 16 combinaciones frente a su resultado serial.
+threading con 4 trabajadores: 1 de 16 combinaciones cambian
+    ('reg', 'Ridge', 'none', 'genetic'): diferencia absoluta 0.01101
+loky con 4 trabajadores: 0 de 16 combinaciones cambian

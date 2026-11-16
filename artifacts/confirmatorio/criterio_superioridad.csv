@@ -1,0 +1,17 @@
+,0
+condicion_a_mejor_metrica,False
+mejor_referencia,Estacional(ALEE)
+alee_rmse,0.8685021109199075
+mejor_referencia_rmse,0.8355535350372063
+alee_en_mcs,True
+dm_hln_p_value,0.14047167271021688
+dm_hln_favorece_alee,False
+spa_p_consistent,0.6736
+spa_mejor_candidato,ALEE
+condicion_b_al_menos_3_rechazos,False
+pruebas_que_rechazan_a_favor_de_alee,1
+d_cohen,0.09360761030812752
+delta_cliff,0.0184375
+condicion_c_efecto_no_despreciable,False
+condicion_d_datasets_adicionales,NO EVALUADO: datasets adicionales (EE.UU./Espana/Mexico) no se pudieron ensamblar en esta corrida (ver limitaciones declaradas)
+criterio_superioridad_completo_abcd,False
