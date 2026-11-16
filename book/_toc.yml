@@ -2,7 +2,6 @@
 format: jb-book
 root: intro
 chapters:
-  - file: 01_correcciones
   - file: 02_datos
     sections:
       - file: 02b_auditoria

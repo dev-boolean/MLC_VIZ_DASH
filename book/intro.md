@@ -25,7 +25,7 @@ La tasa de desempleo es la cifra del mercado laboral que más se sigue en el pa�
 
 ## Objetivos
 
-- Corregir las observaciones del segundo entregable (capítulo 1).
+
 - Elegir con criterios estadísticos la mejor combinación de cada modelo y ponerla en producción (capítulos 3 y 8).
 - Diseñar, implementar y validar un modelo original frente a los modelos del curso (capítulos 4 a 7).
 
@@ -33,7 +33,6 @@ La tasa de desempleo es la cifra del mercado laboral que más se sigue en el pa�
 
 | Capítulo | Contenido |
 |---|---|
-| 1 | Trazabilidad de las correcciones del segundo entregable |
 | 2 | Datos: ETL, EDA y auditoría de fuga de información |
 | 3 | Modelos benchmark y mejores combinaciones |
 | 4 | Revisión de literatura y novedad |
