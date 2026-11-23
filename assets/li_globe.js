@@ -1,0 +1,275 @@
+/* Globo 3D (Three.js r128). Se monta solo en cada .li-globe y se destruye al salir de la página. */
+(function () {
+  "use strict";
+  var ATLAS = "https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json";
+  var R = 1, RAD = Math.PI / 180;
+  var COL = { land: 0x4a6ea8, active: 0x3984ff, sel: 0x28d8f0, arc: 0x28d8f0 };
+  var reduced = !!window.LIReduced;
+  var dataP = null, mapP = null, selected = "colombia", live = [];
+
+  function countries() { return dataP || (dataP = fetch("/api/globo").then(function (r) { return r.json(); })); }
+
+  function vec(lat, lon, r) {
+    var p = (90 - lat) * RAD, t = (lon + 180) * RAD;
+    return new THREE.Vector3(-r * Math.sin(p) * Math.cos(t), r * Math.cos(p), r * Math.sin(p) * Math.sin(t));
+  }
+
+  /* Decodifica el TopoJSON y lo pinta en un lienzo equirrectangular: cada color es un país. */
+  function worldMap() {
+    if (mapP) return mapP;
+    mapP = fetch(ATLAS).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (topo) {
+      var s = topo.transform.scale, t = topo.transform.translate;
+      var arcs = topo.arcs.map(function (a) {
+        var x = 0, y = 0;
+        return a.map(function (p) { x += p[0]; y += p[1]; return [x * s[0] + t[0], y * s[1] + t[1]]; });
+      });
+      function ring(ids) {
+        var out = [];
+        ids.forEach(function (i) {
+          var a = i >= 0 ? arcs[i] : arcs[~i].slice().reverse();
+          out = out.concat(out.length ? a.slice(1) : a);
+        });
+        return out;
+      }
+      var W = 1440, H = 720, cv = document.createElement("canvas");
+      cv.width = W; cv.height = H;
+      var g = cv.getContext("2d", { willReadFrequently: true }), borders = {};
+      g.imageSmoothingEnabled = false;
+      topo.objects.countries.geometries.forEach(function (geo, k) {
+        var iso = parseInt(geo.id, 10) || 0, polys = geo.type === "Polygon" ? [geo.arcs] : geo.type === "MultiPolygon" ? geo.arcs : [];
+        g.fillStyle = "rgb(" + (iso >> 8) + "," + (iso & 255) + ",255)";
+        polys.forEach(function (poly) {
+          g.beginPath();
+          poly.forEach(function (rg) {
+            var pts = ring(rg);
+            pts.forEach(function (p, i) { g[i ? "lineTo" : "moveTo"]((p[0] + 180) / 360 * W, (90 - p[1]) / 180 * H); });
+            g.closePath();
+            (borders[iso] = borders[iso] || []).push(pts);
+          });
+          g.fill("evenodd");
+        });
+      });
+      var px = g.getImageData(0, 0, W, H).data;
+      return {
+        borders: borders,
+        at: function (lat, lon) {
+          var x = Math.min(W - 1, Math.max(0, Math.floor((lon + 180) / 360 * W))), y = Math.min(H - 1, Math.max(0, Math.floor((90 - lat) / 180 * H)));
+          var i = (y * W + x) * 4;
+          return px[i + 3] < 200 ? -1 : px[i + 2] === 255 ? (px[i] << 8) + px[i + 1] : 0;
+        }
+      };
+    }).catch(function () { mapP = null; return null; });
+    return mapP;
+  }
+
+  function Globe(el) {
+    this.el = el; this.mode = el.dataset.mode; this.dead = false; this.visible = true; this.last = 0;
+    var w = el.clientWidth || 600, h = el.clientHeight || 500;
+    try { this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "low-power" }); } catch (e) { el.dataset.nogl = "1"; return; }
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
+    this.renderer.setClearColor(0, 0);
+    el.appendChild(this.renderer.domElement);
+    this.scene = new THREE.Scene();
+    this.cam = new THREE.PerspectiveCamera(36, w / h, 0.1, 50);
+    this.root = new THREE.Group(); this.scene.add(this.root);
+    this.labels = document.createElement("div"); this.labels.className = "globe-labels"; el.appendChild(this.labels);
+    this.rot = { x: 0.1, y: 0 }; this.target = null; this.spin = this.mode === "close" ? 0.0016 : 0.0006; this.drag = null;
+    this.base(); this.resize(); this.bind();
+    var me = this;
+    countries().then(function (d) { if (me.dead) return; me.data = d; me.markers(); me.focus(selected, true); });
+    worldMap().then(function (m) { if (me.dead || !m) return; me.map = m; me.land(); me.paint(); });
+    this.loop = this.loop.bind(this); requestAnimationFrame(this.loop);
+  }
+  var P = Globe.prototype;
+
+  P.base = function () {
+    this.root.add(new THREE.Mesh(new THREE.SphereGeometry(R * 0.994, 64, 48), new THREE.MeshBasicMaterial({ color: 0x0a1326 })));
+    var glow = new THREE.ShaderMaterial({
+      transparent: true, side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: "varying vec3 n;void main(){n=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",
+      fragmentShader: "varying vec3 n;void main(){float i=pow(max(0.,.62-dot(n,vec3(0.,0.,1.))),3.2);gl_FragColor=vec4(.22,.55,1.,1.)*i*.75;}"
+    });
+    this.scene.add(new THREE.Mesh(new THREE.SphereGeometry(R * 1.17, 48, 32), glow));
+    var pos = [];
+    for (var lat = -60; lat <= 60; lat += 30) for (var lon = -180; lon < 180; lon += 4) pos.push(vec(lat, lon, R * 0.997), vec(lat, lon + 4, R * 0.997));
+    for (lon = -180; lon < 180; lon += 30) for (lat = -80; lat < 80; lat += 4) pos.push(vec(lat, lon, R * 0.997), vec(lat + 4, lon, R * 0.997));
+    this.root.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pos), new THREE.LineBasicMaterial({ color: 0x1b2d4e, transparent: true, opacity: 0.6 })));
+    var st = [];
+    for (var i = 0; i < 420; i++) { var v = new THREE.Vector3(Math.random() - .5, Math.random() - .5, Math.random() - .5).normalize().multiplyScalar(5 + Math.random() * 5); st.push(v); }
+    this.stars = new THREE.Points(new THREE.BufferGeometry().setFromPoints(st), new THREE.PointsMaterial({ color: 0x6f8fc4, size: 0.022, transparent: true, opacity: .55 }));
+    this.scene.add(this.stars);
+  };
+
+  P.land = function () {
+    var N = 26000, pos = [], iso = [], ga = Math.PI * (3 - Math.sqrt(5));
+    for (var i = 0; i < N; i++) {
+      var y = 1 - 2 * (i + .5) / N, lat = Math.asin(y) / RAD, lon = ((i * ga) / RAD) % 360 - 180;
+      var id = this.map.at(lat, lon);
+      if (id >= 0) { var v = vec(lat, lon, R); pos.push(v.x, v.y, v.z); iso.push(id); }
+    }
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute("color", new THREE.Float32BufferAttribute(new Float32Array(pos.length), 3));
+    this.iso = iso;
+    this.dots = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.0135, vertexColors: true, transparent: true, opacity: .95 }));
+    this.root.add(this.dots);
+    this.borders = new THREE.Group(); this.root.add(this.borders);
+  };
+
+  P.paint = function () {
+    if (!this.dots || !this.data) return;
+    var ids = {}, me = this, c = this.dots.geometry.attributes.color, k = new THREE.Color();
+    this.data.forEach(function (d) { ids[d.iso] = d.id; });
+    this.iso.forEach(function (iso, i) {
+      k.setHex(ids[iso] ? (ids[iso] === selected ? COL.sel : COL.active) : COL.land);
+      c.setXYZ(i, k.r, k.g, k.b);
+    });
+    c.needsUpdate = true;
+    this.clear(this.borders);
+    this.data.forEach(function (d) {
+      var on = d.id === selected, pts = [];
+      (me.map.borders[d.iso] || []).forEach(function (rg) { for (var j = 1; j < rg.length; j++) { pts.push(vec(rg[j - 1][1], rg[j - 1][0], R * 1.002), vec(rg[j][1], rg[j][0], R * 1.002)); } });
+      if (pts.length) me.borders.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: on ? COL.sel : COL.active, transparent: true, opacity: on ? .95 : .5 })));
+    });
+  };
+
+  P.clear = function (g) { while (g && g.children.length) { var o = g.children.pop(); o.geometry && o.geometry.dispose(); o.material && o.material.dispose(); } };
+
+  P.markers = function () {
+    var me = this; this.pins = [];
+    this.data.forEach(function (d) {
+      var v = vec(d.lat, d.lon, R * 1.008), m = new THREE.Mesh(new THREE.SphereGeometry(0.014, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+      m.position.copy(v); me.root.add(m);
+      var ring = new THREE.Mesh(new THREE.RingGeometry(0.022, 0.028, 32), new THREE.MeshBasicMaterial({ color: COL.sel, transparent: true, side: THREE.DoubleSide, depthWrite: false }));
+      ring.position.copy(v); ring.lookAt(v.clone().multiplyScalar(2)); me.root.add(ring);
+      var lab = document.createElement("div"); lab.className = "globe-label"; lab.innerHTML = d.name + "<b>" + d.obs + " %</b>"; me.labels.appendChild(lab);
+      me.pins.push({ d: d, v: v, m: m, ring: ring, lab: lab });
+    });
+    this.arcs = new THREE.Group(); this.root.add(this.arcs);
+  };
+
+  P.focus = function (id, instant) {
+    if (!this.data) return;
+    var d = this.data.find(function (x) { return x.id === id; });
+    if (!d) return;
+    var off = this.mode === "hero" ? -0.12 : 0;
+    this.target = { x: Math.max(-.55, Math.min(.7, d.lat * RAD * .8)), y: -(d.lon + 90) * RAD + off };
+    while (this.target.y - this.rot.y > Math.PI) this.target.y -= 2 * Math.PI;
+    while (this.target.y - this.rot.y < -Math.PI) this.target.y += 2 * Math.PI;
+    if (instant || reduced) { this.rot.x = this.target.x; this.rot.y = this.target.y + (reduced ? 0 : .7); }
+    this.hold = performance.now() + 5000;
+    this.paint(); this.links(d);
+  };
+
+  P.links = function (from) {
+    this.clear(this.arcs); this.runners = [];
+    var me = this, a = vec(from.lat, from.lon, R);
+    this.data.forEach(function (d, i) {
+      if (d.id === from.id) return;
+      var b = vec(d.lat, d.lon, R), lift = 1 + a.distanceTo(b) * .24;
+      var mid = a.clone().add(b).normalize().multiplyScalar(R * lift);
+      if (a.clone().add(b).length() < .25) mid = new THREE.Vector3(a.z, 1.2, -a.x).normalize().multiplyScalar(1.5);
+      var curve = new THREE.QuadraticBezierCurve3(a, mid, b);
+      var g = new THREE.BufferGeometry().setFromPoints(curve.getPoints(64)); g.setDrawRange(0, reduced ? 65 : 0);
+      var ln = new THREE.Line(g, new THREE.LineBasicMaterial({ color: COL.arc, transparent: true, opacity: .42 }));
+      var dot = new THREE.Mesh(new THREE.SphereGeometry(.009, 8, 8), new THREE.MeshBasicMaterial({ color: 0xbdf3fb }));
+      me.arcs.add(ln); me.arcs.add(dot);
+      me.runners.push({ curve: curve, g: g, dot: dot, born: performance.now() + i * 90, off: Math.random() });
+    });
+  };
+
+  P.bind = function () {
+    var me = this, cv = this.renderer.domElement;
+    this.ro = new ResizeObserver(function () { me.resize(); }); this.ro.observe(this.el);
+    this.io = new IntersectionObserver(function (e) { me.visible = e[0].isIntersecting; }); this.io.observe(this.el);
+    if (this.mode === "close") return;
+    cv.addEventListener("pointerdown", function (e) { me.drag = { x: e.clientX, y: e.clientY, rx: me.rot.x, ry: me.rot.y, moved: 0 }; me.target = null; cv.setPointerCapture(e.pointerId); });
+    cv.addEventListener("pointermove", function (e) {
+      if (me.drag) {
+        var dx = e.clientX - me.drag.x, dy = e.clientY - me.drag.y; me.drag.moved = Math.max(me.drag.moved, Math.abs(dx) + Math.abs(dy));
+        me.rot.y = me.drag.ry + dx * .005; me.rot.x = Math.max(-1.1, Math.min(1.1, me.drag.rx + dy * .004));
+      } else { var h = me.pick(e); cv.style.cursor = h ? "pointer" : ""; cv.title = h ? h.name : ""; me.hover = h && h.id; }
+    });
+    function up(e) {
+      if (!me.drag) return;
+      var click = me.drag.moved < 6; me.drag = null; me.hold = performance.now() + 2500;
+      if (click) { var h = me.pick(e); if (h && window.dash_clientside && dash_clientside.set_props) dash_clientside.set_props("pais", { value: h.id }); }
+    }
+    cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", function () { me.drag = null; });
+  };
+
+  P.pick = function (e) {
+    if (!this.data) return null;
+    var r = this.renderer.domElement.getBoundingClientRect(), ray = new THREE.Raycaster();
+    ray.setFromCamera({ x: (e.clientX - r.left) / r.width * 2 - 1, y: -(e.clientY - r.top) / r.height * 2 + 1 }, this.cam);
+    var hit = ray.ray.intersectSphere(new THREE.Sphere(this.root.position, R), new THREE.Vector3());
+    if (!hit) return null;
+    var p = this.root.worldToLocal(hit.clone()).normalize();
+    var near = this.data.find(function (d) { return vec(d.lat, d.lon, 1).distanceTo(p) < .06; });
+    if (near) return near;
+    if (!this.map) return null;
+    var lat = 90 - Math.acos(p.y) / RAD, lon = Math.atan2(p.z, -p.x) / RAD - 180;
+    if (lon < -180) lon += 360;
+    var iso = this.map.at(lat, lon);
+    return this.data.find(function (d) { return d.iso === iso; }) || null;
+  };
+
+  P.resize = function () {
+    var w = this.el.clientWidth, h = this.el.clientHeight;
+    if (!w || !h) return;
+    this.renderer.setSize(w, h); this.cam.aspect = w / h;
+    var d = this.mode === "close" ? 3.1 : this.mode === "full" ? 4.35 : 3.95;
+    this.cam.position.z = w / h < 1 ? d / Math.max(.55, w / h) : d; this.cam.updateProjectionMatrix();
+    this.root.position.x = 0;
+  };
+
+  P.loop = function (t) {
+    if (this.dead) return;
+    requestAnimationFrame(this.loop);
+    if (!this.visible || document.hidden) return;
+    var dt = Math.min(50, t - this.last); this.last = t;
+    if (!this.drag) {
+      if (this.target) {
+        this.rot.x += (this.target.x - this.rot.x) * Math.min(1, dt * .0035); this.rot.y += (this.target.y - this.rot.y) * Math.min(1, dt * .0035);
+        if (performance.now() > this.hold) this.target = null;
+      } else if (!reduced && performance.now() > (this.hold || 0)) this.rot.y += this.spin * dt * .06;
+    }
+    this.root.rotation.set(this.rot.x, this.rot.y, 0);
+    var me = this, now = performance.now();
+    (this.runners || []).forEach(function (r) {
+      var k = reduced ? 1 : Math.max(0, Math.min(1, (now - r.born) / 1100));
+      r.g.setDrawRange(0, Math.floor(65 * k)); r.dot.visible = k >= 1 && !reduced;
+      if (r.dot.visible) r.dot.position.copy(r.curve.getPoint(((now * .00016) + r.off) % 1));
+    });
+    if (this.pins) {
+      this.root.updateMatrixWorld();
+      var w = this.el.clientWidth, h = this.el.clientHeight, cdir = this.cam.position.clone().normalize();
+      this.pins.forEach(function (p) {
+        var on = p.d.id === selected, s = on ? 1 + .35 * Math.sin(now * .004) : .8;
+        p.ring.scale.setScalar(on ? s * 1.5 : s); p.ring.material.opacity = on ? .95 : .4;
+        var wp = p.v.clone().applyMatrix4(me.root.matrixWorld), front = wp.clone().normalize().dot(cdir) > .28;
+        var show = front && (me.mode === "full" || on || me.hover === p.d.id) && me.mode !== "close";
+        p.lab.style.opacity = show ? 1 : 0; p.lab.className = "globe-label" + (on ? " sel" : "");
+        if (show) { wp.project(me.cam); p.lab.style.left = (wp.x * .5 + .5) * w + "px"; p.lab.style.top = (-wp.y * .5 + .5) * h + "px"; }
+      });
+    }
+    this.renderer.render(this.scene, this.cam);
+  };
+
+  P.destroy = function () {
+    this.dead = true; this.ro && this.ro.disconnect(); this.io && this.io.disconnect();
+    if (!this.renderer) return;
+    this.scene.traverse(function (o) { o.geometry && o.geometry.dispose(); o.material && o.material.dispose && o.material.dispose(); });
+    this.renderer.dispose(); this.renderer.forceContextLoss && this.renderer.forceContextLoss();
+  };
+
+  window.LIGlobe = {
+    scan: function () {
+      if (!window.THREE) return;
+      live = live.filter(function (g) { if (!document.body.contains(g.el)) { g.destroy(); return false; } return true; });
+      document.querySelectorAll(".li-globe").forEach(function (el) { if (!el.dataset.on) { el.dataset.on = "1"; live.push(new Globe(el)); } });
+    },
+    select: function (id) { if (id && id !== selected) { selected = id; live.forEach(function (g) { g.focus(id); }); } },
+    live: function () { return live; }
+  };
+})();
