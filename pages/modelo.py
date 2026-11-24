@@ -81,6 +81,62 @@ No son resultados nuevos de optimización: se derivan de resultados conocidos y 
 """),
 ]
 
+# Diagrama de arquitectura: cajas y flechas en assets/alee_arquitectura.svg (lienzo de 1160 x 640) y, encima,
+# el contenido de cada caja compuesto en LaTeX con MathJax. (x, y, ancho, alto, clase, LaTeX)
+VB_W, VB_H = 1160, 640
+_ACC = {"á": r"\acute{a}", "é": r"\acute{e}", "ó": r"\acute{o}", "ú": r"\acute{u}", "ñ": r"\tilde{n}", "Á": r"\acute{A}", "Ó": r"\acute{O}", "Ú": r"\acute{U}"}
+
+
+def _t(s, font="mathrm"):
+    """Texto en la fuente de LaTeX: tildes como acentos de TeX (no caen en una fuente del sistema)."""
+    for k, v in _ACC.items():
+        s = s.replace(k, v)
+    s = s.replace(" ", "\\ ").replace(":", "{:}")  # {:} = dos puntos de texto, sin espacio de relación
+    return "\\" + font + "{" + s + "}"
+
+
+def _box(title, *lines):
+    return r"\begin{array}{l}" + _t(title, "mathbf") + r"\\[3pt]" + r"\\[2pt]".join(lines) + r"\end{array}"
+
+
+ARCH = [
+    (20, 10, 600, 26, "lbl", _t("RUTA DEL PRONÓSTICO", "mathsf")),
+    (20, 344, 760, 26, "lbl", _t("RUTA DE LOS PESOS: CUÁNTO CONFIAR EN CADA EXPERTO", "mathsf")),
+    (20, 80, 235, 200, "", _box("1. Entrada", r"\mathbf{x}_t:\ " + _t("solo meses ") + r"s\le t", r"\ell_{t,k},\ k\in\{1,2,3,6,12\}",
+                                r"\bar y_{t,m},\ s_{t,m},\ m\in\{3,6,12\}", _t("mes ") + r"(\sin,\cos)" + _t(" y tendencia"),
+                                _t("Colombia: ") + r"+3" + _t(" de 13 áreas"))),
+    (300, 46, 270, 78, "", _box("2a. Persistencia", r"f_1(\mathbf{x}) = y_t")),
+    (300, 138, 270, 78, "", _box("2b. Núcleo del cambio", r"f_2(\mathbf{x}) = y_t + \widehat{\Delta y}_{\mathrm{NW}}(\mathbf{x})")),
+    (300, 230, 270, 78, "", _box("2c. Cambio estacional", r"f_3(\mathbf{x}) = y_t + \overline{\Delta y}_{\,\mathrm{mes}}")),
+    (574, 146, 60, 26, "lbl", r"f_k(\mathbf{x})"),
+    (640, 100, 275, 150, "", _box("4. Combinación convexa", r"\hat y = \displaystyle\sum_{k=1}^{3} w_k^*(\mathbf{x})\, f_k(\mathbf{x})",
+                                  r"w^*\in\Delta_K:\ w_k\ge 0,\ \textstyle\sum_k w_k = 1")),
+    (960, 115, 180, 120, "", _box("5. Pronóstico", r"\hat y_{t+1}", _t("un mes adelante"))),
+    (20, 375, 235, 120, "", _box("3a. Estado", r"z(\mathbf{x}) = \big(s_{t,3},\ y_t-\bar y_{t,12}\big)", _t("volatilidad y brecha anual"))),
+    (300, 370, 310, 130, "", _box("3b. Localización", r"a_s(\mathbf{x}) \propto e^{-\lVert z(\mathbf{x})-z_s\rVert^2/2h^2}\,\gamma^{\,n-1-s}",
+                                  r"\gamma = 0{,}5^{1/\tau}", _t("estado parecido y meses recientes"))),
+    (300, 525, 310, 95, "", _box("Errores fuera de muestra", r"e_{s,k} = y_s - f_k^{(s)}(\mathbf{x}_s)", _t("ventana expansiva"))),
+    (660, 375, 240, 95, "", _box("3c. Error local", r"Q(\mathbf{x}) = \displaystyle\sum_s a_s(\mathbf{x})\, e_s e_s^{\top}")),
+    (945, 375, 195, 95, "", _box("Combinación global", r"\pi:\ " + _t("sin localizar"))),
+    (660, 495, 480, 125, "", _box("3d. Pesos: problema convexo con solución única",
+                                  r"w^*(\mathbf{x}) = \underset{w\in\Delta_K}{\arg\min}\ w^{\top}Q(\mathbf{x})\,w + \tilde\lambda(\mathbf{x})\,\mathrm{KL}(w\,\Vert\,\pi)",
+                                  r"\tilde\lambda(\mathbf{x}) = \lambda\,\dfrac{\operatorname{tr}Q(\mathbf{x})}{K}\,\dfrac{n_{\mathrm{ref}}}{n_{\mathrm{eff}}(a)}")),
+    (930, 284, 80, 26, "lbl", r"w^*(\mathbf{x})"),
+]
+
+
+def arch_diagram():
+    """Diagrama de ALEE: el SVG dibuja cajas y flechas; cada texto es LaTeX compuesto con MathJax."""
+    pct = lambda v, t: f"{100 * v / t:.3f}%"  # noqa: E731
+    boxes = [html.Div(U.math(f"${tex}$"), className=f"arch-box {cls}",
+                      style={"left": pct(x, VB_W), "top": pct(y, VB_H), "width": pct(w, VB_W), "height": pct(h, VB_H)})
+             for x, y, w, h, cls, tex in ARCH]
+    return html.Div([html.Img(src=dash.get_asset_url("alee_arquitectura.svg"), alt="", className="arch-svg"), *boxes],
+                    className="arch-diagram", role="img",
+                    **{"aria-label": "Arquitectura de ALEE: la entrada alimenta tres expertos que se combinan con pesos w*; los pesos salen del estado, "
+                                     "la localización de los meses pasados, sus errores fuera de muestra y un problema convexo regularizado hacia la combinación global."})
+
+
 GROUPS = [("g-exp", "Expertos"), ("g-con", "Contribuciones"), ("g-int", "Interpretabilidad"), ("g-err", "Errores y residuos"),
           ("g-eval", "Evaluación estadística"), ("g-cmp", "Modelos de referencia"), ("g-lab", "Laboratorio de Colombia")]
 
@@ -90,7 +146,7 @@ layout = html.Div([
     html.Div([
         html.Section([
             U.block("3.1 · Arquitectura", "Del dato al pronóstico", "Diagrama estático construido a partir de la implementación (src/original_model.py) y del paper."),
-            html.Figure([html.Img(src=dash.get_asset_url("alee_arquitectura.svg"), alt="Diagrama de la arquitectura de ALEE", className="arch-svg"),
+            html.Figure([arch_diagram(),
                          html.Figcaption("Arriba, la ruta del pronóstico. Abajo, cómo se obtienen los pesos. La flecha discontinua indica que los errores pasados se registran fuera de muestra, en ventana expansiva.")],
                         className="li-panel pad arch reveal"),
             U.loading(html.Div(id="mi-now")),

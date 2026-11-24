@@ -239,6 +239,14 @@ p { margin: 0 0 .6em; }
 /* ------------------------------------------------ 03 modelo */
 .arch { margin: 0; }
 .arch-svg { width: 100%; height: auto; display: block; }
+/* Diagrama con texto en LaTeX: el SVG da cajas y flechas; MathJax compone cada caja. El tamaño sigue al ancho del diagrama. */
+.arch-diagram { position: relative; container-type: inline-size; overflow-x: auto; }
+.arch-diagram .arch-svg { position: relative; z-index: 0; }
+.arch-box { position: absolute; z-index: 1; display: flex; align-items: center; padding: 0 1.05cqw; font-size: 1.12cqw; line-height: 1.2; color: var(--text); overflow: visible; }
+.arch-box .li-math, .arch-box p { margin: 0; font-size: inherit; color: inherit; }
+.arch-box mjx-container { margin: 0 !important; }
+.arch-box.lbl { padding: 0; color: var(--muted); font-size: 0.98cqw; align-items: flex-start; }
+@media (max-width: 900px) { .arch-diagram > * { min-width: 0; } .arch-diagram { min-width: 760px; } .arch { overflow-x: auto; } }
 .arch figcaption { font-size: 13.5px; color: var(--muted); margin-top: 10px; }
 .now-strip { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 14px; }
 .now-strip > div { background: var(--elev); border: 1px solid var(--line); border-radius: 9px; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; }

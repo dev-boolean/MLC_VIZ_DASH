@@ -1,6 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 600" role="img" aria-labelledby="t d" font-family="Inter, Segoe UI, Arial, sans-serif">
-  <title id="t">Arquitectura de ALEE</title>
-  <desc id="d">Arriba, la entrada x_t alimenta tres expertos cuyos pronósticos se combinan con pesos w*. Abajo, los pesos se obtienen del estado z(x), la localización de los meses pasados, los errores fuera de muestra de los expertos y un problema convexo regularizado hacia la combinación global pi.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 640" aria-hidden="true">
+  <!-- Solo cajas y flechas. El texto de cada caja va encima en LaTeX (MathJax): ver pages/modelo.py, ARCH. -->
   <defs>
     <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#687585"/></marker>
     <marker id="an" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#183B56"/></marker>
@@ -11,10 +10,6 @@
       .ex{fill:#FFFFFF;stroke:#9AA5B1;stroke-width:1.2}
       .w{fill:#F3F5F4;stroke:#183B56;stroke-width:1.4}
       .out{fill:#E8F3F1;stroke:#258477;stroke-width:1.6}
-      .h{font-size:15px;font-weight:600;fill:#172536}
-      .s{font-size:12.5px;fill:#687585}
-      .m{font-family:'JetBrains Mono',Consolas,monospace;font-size:12.5px;fill:#183B56}
-      .k{font-size:11px;font-weight:600;letter-spacing:.12em;fill:#687585}
       .ln{stroke:#687585;stroke-width:1.4;fill:none}
       .lnn{stroke:#183B56;stroke-width:1.6;fill:none}
       .lnp{stroke:#258477;stroke-width:1.8;fill:none}
@@ -22,93 +17,37 @@
     </style>
   </defs>
 
-  <text x="24" y="30" class="k">RUTA DEL PRONÓSTICO</text>
-  <text x="24" y="352" class="k">RUTA DE LOS PESOS (CÓMO DECIDE CUÁNTO CONFIAR EN CADA EXPERTO)</text>
-  <line x1="24" y1="330" x2="1136" y2="330" stroke="#E1E6E8" stroke-width="1"/>
+  <line x1="20" y1="335" x2="1140" y2="335" stroke="#E1E6E8" stroke-width="1"/>
 
-  <!-- Entrada -->
-  <rect x="24" y="96" width="210" height="150" rx="10" class="in"/>
-  <text x="40" y="124" class="h">1 · Entrada x<tspan baseline-shift="sub" font-size="11">t</tspan></text>
-  <text x="40" y="148" class="s">Solo meses ya observados (≤ t)</text>
-  <text x="40" y="172" class="s">Rezagos 1, 2, 3, 6 y 12</text>
-  <text x="40" y="191" class="s">Medias y desviaciones móviles</text>
-  <text x="40" y="210" class="s">Mes (seno, coseno) y tendencia</text>
-  <text x="40" y="229" class="s">Colombia: + 3 de las 13 áreas</text>
+  <!-- Ruta del pronóstico -->
+  <rect x="20" y="80" width="235" height="200" rx="10" class="in"/>
+  <rect x="300" y="46" width="270" height="78" rx="10" class="ex"/>
+  <rect x="300" y="138" width="270" height="78" rx="10" class="ex"/>
+  <rect x="300" y="230" width="270" height="78" rx="10" class="ex"/>
+  <rect x="640" y="100" width="275" height="150" rx="10" class="w"/>
+  <rect x="960" y="115" width="180" height="120" rx="10" class="out"/>
 
-  <!-- Expertos -->
-  <rect x="300" y="44" width="250" height="74" rx="10" class="ex"/>
-  <text x="316" y="70" class="h">2a · Persistencia</text>
-  <text x="316" y="96" class="m">f₁ = y_t</text>
-
-  <rect x="300" y="134" width="250" height="74" rx="10" class="ex"/>
-  <text x="316" y="160" class="h">2b · Núcleo del cambio</text>
-  <text x="316" y="186" class="m">f₂ = y_t + NW(Δy | x)</text>
-
-  <rect x="300" y="224" width="250" height="74" rx="10" class="ex"/>
-  <text x="316" y="250" class="h">2c · Cambio estacional</text>
-  <text x="316" y="276" class="m">f₃ = y_t + Δȳ(mes), encogido</text>
-
-  <path d="M234 171 C 268 171 268 81 298 81" class="ln" marker-end="url(#a)"/>
-  <path d="M234 171 L 298 171" class="ln" marker-end="url(#a)"/>
-  <path d="M234 171 C 268 171 268 261 298 261" class="ln" marker-end="url(#a)"/>
-
-  <!-- Combinación -->
-  <rect x="640" y="112" width="250" height="118" rx="10" class="w"/>
-  <text x="656" y="140" class="h">4 · Combinación convexa</text>
-  <text x="656" y="168" class="m">ŷ = Σ_k w*_k · f_k(x)</text>
-  <text x="656" y="192" class="s">w* en el símplex: pesos ≥ 0</text>
-  <text x="656" y="211" class="s">que suman 1</text>
-
-  <path d="M550 81 C 600 81 600 150 638 150" class="ln" marker-end="url(#a)"/>
-  <path d="M550 171 L 638 171" class="ln" marker-end="url(#a)"/>
-  <path d="M550 261 C 600 261 600 192 638 192" class="ln" marker-end="url(#a)"/>
-  <text x="566" y="160" class="s">f_k(x)</text>
-
-  <!-- Pronóstico -->
-  <rect x="950" y="120" width="186" height="102" rx="10" class="out"/>
-  <text x="966" y="148" class="h">5 · Pronóstico</text>
-  <text x="966" y="174" class="m" fill="#258477">ŷ_{t+1}</text>
-  <text x="966" y="198" class="s">Un mes adelante.</text>
-  <text x="966" y="214" class="s">Nunca más allá.</text>
-  <path d="M890 171 L 948 171" class="lnp" marker-end="url(#ap)"/>
+  <path d="M255 180 C 280 180 278 85 298 85" class="ln" marker-end="url(#a)"/>
+  <path d="M255 180 L 298 177" class="ln" marker-end="url(#a)"/>
+  <path d="M255 180 C 280 180 278 269 298 269" class="ln" marker-end="url(#a)"/>
+  <path d="M570 85 C 610 85 605 150 638 150" class="ln" marker-end="url(#a)"/>
+  <path d="M570 177 L 638 177" class="ln" marker-end="url(#a)"/>
+  <path d="M570 269 C 610 269 605 205 638 205" class="ln" marker-end="url(#a)"/>
+  <path d="M915 175 L 958 175" class="lnp" marker-end="url(#ap)"/>
 
   <!-- Ruta de los pesos -->
-  <rect x="24" y="384" width="210" height="118" rx="10" class="in"/>
-  <text x="40" y="412" class="h">3a · Estado z(x)</text>
-  <text x="40" y="438" class="m">( s_t,3 ,  y_t − ȳ_t,12 )</text>
-  <text x="40" y="462" class="s">Volatilidad de 3 meses y</text>
-  <text x="40" y="481" class="s">brecha frente a la media anual</text>
+  <rect x="20" y="375" width="235" height="120" rx="10" class="in"/>
+  <rect x="300" y="370" width="310" height="130" rx="10" class="box"/>
+  <rect x="300" y="525" width="310" height="95" rx="10" class="box"/>
+  <rect x="660" y="375" width="240" height="95" rx="10" class="box"/>
+  <rect x="945" y="375" width="195" height="95" rx="10" class="box"/>
+  <rect x="660" y="495" width="480" height="125" rx="10" class="w"/>
 
-  <rect x="300" y="384" width="250" height="118" rx="10" class="box"/>
-  <text x="316" y="412" class="h">3b · Localización</text>
-  <text x="316" y="438" class="m">a_s ∝ e^(−‖z−z_s‖²/2h²)·γ^(n−1−s)</text>
-  <text x="316" y="462" class="s">Pesan más los meses con estado</text>
-  <text x="316" y="481" class="s">parecido y los más recientes</text>
-  <path d="M234 443 L 298 443" class="ln" marker-end="url(#a)"/>
-
-  <rect x="300" y="522" width="250" height="62" rx="10" class="box"/>
-  <text x="316" y="547" class="h">Errores pasados e_s</text>
-  <text x="316" y="569" class="s">Fuera de muestra, ventana expansiva</text>
-  <path d="M550 288 L 572 288 Q 580 288 580 296 L 580 562 Q 580 570 572 570 L 553 570" class="ln dash" marker-end="url(#a)"/>
-
-  <rect x="640" y="384" width="250" height="78" rx="10" class="box"/>
-  <text x="656" y="412" class="h">3c · Error local Q(x)</text>
-  <text x="656" y="438" class="m">Q = Σ_s a_s · e_s e_sᵀ</text>
-  <path d="M550 423 L 638 423" class="ln" marker-end="url(#a)"/>
-  <path d="M550 540 C 610 540 600 448 638 448" class="ln" marker-end="url(#a)"/>
-
-  <rect x="640" y="484" width="496" height="100" rx="10" class="w"/>
-  <text x="656" y="512" class="h">3d · Pesos: problema convexo con solución única</text>
-  <text x="656" y="540" class="m">w* = argmin_{w∈Δ} wᵀQw + λ(x) · KL(w ‖ π)</text>
-  <text x="656" y="566" class="s">Con pocos meses parecidos, λ(x) crece y los pesos se acercan a π.</text>
-  <path d="M765 462 L 765 482" class="ln" marker-end="url(#a)"/>
-
-  <rect x="950" y="384" width="186" height="78" rx="10" class="box"/>
-  <text x="966" y="412" class="h">Combinación global π</text>
-  <text x="966" y="436" class="s">Mismos expertos, todos</text>
-  <text x="966" y="453" class="s">los meses, sin localizar</text>
-  <path d="M1043 462 L 1043 482" class="ln" marker-end="url(#a)"/>
-
-  <path d="M920 484 L 920 256 Q 920 246 910 246 L 775 246 Q 765 246 765 240 L 765 234" class="lnn" marker-end="url(#an)"/>
-  <text x="930" y="300" class="m">w*(x)</text>
+  <path d="M255 435 L 298 435" class="ln" marker-end="url(#a)"/>
+  <path d="M610 420 L 658 420" class="ln" marker-end="url(#a)"/>
+  <path d="M610 555 C 640 555 630 450 658 450" class="ln" marker-end="url(#a)"/>
+  <path d="M570 290 L 618 290 Q 626 290 626 298 L 626 588 Q 626 596 618 596 L 613 596" class="ln dash" marker-end="url(#a)"/>
+  <path d="M780 470 L 780 493" class="ln" marker-end="url(#a)"/>
+  <path d="M1042 470 L 1042 493" class="ln" marker-end="url(#a)"/>
+  <path d="M922 495 L 922 270 Q 922 262 914 262 L 785 262 Q 777 262 777 258 L 777 252" class="lnn" marker-end="url(#an)"/>
 </svg>
