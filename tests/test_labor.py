@@ -71,15 +71,28 @@ def test_fuera_de_muestra_coincide_con_la_serie_y_las_metricas(c):
 
 
 @pytest.mark.parametrize("c", PAISES)
-def test_escenario_nulo_es_el_caso_base(c):
-    f, sc = E.forecast(c), E.scenario(c)
-    assert sc["pred"] == pytest.approx(f["pred"], abs=1e-9)
-    assert sc["outside"] == []
-    otro = E.scenario(c, (0.5, 0, 0))
-    v = otro["recent"]
-    assert otro["x"]["td_nacional_lag1"] == pytest.approx(f["observed"] + 0.5)
-    assert otro["x"]["td_nacional_rollmean3"] == pytest.approx(v[-3:].mean())
-    assert otro["x"]["td_nacional_rollstd12"] == pytest.approx(v.std(ddof=1))
+def test_intervalo_hacia_adelante_usa_solo_errores_anteriores(c):
+    """El intervalo de cada mes del historial es el del procedimiento conforme con los errores previos."""
+    from src.explain import conformal_halfwidth
+
+    d, hw = E.oof(c), E.forward_halfwidths(c)
+    r = np.abs((d["y_true"] - d["ALEE"]).values)
+    assert np.isnan(hw[:48]).all()
+    for t in (48, len(r) // 2, len(r) - 1):
+        assert hw[t] == pytest.approx(conformal_halfwidth(r[:t], 0.9))
+    k = E.conformal(c)
+    dentro = (np.abs(r[48:]) <= hw[48:]).mean()
+    assert dentro == pytest.approx(k["coverage"])  # misma cobertura que la que se reporta
+    assert k["hw"] == pytest.approx(conformal_halfwidth(r, 0.9))  # intervalo vigente: todos los errores
+
+
+def test_validacion_posterior_solo_el_mes_pronosticable():
+    v = E.later_validation("colombia")
+    f = E.forecast("colombia")
+    ok = v[v["pred"].notna()]
+    assert len(ok) == 1 and ok["objetivo"].iloc[0] == f["target_date"]  # solo el mes siguiente al último dato
+    assert ok["origen"].iloc[0] == f["last_date"] < ok["objetivo"].iloc[0]
+    assert E.later_validation("eeuu").empty
 
 
 def test_colombia_usa_el_artefacto_original():
@@ -95,6 +108,17 @@ def test_rutas():
     cl = app.server.test_client()
     assert cl.get("/health").status_code == 200
     assert [x["id"] for x in cl.get("/api/globo").get_json()] == PAISES
-    for p in ["/", "/analytics", "/modelo", "/forecast", "/escenarios", "/global", "/insights"]:
+    for p in ["/", "/analytics", "/modelo", "/forecast", "/global", "/insights"]:
         assert cl.get(p).status_code == 200
+    assert [h for _, _, h in app.NAV] == ["/", "/analytics", "/modelo", "/forecast", "/global", "/insights"]  # seis secciones
     assert cl.post("/api/chat", json={"messages": "x"}).status_code == 400
+
+
+@pytest.mark.parametrize("c", ["colombia", "japon"])
+def test_informe_pdf(c):
+    import app
+
+    r = app.server.test_client().get(f"/reporte.pdf?pais={c}")
+    assert r.status_code == 200 and r.mimetype == "application/pdf"
+    assert r.data[:5] == b"%PDF-" and len(r.data) > 50_000
+    assert app.server.test_client().get("/reporte.pdf?pais=narnia").status_code == 404

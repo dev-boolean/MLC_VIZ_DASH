@@ -9,10 +9,11 @@ from src.explain import acf, pacf
 from . import catalog as C
 from . import engine as E
 from . import stats as S
-from .theme import BLUE, CARD, CYAN, DASHES, DIM, ELEV, LINE, MONO, MUTED, ORANGE, SERIES, TEXT, VIOLET, base, rgba
+from .theme import ALERT, BLUE, CARD, CYAN, DASHES, DIM, ELEV, LINE, MONO, MUTED, NAVY, OCHRE, ORANGE, PRED, SERIES, TEXT, VIOLET, base, rgba
 
 N = C.num
-EXPERT_COLORS = {"persistencia": DIM, "nucleo": BLUE, "estacional": VIOLET}
+EXPERT_COLORS = {"persistencia": DIM, "nucleo": BLUE, "estacional": OCHRE}
+BAND = rgba(PRED, 0.16)  # intervalo del 90 %: mismo tono que el pronóstico, más claro
 
 
 def _dates(idx):
@@ -35,23 +36,23 @@ def forecast_main(c, months=120, height=430, band=True, posterior=False):
     x0, x1 = f["last_date"], f["target_date"]
     if band:
         fig.add_trace(go.Scatter(x=[x0, x1, x1, x0], y=[f["observed"], f["hi"], f["lo"], f["observed"]], fill="toself", mode="lines",
-                                 line=dict(width=0), fillcolor=rgba(ORANGE, 0.22), name="Intervalo del 90 %", hoverinfo="skip"))
-        fig.add_trace(go.Scatter(x=[x1, x1], y=[f["lo"], f["hi"]], mode="lines+markers", line=dict(color=ORANGE, width=2),
-                                 marker=dict(symbol="line-ew", size=12, line=dict(color=ORANGE, width=2)), showlegend=False,
+                                 line=dict(width=0), fillcolor=BAND, name="Intervalo del 90 %", hoverinfo="skip"))
+        fig.add_trace(go.Scatter(x=[x1, x1], y=[f["lo"], f["hi"]], mode="lines+markers", line=dict(color=PRED, width=1.6),
+                                 marker=dict(symbol="line-ew", size=12, line=dict(color=PRED, width=1.6)), showlegend=False,
                                  hovertemplate="Intervalo del 90 %: %{y:.2f} %<extra></extra>"))
     fig.add_trace(go.Scatter(x=[x0, x1], y=[f["observed"], f["pred"]], mode="lines", name="Pronóstico de ALEE", showlegend=False,
-                             line=dict(color=CYAN, width=3), hoverinfo="skip"))
-    fig.add_trace(go.Scatter(x=[x0], y=[f["observed"]], mode="markers", marker=dict(color=BLUE, size=9, line=dict(color=TEXT, width=2)),
+                             line=dict(color=PRED, width=2.6), hoverinfo="skip"))
+    fig.add_trace(go.Scatter(x=[x0], y=[f["observed"]], mode="markers", marker=dict(color=BLUE, size=9, line=dict(color=CARD, width=2)),
                              showlegend=False, customdata=[C.month_long(x0)],
                              hovertemplate="Último dato: %{customdata}<br><b>%{y:.2f} %</b> observado<extra></extra>"))
     fig.add_trace(go.Scatter(x=[x1], y=[f["pred"]], mode="markers", name="Pronóstico de ALEE",
-                             marker=dict(color=CYAN, size=13, symbol="diamond", line=dict(color=TEXT, width=1.5)),
+                             marker=dict(color=PRED, size=13, symbol="diamond", line=dict(color=CARD, width=1.5)),
                              customdata=[C.month_long(x1)], hovertemplate="%{customdata}<br><b>%{y:.2f} %</b> pronosticado<extra></extra>"))
     later = E.later_observations(c) if posterior else None
     xmax = x1
     if later is not None:
         fig.add_trace(go.Scatter(x=later["fecha"], y=later["tasa_desempleo_nacional"], mode="markers", name="Publicado después (no usado)",
-                                 marker=dict(color="rgba(0,0,0,0)", size=9, line=dict(color=MUTED, width=1.6)),
+                                 marker=dict(color=CARD, size=9, line=dict(color=OCHRE, width=1.8)),
                                  customdata=_dates(later["fecha"]), hovertemplate="%{customdata}<br>%{y:.1f} % publicado después del corte<extra></extra>"))
         xmax = later["fecha"].max()
     fig.add_vline(x=x0, line=dict(color=MUTED, width=1, dash="dot"))
@@ -59,7 +60,7 @@ def forecast_main(c, months=120, height=430, band=True, posterior=False):
                        font=dict(family=MONO, size=11, color=MUTED))
     span = (s.index[-1] - s.index[0]).days
     fig.add_annotation(x=x1, y=f["pred"], text=f"<b>{N(f['pred'])} %</b>", showarrow=False, xanchor="left", xshift=12,
-                       font=dict(family=MONO, size=15, color=CYAN))
+                       font=dict(family=MONO, size=15, color=PRED))
     pad = pd.Timedelta(days=max(40, int(span * 0.085)))
     ys = list(s.values) + [f["lo"], f["hi"]] + (list(later["tasa_desempleo_nacional"]) if later is not None else [])
     m = (max(ys) - min(ys)) * 0.12
@@ -90,12 +91,12 @@ def votes(c, e=None, base_e=None, height=250):
         fig.add_trace(go.Scatter(x=[e["last"], e["experts"][k]], y=[C.EXPERT_LABELS[n]] * 2, mode="lines",
                                  line=dict(color=EXPERT_COLORS[n], width=2), hoverinfo="skip"))
         fig.add_trace(go.Scatter(x=[e["experts"][k]], y=[C.EXPERT_LABELS[n]], mode="markers",
-                                 marker=dict(size=10 + 30 * e["weights"][k], color=rgba(EXPERT_COLORS[n], 0.85), line=dict(color=TEXT, width=1)),
+                                 marker=dict(size=10 + 30 * e["weights"][k], color=rgba(EXPERT_COLORS[n], 0.85), line=dict(color=CARD, width=1)),
                                  hovertemplate=f"{C.EXPERT_LABELS[n]}<br>propone %{{x:.2f}} %<br>peso {N(100 * e['weights'][k], 1)} %<extra></extra>"))
         fig.add_annotation(x=1.0, xref="paper", y=C.EXPERT_LABELS[n], text=f"{N(e['experts'][k])} %<br><span style='color:{MUTED}'>peso {N(100 * e['weights'][k], 0)} %</span>",
                            showarrow=False, xanchor="left", xshift=8, align="left", font=dict(family=MONO, size=12, color=TEXT))
     fig.add_vline(x=e["last"], line=dict(color=BLUE, width=1.5, dash="dot"))
-    fig.add_vline(x=e["pred"], line=dict(color=CYAN, width=2))
+    fig.add_vline(x=e["pred"], line=dict(color=PRED, width=2))
     fig.update_xaxes(ticksuffix=" %")
     fig.update_yaxes(tickfont=dict(family="Inter", size=13, color=TEXT), autorange="reversed", gridcolor="rgba(0,0,0,0)")
     return fig
@@ -108,7 +109,7 @@ def contribution(e, height=300):
     cum = np.cumsum(vals[:4])
     bases = [0, cum[0], cum[1], cum[2], 0]
     fig = base(height, showlegend=False, bargap=0.28)
-    fig.add_trace(go.Bar(x=names, y=vals, base=bases, marker=dict(color=[BLUE, DIM, rgba(BLUE, 0.6), VIOLET, CYAN]),
+    fig.add_trace(go.Bar(x=names, y=vals, base=bases, marker=dict(color=[BLUE, EXPERT_COLORS["persistencia"], EXPERT_COLORS["nucleo"], EXPERT_COLORS["estacional"], PRED]),
                          customdata=[f"{N(v)} %" if k in (0, 4) else f"{N(v, 2, True)} pp" for k, v in enumerate(vals)], hovertemplate="%{x}: %{customdata}<extra></extra>"))
     for k, v in enumerate(vals):
         fig.add_annotation(x=names[k], y=max(bases[k], bases[k] + v), text=f"{N(v)} %" if k in (0, 4) else f"{N(v, 2, True)} pp", showarrow=False, yshift=11,
@@ -123,17 +124,21 @@ def contribution(e, height=300):
     return fig
 
 
-def track(c, n=36, height=340):
-    """Pronósticos ya hechos frente a lo que ocurrió, fuera de muestra."""
-    d, hw = E.oof(c).tail(n), E.conformal(c)["hw"]
+def track(c, n=36, height=360):
+    """Pronósticos ya hechos frente a lo que ocurrió, fuera de muestra, con el intervalo disponible en cada origen."""
+    d = E.recent_track(c, n)
     fig = base(height, hovermode="x unified")
-    fig.add_trace(go.Scatter(x=d["fecha"], y=d["ALEE"] + hw, mode="lines", line=dict(width=0), hoverinfo="skip", showlegend=False))
-    fig.add_trace(go.Scatter(x=d["fecha"], y=d["ALEE"] - hw, mode="lines", line=dict(width=0), fill="tonexty", fillcolor=rgba(ORANGE, 0.13),
-                             name="± semiancho del intervalo actual", hoverinfo="skip"))
+    fig.add_trace(go.Scatter(x=d["fecha"], y=d["ALEE"] + d["hw"], mode="lines", line=dict(width=0), hoverinfo="skip", showlegend=False))
+    fig.add_trace(go.Scatter(x=d["fecha"], y=d["ALEE"] - d["hw"], mode="lines", line=dict(width=0), fill="tonexty", fillcolor=BAND,
+                             name="Intervalo del 90 % (solo con errores anteriores)", hoverinfo="skip"))
     fig.add_trace(go.Scatter(x=d["fecha"], y=d["y_true"], mode="lines+markers", name="Observado", line=dict(color=BLUE, width=2.2), marker=dict(size=5),
                              hovertemplate="Observado %{y:.2f} %<extra></extra>"))
-    fig.add_trace(go.Scatter(x=d["fecha"], y=d["ALEE"], mode="lines+markers", name="Pronóstico de ALEE", line=dict(color=CYAN, width=2, dash="dot"), marker=dict(size=5, symbol="diamond"),
+    fig.add_trace(go.Scatter(x=d["fecha"], y=d["ALEE"], mode="lines+markers", name="Pronóstico de ALEE", line=dict(color=PRED, width=2, dash="dot"), marker=dict(size=5, symbol="diamond"),
                              hovertemplate="Pronóstico %{y:.2f} %<extra></extra>"))
+    out = d[~d["dentro"] & d["hw"].notna()]
+    if len(out):
+        fig.add_trace(go.Scatter(x=out["fecha"], y=out["y_true"], mode="markers", name="Fuera del intervalo", marker=dict(color=CARD, size=11, line=dict(color=ALERT, width=2)),
+                                 hovertemplate="Fuera del intervalo<extra></extra>"))
     fig.update_yaxes(ticksuffix=" %")
     fig.update_xaxes(tickformat="%m/%Y")
     return fig
@@ -146,12 +151,12 @@ def evolution(c, years=None, height=430, show_trend=True, marks=True):
     fig.add_trace(go.Scatter(x=s.index, y=s.values, mode="lines", name="Tasa observada", line=dict(color=BLUE, width=1.8), hovertemplate="%{y:.2f} %<extra>Observada</extra>"))
     if show_trend and len(s) >= 36:
         t = S.trend(s)
-        fig.add_trace(go.Scatter(x=t.index, y=t.values, mode="lines", name="Tendencia (media centrada de 12 meses)", line=dict(color=TEXT, width=2.6),
+        fig.add_trace(go.Scatter(x=t.index, y=t.values, mode="lines", name="Tendencia (media centrada de 12 meses)", line=dict(color=NAVY, width=2.6),
                                  hovertemplate="%{y:.2f} %<extra>Tendencia</extra>"))
     if marks:
         _, _, _, an = S.anomalies(s)
         if len(an):
-            fig.add_trace(go.Scatter(x=an.index, y=s.loc[an.index], mode="markers", name="Cambio atípico", marker=dict(color=ORANGE, size=9, symbol="x"),
+            fig.add_trace(go.Scatter(x=an.index, y=s.loc[an.index], mode="markers", name="Cambio atípico", marker=dict(color=ALERT, size=9, symbol="x"),
                                      customdata=[N(v, 2, True) for v in an.values], hovertemplate="Cambio de %{customdata} pp<extra>Atípico</extra>"))
         for i, tag in [(s.idxmax(), "Máximo"), (s.idxmin(), "Mínimo")]:
             fig.add_annotation(x=i, y=s[i], text=f"{tag}: {N(s[i], 1)} %<br>{C.month_short(i)}", showarrow=True, arrowhead=0, arrowcolor=MUTED, ax=0,
@@ -181,7 +186,7 @@ def month_heat(s, height=360):
     lim = float(np.nanquantile(np.abs(z.values), 0.98))
     fig = base(height, margin=dict(l=52, r=10, t=10, b=34))
     fig.add_trace(go.Heatmap(z=z.values, x=[C.MON[m - 1] for m in t.columns], y=t.index, zmin=-lim, zmax=lim, customdata=t.values,
-                             colorscale=[[0, "#1F5FD0"], [0.5, CARD], [1, ORANGE]], colorbar=dict(title=dict(text="pp frente a<br>su año", font=dict(size=11)), thickness=10, outlinewidth=0, tickfont=dict(family=MONO, size=11, color=MUTED)),
+                             colorscale=[[0, BLUE], [0.5, CARD], [1, OCHRE]], colorbar=dict(title=dict(text="pp frente a<br>su año", font=dict(size=11)), thickness=10, outlinewidth=0, tickfont=dict(family=MONO, size=11, color=MUTED)),
                              hovertemplate="%{x} %{y}: %{customdata:.2f} %<br>%{z:+.2f} pp frente a la media del año<extra></extra>"))
     fig.update_yaxes(autorange="reversed", gridcolor="rgba(0,0,0,0)")
     return fig
@@ -221,7 +226,7 @@ def corr_heat(df, labels, height=430, values=True):
 
 def scatter(x, y, years, lx, ly, sx="", sy="", height=430):
     fig = base(height)
-    fig.add_trace(go.Scatter(x=x, y=y, mode="markers", marker=dict(size=7, color=years, colorscale=[[0, "#26467F"], [0.6, BLUE], [1, CYAN]], opacity=0.85, showscale=True,
+    fig.add_trace(go.Scatter(x=x, y=y, mode="markers", marker=dict(size=7, color=years, colorscale=[[0, "#C9D6E0"], [0.6, BLUE], [1, NAVY]], opacity=0.85, showscale=True,
                              colorbar=dict(title=dict(text="Año", font=dict(size=11)), thickness=10, outlinewidth=0, tickfont=dict(family=MONO, size=11, color=MUTED), tickformat="d")),
                              customdata=[C.month_long(d) for d in x.index], hovertemplate="%{customdata}<br>" + lx + ": %{x:.2f}<br>" + ly + ": %{y:.2f}<extra></extra>"))
     b, a = np.polyfit(x, y, 1) if x.std() > 0 else (0, y.mean())
@@ -254,7 +259,7 @@ def anomaly_fig(s, height=360):
     fig.add_trace(go.Bar(x=d.index, y=d.values, marker=dict(color=rgba(BLUE, 0.65), line=dict(width=0)), name="Cambio mensual", customdata=_dates(d.index),
                          hovertemplate="%{customdata}<br>%{y:+.2f} pp<extra></extra>"))
     if len(an):
-        fig.add_trace(go.Scatter(x=an.index, y=an.values, mode="markers", name="Fuera de las vallas", marker=dict(color=ORANGE, size=10, symbol="x"), customdata=_dates(an.index),
+        fig.add_trace(go.Scatter(x=an.index, y=an.values, mode="markers", name="Fuera de las vallas", marker=dict(color=ALERT, size=10, symbol="x"), customdata=_dates(an.index),
                                  hovertemplate="%{customdata}<br>%{y:+.2f} pp<extra></extra>"))
     _hline(fig, lo, color=ORANGE, dash="dash")
     _hline(fig, hi, "Valla externa (3 RIC)", color=ORANGE, dash="dash", annotation_position="top left")
@@ -272,7 +277,7 @@ def weights_time(c, height=340):
         fig.add_trace(go.Scatter(x=d["fecha"], y=d[f"w_{n}"], mode="lines", stackgroup="w", name=C.EXPERT_LABELS[n], line=dict(width=0.6, color=EXPERT_COLORS[n]),
                                  fillcolor=rgba(EXPERT_COLORS[n], 0.75), hovertemplate="%{y:.0%}<extra>" + C.EXPERT_LABELS[n] + "</extra>"))
     for k in range(2, 6):
-        fig.add_vline(x=d.loc[d["pliegue"] == k, "fecha"].min(), line=dict(color=TEXT, width=1, dash="dot"))
+        fig.add_vline(x=d.loc[d["pliegue"] == k, "fecha"].min(), line=dict(color=MUTED, width=1, dash="dot"))
     fig.update_yaxes(range=[0, 1], tickformat=".0%")
     fig.update_xaxes(tickformat="%Y")
     return fig
@@ -282,8 +287,8 @@ def pred_vs_obs(c, other, height=400):
     d = E.oof(c)
     fig = base(height, hovermode="x unified")
     fig.add_trace(go.Scatter(x=d["fecha"], y=d["y_true"], mode="lines", name="Observado", line=dict(color=BLUE, width=2.2), hovertemplate="%{y:.2f} %<extra>Observado</extra>"))
-    fig.add_trace(go.Scatter(x=d["fecha"], y=d[other], mode="lines", name=C.MODEL_LABELS[other], line=dict(color=DIM, width=1.4), hovertemplate="%{y:.2f} %<extra>" + C.MODEL_LABELS[other] + "</extra>"))
-    fig.add_trace(go.Scatter(x=d["fecha"], y=d["ALEE"], mode="lines", name="ALEE", line=dict(color=CYAN, width=1.8, dash="dot"), hovertemplate="%{y:.2f} %<extra>ALEE</extra>"))
+    fig.add_trace(go.Scatter(x=d["fecha"], y=d[other], mode="lines", name=C.MODEL_LABELS[other], line=dict(color=OCHRE, width=1.4), hovertemplate="%{y:.2f} %<extra>" + C.MODEL_LABELS[other] + "</extra>"))
+    fig.add_trace(go.Scatter(x=d["fecha"], y=d["ALEE"], mode="lines", name="ALEE", line=dict(color=PRED, width=1.8, dash="dot"), hovertemplate="%{y:.2f} %<extra>ALEE</extra>"))
     for k in range(2, 6):
         fig.add_vline(x=d.loc[d["pliegue"] == k, "fecha"].min(), line=dict(color=LINE, width=1))
     fig.update_yaxes(ticksuffix=" %")
@@ -298,7 +303,7 @@ def fold_errors(c, metric="RMSE", height=340):
     per = [f"{g['fecha'].min().year}–{g['fecha'].max().year}" for _, g in d.groupby("pliegue")]
     best, _ = E.best_baseline(c)
     fig = base(height)
-    for mod, col in [("ALEE", VIOLET), (best, DIM)]:
+    for mod, col in [("ALEE", NAVY), (best, OCHRE)]:
         fig.add_trace(go.Bar(x=per, y=m[mod], name=C.MODEL_LABELS[mod], marker=dict(color=col), hovertemplate="%{x}: %{y:.3f}<extra>" + C.MODEL_LABELS[mod] + "</extra>"))
     fig.update_yaxes(title=f"{metric} (pp)" if metric in ("RMSE", "MAE") else metric)
     fig.update_layout(barmode="group", bargap=0.3)
@@ -370,46 +375,36 @@ def regimes(c, height=340):
         g = g.set_index("volatilidad").reindex(["baja", "media", "alta"])
         key = m in ("ALEE", best)
         fig.add_trace(go.Scatter(x=["Baja", "Media", "Alta"], y=g["rmse"], mode="lines+markers", name=C.MODEL_LABELS[m], showlegend=key,
-                                 line=dict(color=VIOLET if m == "ALEE" else (BLUE if m == best else rgba(DIM, 0.45)), width=3 if m == "ALEE" else 2 if key else 1),
+                                 line=dict(color=NAVY if m == "ALEE" else (OCHRE if m == best else rgba(DIM, 0.5)), width=3 if m == "ALEE" else 2 if key else 1),
                                  marker=dict(size=9 if key else 4), hovertemplate=C.MODEL_LABELS[m] + "<br>%{x}: %{y:.3f} pp<extra></extra>"))
     fig.update_yaxes(title="RMSE (pp)", rangemode="tozero")
     fig.update_xaxes(title="Volatilidad de los últimos 3 meses (tercil)")
     return fig
 
 
-# ----------------------------------------------------------------- escenarios
-def sensitivity_fig(c, height=380):
-    d, f = E.sensitivity(c), E.forecast(c)
-    fig = base(height)
-    fig.add_trace(go.Scatter(x=d["ultimo"], y=d["ultimo"], mode="lines", name="Sin cambio (persistencia)", line=dict(color=DIM, width=1.4, dash="dash"), hoverinfo="skip"))
-    fig.add_trace(go.Scatter(x=d["ultimo"], y=d["pred"], mode="lines", name="Respuesta de ALEE", line=dict(color=CYAN, width=3),
-                             customdata=np.c_[100 * d["w_persistencia"], 100 * d["w_nucleo"], 100 * d["w_estacional"]],
-                             hovertemplate="Si el último dato fuera %{x:.2f} %<br>ALEE daría <b>%{y:.2f} %</b><br>pesos: persistencia %{customdata[0]:.0f} %, núcleo %{customdata[1]:.0f} %, estacional %{customdata[2]:.0f} %<extra></extra>"))
-    fig.add_trace(go.Scatter(x=[f["observed"]], y=[f["pred"]], mode="markers", name="Caso base (dato observado)", marker=dict(size=12, color=CYAN, symbol="diamond", line=dict(color=TEXT, width=1.5)),
-                             hovertemplate="Caso base: %{y:.2f} %<extra></extra>"))
-    fig.update_xaxes(title="Último dato hipotético", ticksuffix=" %")
-    fig.update_yaxes(title="Pronóstico del mes siguiente", ticksuffix=" %")
-    return fig
-
-
-def scenario_fig(c, sc, months=18, height=360):
-    f, s = E.forecast(c), E.series(c).iloc[-months:]
-    alt = s.copy()
-    alt.iloc[-12:] = sc["recent"]
-    fig = base(height)
-    fig.add_trace(go.Scatter(x=s.index, y=s.values, mode="lines+markers", name="Observado", line=dict(color=BLUE, width=2.4), marker=dict(size=5), hovertemplate="%{y:.2f} %<extra>Observado</extra>"))
-    tail = alt.iloc[-4:]
-    fig.add_trace(go.Scatter(x=tail.index, y=tail.values, mode="lines+markers", name="Trayectoria hipotética", line=dict(color=VIOLET, width=2, dash="dot"), marker=dict(size=7), hovertemplate="%{y:.2f} %<extra>Hipotético</extra>"))
-    for y0, y1, col, nm, sym in [(f["observed"], f["pred"], CYAN, "Pronóstico base", "diamond"), (alt.iloc[-1], sc["pred"], VIOLET, "Pronóstico del escenario", "square")]:
-        fig.add_trace(go.Scatter(x=[f["last_date"], f["target_date"]], y=[y0, y1], mode="lines+markers", line=dict(color=col, width=2.6), marker=dict(size=[0, 12], symbol=sym, color=col, line=dict(color=TEXT, width=1)), name=nm,
-                                 hovertemplate="%{y:.2f} %<extra>" + nm + "</extra>"))
-    fig.add_vline(x=f["last_date"], line=dict(color=MUTED, width=1, dash="dot"))
-    fig.update_yaxes(ticksuffix=" %")
-    fig.update_xaxes(tickformat="%m/%Y")
-    return fig
-
-
 # --------------------------------------------------------------------- global
+STATUS_COLORS = {"dev": NAVY, "eval": PRED}
+
+
+def world_map(selected, height=390):
+    """Mapa 2D: qué países tienen datos, ALEE propio y evaluación. El color indica el papel en el estudio."""
+    fig = base(height, margin=dict(l=0, r=0, t=0, b=0), showlegend=False)
+    codes = {c: m["short"] for c, m in C.COUNTRIES.items()}
+    for role, label in [("dev", "Desarrollo del diseño y evaluación"), ("eval", "Evaluación con el diseño congelado")]:
+        cs = [c for c in C.COUNTRIES if (c == "colombia") == (role == "dev")]
+        fig.add_trace(go.Choropleth(
+            locations=[codes[c] for c in cs], z=[1] * len(cs), locationmode="ISO-3", customdata=cs, name=label,
+            colorscale=[[0, STATUS_COLORS[role]], [1, STATUS_COLORS[role]]], showscale=False, zmin=0, zmax=1,
+            marker=dict(line=dict(color=[NAVY if c == selected else CARD for c in cs], width=[2.6 if c == selected else 0.8 for c in cs]),
+                        opacity=[1 if c == selected else 0.72 for c in cs]),
+            text=[C.name(c) for c in cs],
+            hovertemplate="<b>%{text}</b><br>Datos disponibles · ALEE propio entrenado · evaluado<br>" + label + "<extra></extra>"))
+    fig.update_geos(projection_type="natural earth", showcountries=True, countrycolor="#D5DCE0", showcoastlines=False, showland=True, landcolor="#E9EDEC",
+                    showocean=True, oceancolor=CARD, showlakes=False, showframe=False, lataxis_range=[-58, 84], bgcolor="rgba(0,0,0,0)")
+    return fig
+
+
+# --------------------------------------------------------------------- global (comparación)
 def compare(countries, mode, years, height=440):
     fig = base(height, hovermode="x unified")
     for i, c in enumerate(countries):
@@ -436,8 +431,8 @@ def forecast_changes(height=380):
     fig = base(height, showlegend=False, margin=dict(l=120, r=30, t=8, b=44))
     for c in cs:
         f, hw = E.forecast(c), E.conformal(c)["hw"]
-        fig.add_trace(go.Scatter(x=[f["change"] - hw, f["change"] + hw], y=[C.name(c)] * 2, mode="lines", line=dict(color=rgba(ORANGE, 0.75), width=3), hoverinfo="skip"))
-        fig.add_trace(go.Scatter(x=[f["change"]], y=[C.name(c)], mode="markers", marker=dict(size=12, color=CYAN, symbol="diamond", line=dict(color=TEXT, width=1)),
+        fig.add_trace(go.Scatter(x=[f["change"] - hw, f["change"] + hw], y=[C.name(c)] * 2, mode="lines", line=dict(color=rgba(PRED, 0.35), width=6), hoverinfo="skip"))
+        fig.add_trace(go.Scatter(x=[f["change"]], y=[C.name(c)], mode="markers", marker=dict(size=12, color=PRED, symbol="diamond", line=dict(color=CARD, width=1.5)),
                                  hovertemplate=f"{C.name(c)}<br>{C.month_long(f['target_date'])}: %{{x:+.2f}} pp<br>intervalo ±{N(hw)} pp<extra></extra>"))
     fig.add_vline(x=0, line=dict(color=MUTED, width=1))
     fig.update_xaxes(title="Cambio pronosticado frente al último dato (pp)")
@@ -451,7 +446,7 @@ def relative_heat(metric="RMSE", height=420):
     txt = [[N(v, 2 if abs(v) >= 10 else 3) for v in row] for row in t.values]
     fig = base(height, margin=dict(l=110, r=10, t=8, b=90))
     fig.add_trace(go.Heatmap(z=np.log2(rel.values), x=[C.MODEL_LABELS[m] for m in t.columns], y=[C.name(c) for c in t.index], text=txt, texttemplate="%{text}", textfont=dict(family=MONO, size=12),
-                             customdata=rel.values, colorscale=[[0, rgba(VIOLET, 0.95)], [0.18, "#2E2C63"], [1, "#0F1A30"]], zmin=0, zmax=3, showscale=False,
+                             customdata=rel.values, colorscale=[[0, "#FFFFFF"], [0.33, "#C9D6E0"], [1, "#5C7A93"]], zmin=0, zmax=3, showscale=False,
                              hovertemplate="%{y}, %{x}<br>" + metric + " %{text}<br>%{customdata:.2f} veces el de ALEE<extra></extra>"))
     fig.update_yaxes(autorange="reversed", tickfont=dict(family="Inter", size=13, color=TEXT))
     fig.update_xaxes(tickangle=-30, tickfont=dict(family="Inter", size=12))
@@ -476,8 +471,8 @@ def cd_fig(height=300):
 
     cd = critical_difference(len(ranks), len(C.COUNTRIES))
     fig = base(height, showlegend=False, margin=dict(l=170, r=30, t=8, b=44))
-    fig.add_vrect(x0=1, x1=1 + cd, fillcolor=rgba(ORANGE, 0.1), line_width=0)
-    fig.add_trace(go.Scatter(x=ranks.values, y=[C.MODEL_LABELS[m] for m in ranks.index], mode="markers", marker=dict(size=12, color=[VIOLET if m == "ALEE" else BLUE for m in ranks.index], line=dict(color=TEXT, width=1)),
+    fig.add_vrect(x0=1, x1=1 + cd, fillcolor=rgba(OCHRE, 0.12), line_width=0)
+    fig.add_trace(go.Scatter(x=ranks.values, y=[C.MODEL_LABELS[m] for m in ranks.index], mode="markers", marker=dict(size=12, color=[NAVY if m == "ALEE" else OCHRE for m in ranks.index], line=dict(color=CARD, width=1)),
                              hovertemplate="%{y}: rango medio %{x:.2f}<extra></extra>"))
     fig.update_xaxes(title=f"Rango medio (1 = mejor). Diferencia crítica: {N(cd)}", range=[0.6, 10.4], dtick=1)
     fig.update_yaxes(autorange="reversed", tickfont=dict(family="Inter", size=13, color=TEXT))

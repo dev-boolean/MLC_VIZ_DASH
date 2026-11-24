@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 
 from src import config
-from src.data import AREA_COLS, LAGS, ROLLING_WINDOWS, TARGET_COL, build_features, load_raw
+from src.data import AREA_COLS, TARGET_COL, build_features, load_raw
 from src.explain import conformal_halfwidth, sequential_coverage
 from src.original_model import EXPERTS
 
@@ -25,8 +25,6 @@ ART = config.ROOT_DIR / "artifacts"
 RESULTS = ART / "resultados" / "solo_curso"
 COVERAGE = 0.9
 MODELS = [m for m in C.MODEL_LABELS if m != "ALEE"]
-AREA_LABELS = {"tasa_global_participacion_area": "Participación, 13 áreas", "tasa_desempleo_area": "Desempleo, 13 áreas",
-               "tasa_ocupacion_area": "Ocupación, 13 áreas"}
 
 
 # ------------------------------------------------------------------- datos
@@ -148,73 +146,49 @@ def forecast(c) -> dict:
     return out
 
 
-# ------------------------------------------------------------- escenarios
-def feature_vector(c, last12, area=None) -> np.ndarray:
-    """Variables del último mes a partir de los 12 valores más recientes.
+# ----------------------------------------------------------- validación
+@lru_cache(maxsize=None)
+def forward_halfwidths(c, warmup=48) -> np.ndarray:
+    """Semiancho del intervalo del 90 % que se habría usado en cada mes de prueba.
 
-    Los rezagos y los estadísticos móviles se recalculan juntos: no se pueden
-    mover por separado sin producir un estado imposible. Calendario y tendencia
-    no cambian.
+    Mismo procedimiento que ``sequential_coverage``: para el mes ``t`` solo se
+    usan los errores fuera de muestra de los meses anteriores. Los primeros
+    ``warmup`` meses no tienen intervalo (NaN).
     """
-    v = np.asarray(last12, dtype=float)
-    base = features(c).iloc[-1]
-    x = base.copy()
-    for k in LAGS:
-        x[f"td_nacional_lag{k}"] = v[-k]
-    for w in ROLLING_WINDOWS:
-        x[f"td_nacional_rollmean{w}"] = v[-w:].mean()
-        x[f"td_nacional_rollstd{w}"] = v[-w:].std(ddof=1)
-    for k, val in (area or {}).items():
-        if k in x.index:
-            x[k] = float(val)
-    return x.values.astype(float)
+    d = oof(c)
+    r = np.abs((d["y_true"] - d["ALEE"]).values)
+    return np.array([np.nan if t < warmup else conformal_halfwidth(r[:t], COVERAGE) for t in range(len(r))])
 
 
-def recent(c) -> np.ndarray:
-    return series(c).values[-12:].copy()
+def recent_track(c, n=24) -> pd.DataFrame:
+    """Últimos ``n`` pronósticos fuera de muestra, con el intervalo que estaba disponible en cada origen."""
+    d = oof(c).copy()
+    d["error"] = d["y_true"] - d["ALEE"]
+    d["hw"] = forward_halfwidths(c)
+    d["origen"] = d["fecha"] - pd.offsets.MonthBegin(1)
+    d["dentro"] = d["error"].abs() <= d["hw"]
+    return d.tail(n)
 
 
-@lru_cache(maxsize=None)
-def training_range(c) -> pd.DataFrame:
-    X = features(c).dropna().iloc[:-1]
-    return pd.DataFrame({"min": X.min(), "max": X.max()})
+def later_validation(c) -> pd.DataFrame:
+    """Pronósticos de la plataforma frente a datos oficiales publicados después del corte.
 
-
-@lru_cache(maxsize=None)
-def step_limit(c) -> float:
-    """Amplitud de los controles: el percentil 99 de los cambios mensuales observados, redondeado a 0,1."""
-    d = np.abs(np.diff(series(c).values))
-    return float(np.ceil(np.quantile(d, 0.99) * 10) / 10)
-
-
-def scenario(c, deltas=(0.0, 0.0, 0.0), area=None) -> dict:
-    """Escenario hipotético: cambia los tres últimos datos (y las 13 áreas en Colombia) y vuelve a pronosticar."""
-    v = recent(c)
-    for k, d in enumerate(deltas, start=1):
-        v[-k] = max(0.0, v[-k] + float(d or 0))
-    x = feature_vector(c, v, area)
-    out = explain_point(c, x)
-    rng, names = training_range(c), list(features(c).columns)
-    out["x"] = pd.Series(x, index=names)
-    skip = {"trend_idx", "mes_sin", "mes_cos"}
-    base = features(c).iloc[-1]
-    inside = lambda n, val: rng.loc[n, "min"] - 1e-9 <= val <= rng.loc[n, "max"] + 1e-9  # noqa: E731
-    # Solo lo que el escenario saca del rango de entrenamiento (el último mes observado puede rozarlo por sí mismo).
-    out["outside"] = [n for n in names if n not in skip and not inside(n, out["x"][n]) and inside(n, base[n])]
-    out["recent"] = v
-    return out
-
-
-@lru_cache(maxsize=None)
-def sensitivity(c, n=33) -> pd.DataFrame:
-    """Respuesta del pronóstico cuando solo cambia el último dato (los demás meses quedan como se observaron)."""
-    lim = step_limit(c)
+    Solo entra un mes si su pronóstico pudo hacerse con información anterior a
+    la publicación: el mes siguiente al último dato de la serie. Los demás meses
+    posteriores se devuelven sin pronóstico (``pred`` vacío) y solo sirven de
+    referencia.
+    """
+    later = later_observations(c)
+    if later is None:
+        return pd.DataFrame()
+    f, hw = forecast(c), conformal(c)["hw"]
     rows = []
-    for d in np.linspace(-lim, lim, n):
-        v = recent(c)
-        v[-1] = max(0.0, v[-1] + d)
-        e = explain_point(c, feature_vector(c, v))
-        rows.append({"delta": d, "ultimo": v[-1], "pred": e["pred"], **{f"w_{k}": w for k, w in zip(("persistencia", "nucleo", "estacional"), e["weights"])}})
+    for _, r in later.iterrows():
+        ok = r["fecha"] == f["target_date"]
+        rows.append({"origen": f["last_date"] if ok else pd.NaT, "objetivo": r["fecha"], "pred": f["pred"] if ok else np.nan,
+                     "obs": float(r["tasa_desempleo_nacional"]), "lo": f["lo"] if ok else np.nan, "hi": f["hi"] if ok else np.nan,
+                     "error": float(r["tasa_desempleo_nacional"]) - f["pred"] if ok else np.nan,
+                     "dentro": (abs(float(r["tasa_desempleo_nacional"]) - f["pred"]) <= hw) if ok else None, "fuente": r["fuente_principal"]})
     return pd.DataFrame(rows)
 
 
@@ -238,13 +212,6 @@ def result(name) -> pd.DataFrame:
 def best_baseline(c):
     row = metric_table().loc[c].drop("ALEE")
     return row.idxmin(), float(row.min())
-
-
-@lru_cache(maxsize=None)
-def recent_track(c, n=24) -> pd.DataFrame:
-    d = oof(c).tail(n).copy()
-    d["error"] = d["y_true"] - d["ALEE"]
-    return d
 
 
 assert EXPERTS == ("persistencia", "nucleo_cambio", "estacional")

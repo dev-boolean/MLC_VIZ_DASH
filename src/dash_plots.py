@@ -8,11 +8,12 @@ o de marcador, y cada figura lleva título, ejes con unidades y texto en el
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from labor import theme  # noqa: F401  (plantilla oscura común)
+from labor import theme  # noqa: F401  (plantilla común de la plataforma)
 
 from .explain import acf, pacf
 
-NAVY, BLUE, VIOLET, SLATE, AMBER = "#F3F7FC", "#3984FF", "#9565FF", "#A7B5C9", "#FFB547"
+# Misma semántica que labor/theme.py: marino (modelo), azul acero (observado), verde azulado (pronóstico), gris, ocre.
+NAVY, BLUE, VIOLET, SLATE, AMBER = "#183B56", "#47799D", "#258477", "#687585", "#C18B43"
 PALETTE = [BLUE, VIOLET, AMBER, SLATE, NAVY]
 DASHES = ["solid", "dash", "dot", "dashdot", "longdash"]
 SYMBOLS = ["circle", "diamond", "square", "triangle-up", "x"]
@@ -78,7 +79,7 @@ def scatter_explorer(df, x, y, color, labels) -> go.Figure:
                                      hovertemplate=f"{labels[x]}: %{{x:.2f}}<br>{labels[y]}: %{{y:.2f}}<extra>{g}</extra>"))
     else:
         fig.add_trace(go.Scatter(x=df[x], y=df[y], mode="markers",
-                                 marker=dict(color=df[color], colorscale=[[0, "#26467F"], [1, NAVY]], size=7,
+                                 marker=dict(color=df[color], colorscale=[[0, "#C9D6E0"], [1, NAVY]], size=7,
                                              colorbar=dict(title=labels.get(color, color)), showscale=True),
                                  hovertemplate=f"{labels[x]}: %{{x:.2f}}<br>{labels[y]}: %{{y:.2f}}<extra></extra>"))
     fig.update_layout(title=f"{labels[y]} frente a {labels[x]}", xaxis_title=f"{labels[x]} (%)",
@@ -89,7 +90,7 @@ def scatter_explorer(df, x, y, color, labels) -> go.Figure:
 def correlation_heatmap(corr: pd.DataFrame, labels: dict) -> go.Figure:
     names = [labels.get(c, c) for c in corr.columns]
     fig = go.Figure(go.Heatmap(z=corr.values, x=names, y=names, zmin=-1, zmax=1,
-                               colorscale=[[0, AMBER], [0.5, "#101B32"], [1, BLUE]],
+                               colorscale=[[0, AMBER], [0.5, "#FFFFFF"], [1, BLUE]],
                                text=np.round(corr.values, 2), texttemplate="%{text}", colorbar=dict(title="r"),
                                hovertemplate="%{y} y %{x}: r = %{z:.3f}<extra></extra>"))
     fig.update_layout(title="Correlación de Pearson entre las tasas", height=460, xaxis=dict(tickangle=-30))
@@ -165,7 +166,7 @@ def shap_summary(phi: np.ndarray, X: pd.DataFrame, labels: dict, title: str, top
         norm = (v - v.min()) / (np.ptp(v) or 1.0)
         fig.add_trace(go.Scatter(
             x=phi[:, j], y=rank + rng.uniform(-0.25, 0.25, len(v)), mode="markers", showlegend=False,
-            marker=dict(color=norm, colorscale=[[0, "#28D8F0"], [1, VIOLET]], size=6, opacity=0.75,
+            marker=dict(color=norm, colorscale=[[0, "#C9D6E0"], [1, NAVY]], size=6, opacity=0.75,
                         cmin=0, cmax=1, colorbar=dict(title="Valor de la<br>variable", tickvals=[0, 1],
                                                       ticktext=["bajo", "alto"]) if rank == 0 else None,
                         showscale=rank == 0),
@@ -215,7 +216,7 @@ def residual_panels(resid, fitted) -> go.Figure:
 def confusion_figure(cm: np.ndarray, labels: list) -> go.Figure:
     pct = cm / cm.sum(axis=1, keepdims=True).clip(min=1) * 100
     text = [[f"{cm[i, j]}<br>({pct[i, j]:.0f} %)" for j in range(len(labels))] for i in range(len(labels))]
-    fig = go.Figure(go.Heatmap(z=pct, x=labels, y=labels, colorscale=[[0, "#101B32"], [1, BLUE]], zmin=0, zmax=100,
+    fig = go.Figure(go.Heatmap(z=pct, x=labels, y=labels, colorscale=[[0, "#FFFFFF"], [1, BLUE]], zmin=0, zmax=100,
                                text=text, texttemplate="%{text}", colorbar=dict(title="% de la fila"),
                                hovertemplate="real %{y}, predicho %{x}<extra></extra>"))
     fig.update_layout(title="Matriz de confusión (fuera de muestra)", xaxis_title="Clase predicha",
@@ -289,7 +290,7 @@ def relative_heatmap(table: pd.DataFrame, row_labels: dict, col_labels: dict) ->
     fig = go.Figure(go.Heatmap(
         z=rel.values, x=[col_labels.get(c, c) for c in rel.columns], y=[row_labels.get(r, r) for r in rel.index],
         text=table.round(3).values, texttemplate="%{text}", textfont=dict(size=10),
-        colorscale=[[0, "#101B32"], [1, VIOLET]], zmin=1, zmax=max(2.0, float(np.nanmax(rel.values))),
+        colorscale=[[0, "#FFFFFF"], [1, NAVY]], zmin=1, zmax=max(2.0, float(np.nanmax(rel.values))),
         colorbar=dict(title="Error / ALEE"),
         hovertemplate="%{y} · %{x}<br>RMSE %{text}<br>%{z:.2f} veces el de ALEE<extra></extra>"))
     fig.update_layout(title="RMSE medio por pliegue en los nueve conjuntos (color: veces el error de ALEE)",

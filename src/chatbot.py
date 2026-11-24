@@ -108,10 +108,11 @@ los mismos 240 meses, por lo que los ocho países adicionales son la evidencia m
 PRONÓSTICO DEL MES SIGUIENTE (el modelo solo pronostica un mes; intervalo conforme del 90 %):
 {_forecast_lines()}
 
-SECCIONES: Overview, Exploratory Analytics (evolución, estacionalidad, distribución, relaciones, memoria y anomalías),
-Model Intelligence (arquitectura de ALEE, explicabilidad, evaluación, comparación y laboratorio de modelos de Colombia),
-Unemployment Forecast (pronóstico, incertidumbre e historial), Scenario Lab (escenarios hipotéticos, no causales),
-Global Intelligence (globo, comparación y rendimiento por país) e Insights & Conclusions.
+SECCIONES (seis): Overview, Exploratory Analytics (análisis exploratorio de Colombia: evolución, estacionalidad,
+distribución, relaciones, memoria y rupturas), Model Intelligence (arquitectura y fundamentos matemáticos de ALEE,
+diagnósticos, evaluación y comparación), Unemployment Forecast (pronóstico a un mes, incertidumbre, validación e
+historial), Global Intelligence (mapa de cobertura, comparación y rendimiento por país) e Insights & Conclusions
+(resultados, limitaciones, referencias e informe PDF).
 
 REGLAS:
 1. Responde en español, con claridad, en 4 o 5 oraciones salvo que pidan más detalle.

@@ -7,7 +7,8 @@ from . import catalog as C
 from . import engine as E
 
 N = C.num
-KIND = {"obs": "Dato observado", "est": "Dato estimado", "calc": "Variación calculada", "ref": "Referencia"}
+# Clasificación de cada cifra, la misma en toda la plataforma.
+KIND = {"obs": "Observado", "est": "Pronosticado", "calc": "Calculado", "ref": "Calculado"}
 
 
 def graph(fig=None, id=None, cls="", **kw):
@@ -27,10 +28,9 @@ def panel(title, children, sub=None, cls="", tools=None):
 
 
 def head(num, kicker, title, accent, lead):
-    """Encabezado de sección: número en contorno, antetítulo, titular con remate y bajada."""
+    """Encabezado de sección: antetítulo numerado, titular editorial y bajada."""
     return html.Header([
-        html.Div(num, className="li-ghost", **{"aria-hidden": "true"}),
-        html.Div([html.Span(className="li-dash"), f"{num}  ·  {kicker}"], className="li-kicker"),
+        html.Div([html.Span(num, className="n"), html.Span(kicker)], className="li-kicker"),
         html.H1([html.Span(title + " "), html.Span(accent, className="li-accent")], className="li-title split"),
         html.P(lead, className="li-lead"),
     ], className="li-head")
@@ -40,8 +40,8 @@ def block(tag, title, lead=None):
     return html.Div([html.Span(tag, className="li-tag"), html.H2(title), html.P(lead) if lead else None], className="li-block reveal")
 
 
-def kpi(label, value, kind, unit="", foot=None, dec=None, accent=""):
-    """Tarjeta de indicador. Si ``value`` es número, el contador se anima."""
+def kpi(label, value, kind, unit="", foot=None, dec=None, accent="", big=False):
+    """Tarjeta de indicador. Si ``value`` es número, el contador se anima una vez."""
     if isinstance(value, (int, float)):
         val = html.Span(N(value, dec if dec is not None else 2, kind == "calc"), className="num",
                         **{"data-count": f"{value:.6f}", "data-dec": str(dec if dec is not None else 2), "data-sign": "1" if kind == "calc" else "0"})
@@ -51,20 +51,30 @@ def kpi(label, value, kind, unit="", foot=None, dec=None, accent=""):
         html.Div([html.Span(label, className="k-label"), html.Span(KIND[kind], className=f"chip {kind}")], className="k-top"),
         html.Div([val, html.Span(unit, className="unit") if unit else None], className=f"k-val {accent or kind}"),
         html.Div(foot, className="k-foot") if foot else None,
-    ], className="li-kpi reveal")
+    ], className="li-kpi reveal" + (" big" if big else ""))
 
 
-def kpis(*items):
-    return html.Div(items, className="li-kpis")
+def kpis(*items, cls=""):
+    return html.Div(items, className=f"li-kpis {cls}")
 
 
 def reading(obs, finding, why):
-    cols = [("¿Qué observamos?", obs), ("¿Cuál es el hallazgo?", finding), ("¿Por qué importa para el desempleo?", why)]
+    cols = [("Qué se observa", obs), ("Qué muestra la evidencia", finding), ("Por qué importa", why)]
     return html.Div([html.Div([html.H4(t), html.P(x)]) for t, x in cols], className="li-reading")
 
 
 def note(children, kind="info", title=None):
     return html.Div([html.B(title + " ") if title else None, html.Span(children)], className=f"li-note {kind}", role="note")
+
+
+def disclose(summary, children, open=False, cls=""):
+    """Panel desplegable para explicaciones estadísticas o matemáticas."""
+    return html.Details([html.Summary(summary), html.Div(children, className="li-disclose-body")], className=f"li-disclose reveal {cls}", open=open)
+
+
+def math(md):
+    """Texto con ecuaciones en LaTeX ($...$ y $$...$$), compuesto con MathJax."""
+    return dcc.Markdown(md, mathjax=True, className="li-math")
 
 
 def seg(id, options, value, label=None):
@@ -76,13 +86,18 @@ def seg(id, options, value, label=None):
 def table(rows, cols, numeric=(), cls=""):
     """Tabla HTML. ``rows``: lista de dict; ``cols``: lista de (clave, título)."""
     return html.Div(html.Table([
-        html.Thead(html.Tr([html.Th(t, className="n" if k in numeric else "") for k, t in cols])),
+        html.Thead(html.Tr([html.Th(t, className="n" if k in numeric else "", scope="col") for k, t in cols])),
         html.Tbody([html.Tr([html.Td(r.get(k, ""), className="n" if k in numeric else "") for k, _ in cols], className=r.get("_cls", "")) for r in rows]),
     ], className="li-table"), className=f"li-table-wrap {cls}", tabIndex=0)
 
 
 def grid(*children, cols="2"):
     return html.Div(list(children), className=f"li-grid g{cols}")
+
+
+def legend(*items):
+    """Leyenda HTML con la semántica de colores: (texto, clase) con clase obs, est, unc, later, model, cmp."""
+    return html.Div([html.Span(t, className=f"lg {k}") for t, k in items], className="lgs")
 
 
 def source(c):
@@ -97,7 +112,7 @@ def provenance(c):
 
 
 def loading(child, **kw):
-    return dcc.Loading(child, type="dot", color="#28D8F0", delay_show=350, overlay_style={"visibility": "visible", "opacity": 0.45}, **kw)
+    return dcc.Loading(child, type="dot", color="#258477", delay_show=350, overlay_style={"visibility": "visible", "opacity": 0.5}, **kw)
 
 
 def safe(fn):

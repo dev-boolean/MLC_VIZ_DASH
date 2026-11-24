@@ -26,14 +26,15 @@ Pruebas: `pip install pytest` y `python -m pytest tests -q`.
 
 | Ruta | Contenido |
 |---|---|
-| `app.py` | Aplicación, navegación, selector de país y `/api/globo` |
-| `pages/` | Las siete secciones, cada una con su layout y sus callbacks |
+| `app.py` | Aplicación, navegación de seis secciones, selector de país, `/api/globo` y `/reporte.pdf?pais=<id>` |
+| `pages/` | Las seis secciones: Overview, Exploratory Analytics (Colombia), Model Intelligence, Unemployment Forecast, Global Intelligence e Insights & Conclusions |
 | `labor/catalog.py` | Países, fuentes y formato en español |
-| `labor/engine.py` | Única puerta al modelo: series, variables, pronóstico, intervalo, escenarios y métricas |
+| `labor/engine.py` | Única puerta al modelo: series, variables, pronóstico, intervalo conforme, validación y métricas |
 | `labor/stats.py` | Estadística descriptiva |
-| `labor/figs.py`, `labor/theme.py` | Figuras y plantilla de Plotly |
+| `labor/figs.py`, `labor/theme.py` | Figuras y plantilla de Plotly, con la semántica de color de la plataforma |
 | `labor/ui.py` | Componentes visuales |
-| `assets/` | `labor.css` (design system), `li_globe.js` (Three.js), `li_motion.js` (GSAP), `chatbot.js` |
+| `labor/report.py` | Informe académico en PDF (fpdf2 y matplotlib) con los datos de la plataforma |
+| `assets/` | `labor.css` (sistema de diseño académico), `alee_arquitectura.svg`, `li_globe.js` (globo de la portada, Three.js), `li_motion.js` (GSAP), `chatbot.js` |
 | `src/` | Código del proyecto de investigación. `original_model.py` (ALEE) no se modificó |
 | `artifacts/reg_ALEE` | ALEE de Colombia, congelado |
 | `artifacts/paises/`, `data/paises/` | ALEE ajustado con la serie de cada país, series y predicciones fuera de muestra |
@@ -46,7 +47,8 @@ Pruebas: `pip install pytest` y `python -m pytest tests -q`.
 - Colombia usa 17 variables; los demás países, 14 (no hay indicadores de las 13 áreas).
 - Cada país tiene su propio ALEE, ajustado con su serie: generaliza el método, no un modelo entrenado en Colombia.
 - Los intervalos del 90 % son de predicción conforme con los errores fuera de muestra; su cobertura se mide hacia adelante.
-- Los escenarios se ejecutan con el modelo y no se interpretan como efectos causales.
+  En el historial, el intervalo de cada mes se calcula solo con los errores anteriores (`engine.forward_halfwidths`).
+- Cada cifra se etiqueta como observada, pronosticada o calculada.
 - `data/paises/colombia_posterior.csv` son datos de 2026 recopilados por el equipo. Solo se muestran como contraste.
 - Octubre de 2025 en Estados Unidos es una interpolación lineal (no se publicó).
 
