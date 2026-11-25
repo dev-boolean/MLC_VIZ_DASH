@@ -104,7 +104,10 @@
   }
 
   function start() {
-    new MutationObserver(queue).observe(document.body, { childList: true, subtree: true, characterData: true });
+    /* Los cambios de la introducción (un cuadro por mes) no deben disparar el escaneo de la página. */
+    new MutationObserver(function (ms) {
+      for (var i = 0; i < ms.length; i++) { var n = ms[i].target, el = n.nodeType === 1 ? n : n.parentElement; if (!el || !el.closest("#li-intro")) { queue(); return; } }
+    }).observe(document.body, { childList: true, subtree: true, characterData: true });
     addEventListener("scroll", progress, { passive: true });
     document.addEventListener("click", function (e) {
       if (e.target.closest("#li-burger")) { document.body.classList.toggle("menu"); return; }

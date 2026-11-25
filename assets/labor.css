@@ -390,3 +390,78 @@ p { margin: 0 0 .6em; }
   .q-grid, .lim-grid, .mini-countries { grid-template-columns: minmax(0, 1fr); }
   .li-foot { padding: 18px 16px 26px; }
 }
+
+/* ------------------------------------------------ introducción animada (li_intro.js) */
+.li-replay { margin-top: 10px; background: var(--card); border: 1px solid var(--line2); color: var(--muted); border-radius: 8px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
+.li-replay:hover { color: var(--navy); border-color: var(--navy); }
+
+/* Mientras corre: la página no se desplaza y la portada espera oculta debajo. */
+html.li-intro-on, html.li-intro-on body { overflow: hidden; }
+html.li-intro-on .li-hero .hero-copy { opacity: 0; transform: translateY(18px); }
+html.li-intro-on .hero-globe canvas, html.li-intro-on .hero-globe .globe-labels { opacity: 0; transform: scale(.84); }
+html.li-intro-on .hero-card, html.li-intro-on .illus { opacity: 0; }
+html.li-intro-rev .li-hero .hero-copy { transition: opacity .9s ease .45s, transform 1s cubic-bezier(.2, .7, .2, 1) .45s; }
+html.li-intro-rev .hero-globe canvas, html.li-intro-rev .hero-globe .globe-labels { transition: opacity 1.1s ease, transform 1.6s cubic-bezier(.2, .7, .2, 1); }
+html.li-intro-rev .hero-card, html.li-intro-rev .illus { transition: opacity .8s ease 1s; }
+
+.li-intro { position: fixed; inset: 0; z-index: 9000; height: 100vh; height: 100dvh; display: flex; flex-direction: column; gap: clamp(12px, 2.2vh, 24px);
+  padding: clamp(18px, 3.2vh, 40px) clamp(16px, 4vw, 64px) clamp(14px, 2.6vh, 30px); background: var(--bg); color: var(--text); font-family: var(--sans); overflow: hidden; }
+.lii-skip { position: absolute; top: clamp(12px, 2.4vh, 26px); right: clamp(12px, 2.4vw, 32px); z-index: 2; background: rgba(255, 255, 255, .9); border: 1px solid var(--line2);
+  color: var(--muted); border-radius: 999px; padding: 6px 14px; font: 500 12.5px var(--sans); cursor: pointer; transition: color .15s, border-color .15s; }
+.lii-skip:hover, .lii-skip:focus-visible { color: var(--navy); border-color: var(--navy); }
+
+.lii-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 10px 32px; padding-right: 170px; }
+.lii-head > * { opacity: 0; transform: translateY(14px); transition: opacity .9s ease, transform 1s cubic-bezier(.2, .7, .2, 1); }
+.s-head .lii-brand { opacity: 1; transform: none; }
+.s-head .lii-topic { opacity: 1; transform: none; transition-delay: .25s; }
+.lii-title { font: 600 clamp(2rem, 4.4vw, 3.6rem)/1 var(--serif); letter-spacing: .02em; color: var(--navy); margin: 0; }
+.lii-sub { margin: 8px 0 0 !important; font-size: clamp(13px, 1.2vw, 15.5px); color: var(--muted); letter-spacing: .04em; }
+.lii-topic, .lii-final { grid-column: 2; grid-row: 1; text-align: right; }
+.lii-kicker { font: 600 12px var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--pred); margin: 0 0 6px !important; }
+.lii-range { font: 500 clamp(12px, 1.1vw, 14px) var(--mono); color: var(--text2); letter-spacing: .06em; margin: 0 !important; }
+.s-final .lii-topic { opacity: 0; transform: translateY(-8px); transition-delay: 0s; }
+.lii-final p { margin: 0 !important; }
+.s-final .lii-final { opacity: 1; transform: none; }
+.lii-f1 { font: 600 clamp(12px, 1.1vw, 14px) var(--mono); letter-spacing: .08em; color: var(--pred); }
+.lii-f2 { font: 500 clamp(1.05rem, 1.7vw, 1.4rem)/1.3 var(--serif); color: var(--navy); margin-top: 4px !important; }
+.lii-f3 { font: italic 500 clamp(.98rem, 1.45vw, 1.2rem)/1.3 var(--serif); color: var(--pred); margin-top: 2px !important; opacity: 0; transform: translateY(6px); transition: opacity .8s ease, transform .8s ease; }
+.s-msg .lii-f3 { opacity: 1; transform: none; }
+
+.lii-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; will-change: transform, opacity; }
+.lii-chart { position: relative; flex: 1; min-height: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow);
+  opacity: 0; transform: translateY(16px); transition: opacity .9s ease, transform 1s cubic-bezier(.2, .7, .2, 1); overflow: hidden; }
+.s-chart .lii-chart { opacity: 1; transform: none; }
+.lii-svg { position: absolute; inset: 0; display: block; }
+.lii-grid line { stroke: var(--line); stroke-width: 1; }
+.lii-grid text { font: 500 11.5px var(--mono); fill: var(--muted); }
+.lii-area { fill: rgba(71, 121, 157, .09); }
+.lii-line { fill: none; stroke: var(--obs); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.lii-dot { fill: var(--pred); stroke: #fff; stroke-width: 2; }
+.lii-halo { fill: rgba(37, 132, 119, .14); transition: r .5s ease; }
+.s-final .lii-halo { r: 15; }
+.s-final .lii-dot { r: 6; }
+.lii-peak { opacity: 0; transition: opacity .6s ease; }
+.lii-peak.on { opacity: 1; }
+.lii-peak circle { fill: var(--card); stroke: var(--navy); stroke-width: 1.5; }
+.lii-peak text { font: 500 12px var(--sans); fill: var(--navy); }
+.lii-read { position: absolute; top: 14px; left: 66px; z-index: 1; display: grid; gap: 2px; justify-items: start; background: rgba(255, 255, 255, .88); padding: 4px 8px 6px 0; }
+.lii-date { font: 600 clamp(1.4rem, 2.3vw, 2rem)/1.1 var(--mono); color: var(--navy); letter-spacing: .04em; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.lii-val { font: 500 clamp(.95rem, 1.3vw, 1.15rem) var(--mono); color: var(--obs); font-variant-numeric: tabular-nums; }
+.lii-count { font: 500 11.5px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.s-final .lii-date { color: var(--pred); }
+.lii-src { font-size: 12.5px; color: var(--muted); margin: 0 !important; opacity: 0; transition: opacity .9s ease .3s; }
+.s-chart .lii-src { opacity: 1; }
+.lii-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.lii-fly { position: fixed; z-index: 3; width: 13px; height: 13px; border-radius: 50%; background: var(--pred); border: 2px solid #fff; box-shadow: 0 0 0 5px rgba(37, 132, 119, .16); pointer-events: none; }
+
+@media (max-width: 760px) {
+  .lii-head { grid-template-columns: minmax(0, 1fr); padding-right: 0; padding-top: 34px; gap: 12px; }
+  .lii-topic, .lii-final { grid-column: 1; grid-row: 2; text-align: left; }
+  .lii-read { left: 12px; top: 10px; }
+  .lii-src { font-size: 11.5px; }
+  .lii-grid text { font-size: 10.5px; }
+}
+@media (max-height: 560px) and (min-width: 761px) {
+  .lii-title { font-size: 2rem; }
+  .lii-read { top: 8px; }
+}

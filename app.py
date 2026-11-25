@@ -3,6 +3,7 @@
 Local:   python app.py                  (http://127.0.0.1:8050)
 Render:  gunicorn app:server
 """
+import json
 import os
 
 import dash
@@ -74,6 +75,19 @@ def report_pdf():
 for _c in C.COUNTRIES:
     E.forecast(_c)
 
+
+def _intro_data():
+    """Serie de Colombia para la introducción animada: la misma fuente del EDA (``E.series``), sin transformar."""
+    f = E.frame(C.DEFAULT)
+    return json.dumps({"fechas": f["fecha"].dt.strftime("%Y-%m").tolist(), "valores": [float(v) for v in f["valor"]],
+                       "interpolados": int(f["interpolado"].sum()), "fuente": C.COUNTRIES[C.DEFAULT]["source"]},
+                      ensure_ascii=False).replace("</", "<\\/")
+
+
+# Va dentro del HTML para que la introducción no necesite otra petición.
+app.index_string = app.index_string.replace(
+    "{%app_entry%}", f'<script id="li-intro-data" type="application/json">{_intro_data()}</script>\n{{%app_entry%}}')
+
 NAV = [("01", "Overview", "/"), ("02", "Exploratory Analytics", "/analytics"), ("03", "Model Intelligence", "/modelo"),
        ("04", "Unemployment Forecast", "/forecast"), ("05", "Global Intelligence", "/global"), ("06", "Insights & Conclusions", "/insights")]
 
@@ -86,7 +100,9 @@ sidebar = html.Aside([
         html.P("Pronóstico a un mes de la tasa de desempleo con ALEE, un modelo original de combinación de expertos."),
     ], className="li-side-about"),
     html.Div([html.P("Andrés Parejo, Santiago Hurtado y Juan Marín"), html.P("Universidad del Norte · 2026"),
-              html.A("Video del proyecto", href="https://www.youtube.com/watch?v=2pBUO-to_KM", target="_blank", rel="noopener")], className="li-credits"),
+              html.A("Video del proyecto", href="https://www.youtube.com/watch?v=2pBUO-to_KM", target="_blank", rel="noopener"),
+              html.Div(html.Button("Ver la introducción", id="li-intro-replay", className="li-replay", title="Repetir la introducción animada"))],
+             className="li-credits"),
 ], className="li-side")
 
 topbar = html.Div([

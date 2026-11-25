@@ -225,6 +225,17 @@
       document.querySelectorAll(".li-globe").forEach(function (el) { if (!el.dataset.on) { el.dataset.on = "1"; live.push(new Globe(el)); } });
     },
     select: function (id) { if (id && id !== selected) { selected = id; live.forEach(function (g) { g.focus(id); }); } },
+    /* Posición en pantalla del país en el globo de la portada (para la introducción). Gira el globo hacia él. */
+    anchor: function (id) {
+      var g = live.filter(function (x) { return !x.dead && x.pins && x.el.classList.contains("hero-globe"); })[0];
+      if (!g) return null;
+      g.focus(id, true);
+      g.root.rotation.set(g.rot.x, g.rot.y, 0); g.root.updateMatrixWorld();
+      var p = g.pins.filter(function (q) { return q.d.id === id; })[0];
+      if (!p) return null;
+      var wp = p.v.clone().applyMatrix4(g.root.matrixWorld).project(g.cam), r = g.el.getBoundingClientRect();
+      return { x: r.left + (wp.x * .5 + .5) * r.width, y: r.top + (-wp.y * .5 + .5) * r.height };
+    },
     live: function () { return live; }
   };
 })();

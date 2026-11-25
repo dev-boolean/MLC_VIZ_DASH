@@ -114,6 +114,23 @@ def test_rutas():
     assert cl.post("/api/chat", json={"messages": "x"}).status_code == 400
 
 
+def test_introduccion_usa_la_serie_del_eda():
+    """La introducción dibuja la serie observada de Colombia tal cual: mismas fechas, mismos valores, de ene 2001 a dic 2025."""
+    import json
+    import re
+
+    import app
+
+    html_ = app.server.test_client().get("/").get_data(as_text=True)
+    m = re.search(r'<script id="li-intro-data" type="application/json">(.*?)</script>', html_, re.S)
+    assert m, "falta la serie de la introducción en la página"
+    d = json.loads(m.group(1))
+    s = E.series("colombia")
+    assert d["fechas"] == [x.strftime("%Y-%m") for x in s.index]
+    assert np.array_equal(np.array(d["valores"]), s.values)
+    assert d["fechas"][0] == "2001-01" and d["fechas"][-1] == "2025-12" and d["interpolados"] == 0
+
+
 @pytest.mark.parametrize("c", ["colombia", "japon"])
 def test_informe_pdf(c):
     import app

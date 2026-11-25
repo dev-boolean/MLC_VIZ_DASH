@@ -18,6 +18,9 @@ python app.py
 Abra <http://127.0.0.1:8050>. En Windows también sirve `iniciar_dashboard.bat`. La portada 3D, las animaciones y las fuentes se
 cargan de CDN (cdnjs, jsDelivr y Google Fonts); sin internet, los datos, los pronósticos y los gráficos siguen funcionando, pero se pierde parte del estilo (Bootstrap también viene de CDN).
 Las animaciones están siempre activas, aunque el sistema tenga «reducir movimiento».
+Al abrir la portada se muestra una introducción de unos 12 s (`assets/li_intro.js`): la tasa de desempleo observada de Colombia
+se dibuja mes a mes de enero de 2001 a diciembre de 2025 (la misma serie del EDA, incrustada en la página por `app.py`) y el último
+punto viaja hasta Colombia en el globo. Se ve una vez por pestaña; se salta con el botón o con Escape y se repite desde la barra lateral.
 El asistente necesita la variable de entorno `GROQ_API_KEY`.
 
 Pruebas: `pip install pytest` y `python -m pytest tests -q`.
