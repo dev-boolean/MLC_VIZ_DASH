@@ -24,9 +24,114 @@ hero = html.Section([
               html.Div(id="ov-hero-card", className="hero-card")], className="hero-visual"),
 ], className="li-hero")
 
+# Indicadores que publica el DANE cada mes (definiciones del primer entregable) y su papel en el modelo de Colombia.
+INDICATORS = [
+    ("Tasa de desempleo, nacional", "TD NAL", "Variable objetivo",
+     "Proporción de personas desocupadas sobre la fuerza laboral a nivel nacional. El modelo pronostica su valor del mes siguiente."),
+    ("Tasa de desempleo, 13 áreas", "TD ÁREA", "Variable del modelo",
+     "Proporción de desocupados sobre la fuerza laboral en las 13 principales áreas metropolitanas; aproxima la presión laboral urbana."),
+    ("Tasa de ocupación, nacional", "TO NAL", "Excluida",
+     "Relación entre la población ocupada y la población en edad de trabajar; mide la capacidad de la economía para generar empleo."),
+    ("Tasa de ocupación, 13 áreas", "TO ÁREA", "Variable del modelo",
+     "Ocupados sobre población en edad de trabajar en las 13 áreas; mide la absorción de empleo en el entorno urbano."),
+    ("Tasa global de participación, nacional", "TGP NAL", "Excluida",
+     "Relación entre la fuerza laboral y la población en edad de trabajar; refleja la disposición a participar en el mercado laboral."),
+    ("Tasa global de participación, 13 áreas", "TGP ÁREA", "Variable del modelo",
+     "Fuerza laboral sobre población en edad de trabajar en las 13 áreas metropolitanas."),
+]
+
+# Recorrido metodológico del proyecto, con la sección del dashboard donde se ve cada paso.
+STEPS = [
+    ("Datos", "Serie mensual del DANE (GEIH) y de ocho países más; variables con rezagos, medias móviles y estacionalidad.", None),
+    ("Análisis exploratorio", "Tendencia, estacionalidad, autocorrelación, estacionariedad y anomalías de la serie.", ("/analytics", "02")),
+    ("Modelos del curso", "140 combinaciones de modelos, balanceo y optimizadores, con validación anidada.", ("/modelo", "03")),
+    ("ALEE", "Modelo original: tres expertos combinados con pesos que dependen del estado del mercado laboral.", ("/modelo", "03")),
+    ("Pronóstico", "Tasa del mes siguiente con un intervalo conforme del 90 % calculado con errores fuera de muestra.", ("/forecast", "04")),
+    ("Evaluación internacional", "El mismo método, con un ALEE propio por país, en nueve países.", ("/global", "05")),
+    ("Conclusiones", "Respuestas a la pregunta de investigación, limitaciones y trabajo futuro.", ("/insights", "06")),
+]
+
+
+def _indicator(title, code, role, text):
+    kind = {"Variable objetivo": "est", "Variable del modelo": "obs", "Excluida": "calc"}[role]
+    return html.Details([
+        html.Summary([html.Span(title, className="ind-t"), html.Span(code, className="ind-code"), html.Span(role, className=f"chip {kind}")]),
+        html.P(text + " Cuantitativa continua, en porcentaje, mensual."),
+    ], className="ctx-ind")
+
+
+def context():
+    """Contexto del estudio: problema, pregunta, datos, indicadores y metodología. Cifras calculadas con la serie guardada."""
+    s, m = E.series("colombia"), E.meta("colombia")
+    peak, first, last = s.idxmax(), s.index[0], s.index[-1]
+    early = s[s.index.year <= first.year + 2]
+    final = s[s.index.year == last.year]
+    others = sorted({C.COUNTRIES[k]["source"].split(" (")[0].replace("OCDE, Infra-annual labour statistics", "OCDE").replace(", vía", " vía")
+                     for k in C.COUNTRIES if k != "colombia"})
+    others = ", ".join(others[:-1]) + " y " + others[-1]
+    n_other = len(E.meta("eeuu")["features"])
+    data = [
+        ("Fuente", "DANE, Gran Encuesta Integrada de Hogares (GEIH); series publicadas por el Banco de la República."),
+        ("Periodo", f"{C.month_long(first)} a {C.month_long(last)}, mensual ({len(s)} meses)."),
+        ("Variable objetivo", "Tasa de desempleo nacional del mes t+1: el horizonte es siempre de un mes."),
+        ("Variables del modelo", f"{len(m['features'])}: rezagos de 1, 2, 3, 6 y 12 meses; medias y desviaciones móviles de 3, 6 y 12 meses; "
+                                 "el mes del año (seno y coseno); una tendencia, y las tres tasas de las 13 áreas metropolitanas."),
+        ("Observaciones", f"{m['n']} meses para entrenar y evaluar: se pierden los primeros por los rezagos y el último por no tener mes siguiente."),
+        ("Exclusión", "La ocupación y la participación nacionales del mismo mes no se usan: TD = 1 − TO/TGP, así que el modelo solo despejaría una identidad contable."),
+        ("Otros países", f"Ocho series mensuales de {others}. Cada país tiene su propio ALEE con {n_other} variables: "
+                         "las mismas, sin las de las 13 áreas."),
+    ]
+    return html.Section([
+        U.block("Contexto del estudio", "Qué se pregunta, con qué datos y cómo se responde",
+                "El problema, la pregunta de investigación, los datos y el recorrido metodológico. Los datos detallados y el laboratorio de modelos "
+                "del curso son de Colombia; la evaluación internacional aplica el mismo método en ocho países más."),
+        U.grid(
+            U.panel("Por qué importa", html.Div([
+                html.P("La tasa de desempleo es el indicador laboral que más se sigue en Colombia: orienta la política monetaria y fiscal, los programas "
+                       "de empleo y las decisiones de contratación. Un pronóstico confiable del mes siguiente permite anticipar cambios antes de que el "
+                       "DANE publique la cifra."),
+                html.P(f"La serie muestra por qué es difícil: promedió {N(early.mean(), 1)} % entre {first.year} y {first.year + 2}, llegó a "
+                       f"{N(s.max(), 1)} % en {C.month_long(peak)}, durante la pandemia, y promedió {N(final.mean(), 1)} % en {last.year}."),
+            ], className="li-prose"), sub="Observado · DANE"),
+            U.panel("Pregunta de investigación", html.Div([
+                html.P(html.B("¿Puede un modelo de combinación de expertos, con pesos que dependen del estado del mercado laboral, pronosticar la tasa "
+                              "de desempleo del mes siguiente mejor que los modelos de regresión estudiados en clase?"), className="ctx-q"),
+                html.Ul([
+                    html.Li("Comparar 140 combinaciones de modelos, técnicas de balanceo y optimizadores con validación anidada."),
+                    html.Li("Proponer, implementar y validar con rigor un modelo original: ALEE."),
+                    html.Li("Comprobar si su ventaja se mantiene en ocho países con mercados laborales distintos."),
+                    html.Li("Llevar el resultado a un producto que cualquier persona pueda consultar."),
+                ], className="ctx-list"),
+            ], className="li-prose"), sub="Objetivos del proyecto"),
+            cols="2",
+        ),
+        U.grid(
+            U.panel("Datos", html.Dl([x for t, v in data for x in (html.Dt(t), html.Dd(v))], className="li-interp ctx-data"), sub="Colombia y comparación internacional"),
+            U.panel("Indicadores del mercado laboral", html.Div([
+                html.P("El DANE publica cada mes tres tasas para el total nacional y para las 13 principales áreas metropolitanas. "
+                       "Despliegue cada una para ver su definición y su papel en el modelo.", className="li-cap ctx-lead"),
+                html.Div([_indicator(*i) for i in INDICATORS]),
+            ]), sub="Definiciones"),
+            cols="2",
+        ),
+        U.panel("Metodología", html.Div([
+            html.Ol([html.Li([
+                html.Span(f"{i:02d}", className="st-n"), html.B(t), html.P(d),
+                dcc.Link(f"Sección {link[1]} →", href=link[0], className="li-link") if link else html.Span("Base de todo el análisis", className="st-none"),
+            ]) for i, (t, d, link) in enumerate(STEPS, 1)], className="ctx-steps"),
+            html.P("Todos los modelos se evalúan con validación anidada: el bucle externo (cinco pliegues de ventana expansiva) estima el desempeño y el "
+                   "interno (tres pliegues) elige los hiperparámetros, siempre entrenando con meses anteriores a los que se pronostican.", className="li-cap"),
+        ]), sub="Del dato al pronóstico"),
+    ], className="ctx")
+
+
 layout = html.Div([
     hero,
-    html.Div([html.Div(id="ov-kpis"), U.loading(html.Div(id="ov-main")), html.Div(id="ov-more")], className="li-wrap"),
+    html.Div([
+        context(),
+        U.block("Pronóstico vigente", "El país seleccionado, hoy", "Todo lo que sigue se actualiza con el país elegido en la barra superior, en el mapa de la sección 05 o en las tarjetas de abajo."),
+        html.Div(id="ov-kpis"), U.loading(html.Div(id="ov-main")), html.Div(id="ov-more"),
+    ], className="li-wrap"),
 ])
 
 
