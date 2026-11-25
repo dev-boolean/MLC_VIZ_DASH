@@ -1,5 +1,5 @@
 /* Movimiento sutil (GSAP): entradas al hacer scroll, contadores y dibujo progresivo del pronóstico.
-   Sin GSAP, o con "reducir movimiento", todo queda visible de inmediato. */
+   Siempre activo; sin GSAP (sin internet), todo queda visible de inmediato. */
 (function () {
   "use strict";
   var reduced = !!window.LIReduced;

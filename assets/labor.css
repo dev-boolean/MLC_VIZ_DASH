@@ -12,7 +12,6 @@
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 84px; }
-html.li-still { scroll-behavior: auto; }
 body { margin: 0; background: var(--bg) !important; color: var(--text) !important; font-family: var(--sans) !important; font-size: 15.5px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
 a { color: var(--navy); text-decoration-color: rgba(24, 59, 86, .35); text-underline-offset: 3px; }
 a:hover { color: var(--pred); }
@@ -38,8 +37,6 @@ p { margin: 0 0 .6em; }
 .li-side-k { font: 600 11px var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--navy); margin-bottom: 6px !important; }
 .li-credits { margin-top: auto; border-top: 1px solid var(--line); padding: 14px 8px 0; font-size: 12.5px; color: var(--muted); }
 .li-credits p { margin: 0 0 3px; } .li-credits a { font-size: 12.5px; font-weight: 500; }
-#li-motion { margin-top: 10px; background: var(--card); border: 1px solid var(--line2); color: var(--muted); border-radius: 8px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
-#li-motion:hover { color: var(--navy); border-color: var(--navy); }
 
 .li-shell { margin-left: var(--side); min-height: 100vh; display: flex; flex-direction: column; }
 .li-top { position: sticky; top: 0; z-index: 40; height: 64px; display: flex; align-items: center; gap: 16px; padding: 0 36px; background: rgba(246, 247, 245, .92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
@@ -330,10 +327,6 @@ p { margin: 0 0 .6em; }
 #mlc-chat-header { background: var(--navy) !important; }
 .mlc-msg-user { background: var(--navy) !important; }
 .mlc-dot.used { background: var(--pred) !important; }
-
-/* ------------------------------------------------ animación sutil (respeta reducir movimiento) */
-.li-still .reveal, .li-still .split > * { opacity: 1 !important; transform: none !important; }
-@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 
 /* ------------------------------------------------ adaptación */
 @media (max-width: 1100px) {

@@ -86,8 +86,7 @@ sidebar = html.Aside([
         html.P("Pronóstico a un mes de la tasa de desempleo con ALEE, un modelo original de combinación de expertos."),
     ], className="li-side-about"),
     html.Div([html.P("Andrés Parejo, Santiago Hurtado y Juan Marín"), html.P("Universidad del Norte · 2026"),
-              html.A("Video del proyecto", href="https://www.youtube.com/watch?v=2pBUO-to_KM", target="_blank", rel="noopener"),
-              html.Div(html.Button("Animaciones", id="li-motion", title="Activar o desactivar las animaciones"))], className="li-credits"),
+              html.A("Video del proyecto", href="https://www.youtube.com/watch?v=2pBUO-to_KM", target="_blank", rel="noopener")], className="li-credits"),
 ], className="li-side")
 
 topbar = html.Div([
