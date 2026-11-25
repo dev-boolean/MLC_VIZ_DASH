@@ -100,7 +100,7 @@ NAV = [("01", "Overview", "/"), ("02", "Exploratory Analytics", "/analytics"), (
        ("04", "Unemployment Forecast", "/forecast"), ("05", "Global Intelligence", "/global"), ("06", "Insights & Conclusions", "/insights")]
 
 sidebar = html.Aside([
-    dcc.Link([html.Span(className="li-mark", **{"aria-hidden": "true"}),
+    dcc.Link([html.Img(src=app.get_asset_url("logo.png"), alt="Logo del Banco de la República", className="li-logo"),
               html.Span([html.B("LABOR INSIGHTS"), html.Small("Global Labor Market Intelligence")])], href="/", className="li-brand"),
     html.Nav(id="li-nav", className="li-nav", **{"aria-label": "Secciones"}),
     html.Div([
