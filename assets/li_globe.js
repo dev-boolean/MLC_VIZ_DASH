@@ -2,7 +2,7 @@
    Es ilustrativo: ubica los nueve países, no mide nada. Se destruye al salir de la página. */
 (function () {
   "use strict";
-  var ATLAS = "https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json";
+  var ATLAS = "/vendor/countries-110m.json";  // copia local de world-atlas@2.0.2
   var R = 1, RAD = Math.PI / 180;
   var COL = { sphere: 0xF7F9F8, grid: 0xDCE3E6, land: 0xB9C6D0, active: 0x47799D, sel: 0x183B56 };
   var reduced = !!window.LIReduced;

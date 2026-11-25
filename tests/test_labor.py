@@ -139,3 +139,48 @@ def test_informe_pdf(c):
     assert r.status_code == 200 and r.mimetype == "application/pdf"
     assert r.data[:5] == b"%PDF-" and len(r.data) > 50_000
     assert app.server.test_client().get("/reporte.pdf?pais=narnia").status_code == 404
+
+
+def test_librerias_locales_y_chatbot_oculto():
+    """Three.js, GSAP, Bootstrap y el mapa se sirven desde vendor/; el asistente no se carga si no se activa."""
+    import app
+
+    cl = app.server.test_client()
+    for f in ["three.min.js", "gsap.min.js", "ScrollTrigger.min.js", "bootstrap.min.css", "countries-110m.json"]:
+        r = cl.get(f"/vendor/{f}")
+        assert r.status_code == 200 and len(r.data) > 10_000, f
+    html_ = cl.get("/").get_data(as_text=True)
+    assert "cdnjs.cloudflare.com" not in html_ and "/vendor/three.min.js" in html_
+    assert ("chatbot.js" in html_) == app.CHATBOT
+
+
+@pytest.mark.parametrize("c", PAISES)
+def test_diagrama_y_valores(c):
+    """3.1: el diagrama original y el panel con los valores del pronóstico vigente de cada país."""
+    import app  # noqa: F401  (registra las páginas)
+    from pages import modelo
+
+    assert "alee_arquitectura.svg" in str(modelo.arch_diagram())
+    f = E.forecast(c)
+    assert C.num(f["pred"]) + " %" in str(modelo.now(c))
+    assert f["last"] + float(np.sum(f["contrib"])) == pytest.approx(f["pred"])
+
+
+def test_sin_laboratorio_ni_periodo():
+    import app
+
+    cl = app.server.test_client()
+    from pages import analytics, modelo, overview  # noqa: F401
+
+    assert not any(i == "g-lab" for i, _ in modelo.GROUPS)
+    assert "Periodo de análisis" not in str(analytics.layout)
+    assert "ilustrativo" not in str(overview.layout) and "ilustrativo" not in cl.get("/").get_data(as_text=True)
+
+
+def test_model_intelligence_sin_desplegables():
+    """La formulación, los pasos y la guía de la tabla están a la vista: sin <details> en la página del modelo."""
+    import app  # noqa: F401
+    from pages import modelo
+
+    assert "Details" not in str(modelo.layout)
+    assert "Details" not in str(modelo.evaluate("colombia"))

@@ -91,7 +91,7 @@ layout = html.Div([
             U.panel("Todos los modelos, todos los países", html.Div([U.seg("gl-metric", [("RMSE", "RMSE"), ("MAE", "MAE"), ("MAPE", "MAPE"), ("MASE", "MASE")], "RMSE"), U.graph(F.relative_heat(height=440), id="gl-heat")]),
                     sub="Blanco: igual que ALEE. Más oscuro: error mayor, en escala logarítmica hasta ocho veces el de ALEE"),
             html.Div(id="gl-tests"),
-            html.Div([U.disclose(t, html.P(x)) for t, x in EXPLAIN], className="li-explain"),
+            U.panel("Cómo se evaluó", html.Dl([x for t, d in EXPLAIN for x in (html.Dt(t), html.Dd(d))], className="eval-guide")),
         ], id="s54"),
         html.Section([
             U.block("5.4 · Estado experimental", "Datos, entrenamiento y evaluación de cada país"),

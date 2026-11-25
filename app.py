@@ -7,7 +7,6 @@ import json
 import os
 
 import dash
-import dash_bootstrap_components as dbc
 from dash import Input, Output, dcc, html
 from flask import Response, abort, jsonify, request
 
@@ -16,20 +15,22 @@ from labor import engine as E
 from labor import theme  # noqa: F401  (registra la plantilla de las figuras)
 from src.chatbot import chatbot_bp
 
-CDN = "https://cdnjs.cloudflare.com/ajax/libs"
+# Three.js, GSAP, Bootstrap y el mapa del globo van en vendor/ (copias exactas de las versiones de CDN) para que la
+# plataforma funcione sin internet en la sustentación. Solo las fuentes de Google vienen de internet; sin ellas se usan
+# las de respaldo del sistema.
+VENDOR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vendor")
+# El asistente no se ha probado: queda oculto salvo que se active con LI_CHATBOT=1.
+CHATBOT = os.environ.get("LI_CHATBOT") == "1"
 app = dash.Dash(
     __name__,
     use_pages=True,
     external_stylesheets=[
-        dbc.themes.BOOTSTRAP,
+        "/vendor/bootstrap.min.css",
         "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600"
         "&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,500&display=swap",
     ],
-    external_scripts=[
-        f"{CDN}/three.js/r128/three.min.js",
-        f"{CDN}/gsap/3.13.0/gsap.min.js",
-        f"{CDN}/gsap/3.13.0/ScrollTrigger.min.js",
-    ],
+    external_scripts=["/vendor/three.min.js", "/vendor/gsap.min.js", "/vendor/ScrollTrigger.min.js"],
+    assets_ignore="" if CHATBOT else r"chatbot\.js",
     title="LABOR INSIGHTS",
     update_title=None,
     suppress_callback_exceptions=True,
@@ -39,6 +40,13 @@ app = dash.Dash(
 app.index_string = app.index_string.replace("<html>", '<html lang="es" data-bs-theme="light">')
 server = app.server
 server.register_blueprint(chatbot_bp)
+
+
+@server.route("/vendor/<path:name>")
+def vendor(name):
+    from flask import send_from_directory
+
+    return send_from_directory(VENDOR, name, max_age=86400)
 
 
 @server.route("/health")
@@ -126,7 +134,7 @@ app.layout = html.Div([
     sidebar,
     html.Div([topbar, html.Main(dash.page_container, id="li-main", className="li-main"),
               html.Footer(["Plataforma académica. No sustituye las cifras oficiales. Datos: DANE (GEIH), vía Banco de la República; BLS, vía FRED; "
-                           "Eurostat y OCDE. El globo de la portada es ilustrativo."], className="li-foot")], className="li-shell"),
+                           "Eurostat y OCDE."], className="li-foot")], className="li-shell"),
 ], id="li-app")
 
 

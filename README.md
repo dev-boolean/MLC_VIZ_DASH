@@ -21,7 +21,7 @@ Las animaciones están siempre activas, aunque el sistema tenga «reducir movimi
 Al abrir la portada se muestra una introducción de unos 12 s (`assets/li_intro.js`): la tasa de desempleo observada de Colombia
 se dibuja mes a mes de enero de 2001 a diciembre de 2025 (la misma serie del EDA, incrustada en la página por `app.py`) y el último
 punto viaja hasta Colombia en el globo. Se ve una vez por pestaña; se salta con el botón o con Escape y se repite desde la barra lateral.
-El asistente necesita la variable de entorno `GROQ_API_KEY`.
+El asistente está oculto por defecto (no se ha probado): se activa con `LI_CHATBOT=1` y necesita la variable de entorno `GROQ_API_KEY`. Three.js, GSAP, Bootstrap y el mapa del globo se sirven desde `vendor/`, así que la plataforma funciona sin internet (salvo las fuentes de Google, que tienen respaldo).
 
 Pruebas: `pip install pytest` y `python -m pytest tests -q`.
 

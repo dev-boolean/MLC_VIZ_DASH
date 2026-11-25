@@ -36,9 +36,7 @@ layout = html.Div([
     html.Div([
         U.note([f"Esta sección analiza Colombia ({C.month_long(_S.index[0])} a {C.month_long(_S.index[-1])}), el problema principal del estudio. El selector de país no la modifica; "
                 "la evolución de los otros ocho países está en Global Intelligence. ", U.source(CO)], "info", "Alcance."),
-        html.Div([html.Span("Periodo de análisis", className="seg-label"),
-                  html.Div(dcc.RangeSlider(id="ea-range", min=A, max=B, step=1, value=[A, B], marks={y: {"label": str(y)} for y in range(A, B + 1, 4)} | {B: {"label": str(B)}},
-                                           allowCross=False, pushable=4, tooltip={"placement": "bottom"}), className="range")], className="li-filter reveal"),
+        dcc.Store(id="ea-range", data=[A, B]),  # periodo fijo: la serie completa que usa el modelo
         html.Nav([dcc.Link(t, href=f"#{i}") for i, t in [("s21", "2.1 Evolución"), ("s22", "2.2 Estacionalidad"), ("s23", "2.3 Distribución"), ("s24", "2.4 Relaciones"),
                                                         ("s25", "2.5 Autocorrelación"), ("s26", "2.6 Rupturas")]], className="li-subnav", **{"aria-label": "Subsecciones"}),
         U.loading(html.Div(id="ea-a")), U.loading(html.Div(id="ea-b")), U.loading(html.Div(id="ea-c")),
@@ -46,7 +44,7 @@ layout = html.Div([
 ])
 
 
-@callback(Output("ea-a", "children"), Input("ea-range", "value"))
+@callback(Output("ea-a", "children"), Input("ea-range", "data"))
 @U.safe
 def part_a(years):
     c = CO
@@ -89,7 +87,7 @@ def part_a(years):
     ])
 
 
-@callback(Output("ea-b", "children"), Input("ea-range", "value"))
+@callback(Output("ea-b", "children"), Input("ea-range", "data"))
 @U.safe
 def part_b(years):
     c = CO
@@ -127,7 +125,7 @@ def _raw(years):
     return d[(d.index.year >= years[0]) & (d.index.year <= years[1])]
 
 
-@callback(Output("ea-dist", "children"), Input("ea-var", "value"), dash.State("ea-range", "value"))
+@callback(Output("ea-dist", "children"), Input("ea-var", "value"), dash.State("ea-range", "data"))
 @U.safe
 def dist(var, years):
     v, label = _raw(years)[var], RAW_LABELS[var]
@@ -143,7 +141,7 @@ def dist(var, years):
                             "Los meses extremos son episodios reales: no se eliminan ni se recortan, porque son los que un modelo de pronóstico debe enfrentar.")])
 
 
-@callback(Output("ea-corr", "children"), Input("ea-corr-mode", "value"), dash.State("ea-range", "value"))
+@callback(Output("ea-corr", "children"), Input("ea-corr-mode", "value"), dash.State("ea-range", "data"))
 @U.safe
 def corr(mode, years):
     c = CO
@@ -162,7 +160,7 @@ def corr(mode, years):
     return [U.graph(F.corr_heat(f, lab, 560, values=False)), U.note(f"La variable más correlacionada con la tasa del mes siguiente es «{lab[r.index[0]]}» (|r| = {N(r.iloc[0])}). Los rezagos y las medias móviles se parecen mucho entre sí: miden casi lo mismo.")]
 
 
-@callback(Output("ea-scatter", "children"), Input("ea-x", "value"), dash.State("ea-range", "value"))
+@callback(Output("ea-scatter", "children"), Input("ea-x", "value"), dash.State("ea-range", "data"))
 @U.safe
 def scat(key, years):
     c = CO
@@ -181,7 +179,7 @@ def scat(key, years):
     return [U.graph(F.scatter(x, y, x.index.year, lx, ly, sx, " %", 460)), U.note(f"La relación lineal es {how} y {'directa' if r > 0 else 'inversa'} (r = {N(r)}) en {len(x)} meses. El color indica el año.")]
 
 
-@callback(Output("ea-c", "children"), Input("ea-range", "value"))
+@callback(Output("ea-c", "children"), Input("ea-range", "data"))
 @U.safe
 def part_c(years):
     c = CO

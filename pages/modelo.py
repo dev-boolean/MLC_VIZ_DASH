@@ -7,7 +7,6 @@ from labor import catalog as C
 from labor import engine as E
 from labor import figs as F
 from labor import ui as U
-from src import config
 from src import dash_data as D
 from src import dash_plots as P
 from src.dash_data import FEATURE_INFO
@@ -137,8 +136,16 @@ def arch_diagram():
                                      "la localización de los meses pasados, sus errores fuera de muestra y un problema convexo regularizado hacia la combinación global."})
 
 
+TABLE_GUIDE = [
+    ("Qué se compara", "El error al cuadrado de ALEE y el de cada modelo, mes a mes, en los mismos meses fuera de muestra."),
+    ("Diferencia de pérdida", "Media de (error² de ALEE − error² del modelo). Negativa: ALEE se equivoca menos. Entre corchetes, su IC del 95 %."),
+    ("DM-HLN y GW", "H0: igual capacidad predictiva (GW: condicional). Valores p corregidos por Holm; menores que 0,05 rechazan la igualdad."),
+    ("P(ALEE mejor)", "Prueba bayesiana con ROPE de ±1 % sobre cinco pliegues dependientes: orientativa."),
+    ("d de Cohen y A₁₂", "Tamaños del efecto: cuánto importa la diferencia, no solo si existe."),
+]
+
 GROUPS = [("g-exp", "Expertos"), ("g-con", "Contribuciones"), ("g-int", "Interpretabilidad"), ("g-err", "Errores y residuos"),
-          ("g-eval", "Evaluación estadística"), ("g-cmp", "Modelos de referencia"), ("g-lab", "Laboratorio de Colombia")]
+          ("g-eval", "Evaluación estadística"), ("g-cmp", "Modelos de referencia")]
 
 layout = html.Div([
     U.head("03", "Model Intelligence", "ALEE: tres expertos,", "una combinación convexa.",
@@ -152,25 +159,16 @@ layout = html.Div([
             U.loading(html.Div(id="mi-now")),
         ], id="s31"),
         html.Section([
-            U.block("3.2 · Fundamentos matemáticos", "La formulación, paso a paso", "Notación y ecuaciones del paper. Cada bloque se despliega por separado."),
-            html.Div([U.disclose(t, U.math(m), open=(i == 0)) for i, (t, m) in enumerate(MATH)], className="li-math-list"),
+            U.block("3.2 · Formulación matemática", "El modelo completo, en la notación del paper",
+                    "Problema, variables, expertos, pesos, optimización y propiedades."),
+            html.Div([html.Article([html.H3([html.Span(f"{i + 1}", className="math-n"), t]), U.math(m)], className=f"math-card{' wide' if i not in (2, 3) else ''}")
+                      for i, (t, m) in enumerate(MATH)], className="math-grid reveal"),
         ], id="s32"),
         html.Section([
             U.block("3.3 · Diagnósticos", "Cómo se comporta y cuánto se equivoca"),
             html.Nav([dcc.Link(t, href=f"#{i}") for i, t in GROUPS], className="li-subnav", **{"aria-label": "Grupos de diagnóstico"}),
             U.loading(html.Div(id="mi-explain")),
             U.loading(html.Div(id="mi-eval")),
-            html.Div([
-                U.block("Laboratorio de Colombia", "Las 140 combinaciones del segundo entregable",
-                        "Catorce modelos base, cuatro técnicas de balanceo y cuatro optimizadores. Aquí están las mejores de cada modelo, en regresión y en clasificación (Bajo, menos de 10 %; Medio, 10 a 14 %; Alto, 14 % o más)."),
-                U.panel("Mejores combinaciones", html.Div([
-                    U.seg("lab-task", [("Regresión", "reg"), ("Clasificación", "clf")], "reg"), html.Div(id="lab-board"),
-                ]), sub="Media de los cinco pliegues externos. Estos resultados son solo de Colombia"),
-                U.panel("Diagnóstico de un modelo", html.Div([
-                    html.Div([html.Label("Modelo", htmlFor="lab-model"), dcc.Dropdown(id="lab-model", clearable=False, searchable=False, className="li-dd")], className="li-ctl"),
-                    U.loading(html.Div(id="lab-diag")),
-                ]), sub="240 predicciones fuera de muestra de Colombia y valores de Shapley"),
-            ], id="g-lab"),
         ], id="s33"),
     ], className="li-wrap"),
 ])
@@ -256,11 +254,14 @@ def evaluate(c):
     pf = lambda p: "< 0,001" if p < 0.001 else N(p, 3)  # noqa: E731
     rows = [{"m": C.MODEL_LABELS[r["baseline"]], "r": N(E.metric_table().loc[c, r["baseline"]], 3), "d": f"{N(r['dif_perdida_media'], 3)}  [{N(r['ic95_inf'], 3)}; {N(r['ic95_sup'], 3)}]",
              "dm": pf(r["dm_p_holm"]), "gw": pf(r["gw_p_holm"]), "pb": N(r["p_bayes_mejor"], 2), "cd": N(r["d_cohen"], 2), "a": N(r["a12_vargha"], 2)} for _, r in t.iterrows()]
+    # ALEE es la referencia de todas las pruebas: va primero, resaltado, con su RMSE y sin pruebas contra sí mismo.
+    rows.insert(0, {"m": "ALEE (referencia)", "r": N(E.metric_table().loc[c, "ALEE"], 3), "d": "—", "dm": "—", "gw": "—", "pb": "—", "cd": "—", "a": "—", "_cls": "hl"})
     n_sig = int((t["dm_p_holm"] < 0.05).sum())
     abl = E.result("ablacion")
     a = abl[(abl["conjunto"] == c) & (abl["dm_p_holm"] < 0.05)]
     worse = [v.lower() for v in a[a["dif_perdida"] < 0]["variante"]]
     loc = abl[(abl["variante"] == "Sin localización") & (abl["dm_p_holm"] < 0.05)]["conjunto"].map(C.name).tolist()
+    jury = _seasonal_answer(abl)
     mcs = E.result("mcs")
     mk = [m for m in mcs[(mcs["conjunto"] == c) & mcs["en_conjunto"].astype(bool)]["modelo"] if m in C.MODEL_LABELS]
     r = err.values
@@ -286,23 +287,19 @@ def evaluate(c):
                 U.table(rows, [("m", "Modelo"), ("r", "RMSE"), ("d", "Diferencia de pérdida [IC 95 %]"), ("dm", "DM-HLN, p"), ("gw", "GW, p"), ("pb", "P(ALEE mejor)"), ("cd", "d de Cohen"), ("a", "A₁₂")], numeric=("r", "d", "dm", "gw", "pb", "cd", "a")),
                 html.P(f"Diebold-Mariano-HLN rechaza la igualdad de la pérdida en {n_sig} de {len(t)} comparaciones en {C.name(c)}. El conjunto de confianza de modelos conserva {len(mk)} de 10 modelos"
                        + (": solo ALEE." if len(mk) == 1 else "; con estos meses, esa prueba no descarta a los demás."), className="li-cap"),
-                U.disclose("Cómo leer esta tabla", html.Ul([
-                    html.Li([html.B("Qué se compara: "), "la pérdida cuadrática de ALEE y la de cada modelo, mes a mes, en los mismos meses fuera de muestra."]),
-                    html.Li([html.B("Diferencia de pérdida: "), "media de (error² de ALEE − error² del modelo). Negativa: ALEE se equivoca menos. Entre corchetes, su intervalo de confianza del 95 %."]),
-                    html.Li([html.B("Diebold-Mariano-HLN y Giacomini-White: "), "H0: los dos modelos tienen la misma pérdida esperada (GW: la misma capacidad predictiva condicional). Valores p corregidos por Holm."]),
-                    html.Li([html.B("P(ALEE mejor): "), "prueba bayesiana con ROPE de ±1 %. Usa solo cinco pliegues dependientes: es orientativa."]),
-                    html.Li([html.B("d de Cohen y A₁₂ de Vargha-Delaney: "), "tamaños del efecto. La significancia estadística no mide por sí sola cuánto importa la diferencia en la práctica."]),
-                ])),
+                html.Div([html.H4("Cómo leer la tabla"), html.Dl([x for t, d in TABLE_GUIDE for x in (html.Dt(t), html.Dd(d))])], className="table-guide"),
             ])),
             U.panel("Ablación: qué pasa si se quita una pieza", html.Div([
                 U.graph(F.ablation(c, 380)),
                 html.P((f"Con significancia son peores que ALEE completo: {', '.join(worse)}. " if worse else "Ninguna variante es significativamente peor que ALEE completo en este país. ")
                        + f"En los nueve países, la localización por estado solo aporta con significancia en {' y '.join(loc) if loc else 'ninguno'}; la mayor parte de la ventaja viene de los expertos.", className="li-cap"),
+                jury,
             ]), sub="Rayado: diferencia significativa frente a ALEE completo (Diebold-Mariano con Holm)"),
         ], id="g-eval"),
         html.Section([
             html.H3("Comparación con modelos de referencia", className="li-group"),
-            html.P("Los ocho modelos de regresión del curso y LightGBM, con las mismas particiones, variables y presupuesto de ajuste.", className="li-lead sm"),
+            html.P("Los ocho modelos de regresión del curso y LightGBM, con las mismas particiones, variables y presupuesto de ajuste. "
+                   "Antecedente: en Colombia, ALEE también tuvo el menor RMSE medio entre las 140 combinaciones de modelos, balanceo y optimizadores del segundo entregable.", className="li-lead sm"),
             U.grid(
                 U.panel("Métrica por modelo", html.Div([U.seg("mi-metric", [(("R²" if k == "R2" else k), k) for k in METRICS], "RMSE"), html.Div(U.graph(F.model_bars(c, height=420), id="mi-bars"))]),
                         sub="Media de los cinco pliegues externos"),
@@ -312,24 +309,31 @@ def evaluate(c):
     ])
 
 
+def _seasonal_answer(abl):
+    """Respuesta a «¿por qué no usar solo el experto estacional?», calculada con la ablación de los nueve países."""
+    s = abl[abl["variante"] == "Solo estacional"].set_index("conjunto")
+    alee = E.metric_table()["ALEE"]
+    sig = s["dm_p_holm"] < 0.05
+    alee_better = s[sig & (s["dif_perdida"] < 0)].index.map(C.name).tolist()
+    seas_better = s[sig & (s["dif_perdida"] > 0)].index.map(C.name).tolist()
+    lower = int((alee.reindex(s.index) < s["RMSE"]).sum())
+    co = s.loc["colombia"] if "colombia" in s.index else None
+    txt = [html.B("¿Por qué no usar solo el experto estacional? "),
+           (f"En Colombia tiene un RMSE de {N(co['RMSE'], 3)} frente a {N(alee['colombia'], 3)} de ALEE, " + ("y la diferencia no es significativa. " if co["dm_p_holm"] >= 0.05 else "y la diferencia es significativa. ") if co is not None else ""),
+           ("En ningún país el experto estacional solo es significativamente mejor que ALEE. " if not seas_better else f"Es significativamente mejor que ALEE en {', '.join(seas_better)}. "),
+           (f"ALEE sí es significativamente mejor en {_and(alee_better)}. " if alee_better else ""),
+           f"ALEE tiene menor RMSE en {lower} de {len(s)} países. Lo que aporta ALEE es que no hay que saber de antemano qué experto funciona en cada país: "
+           "lo decide con los datos, y su error nunca supera al del peor experto."]
+    return U.note(txt, "info")
+
+
+def _and(xs):
+    return xs[0] if len(xs) == 1 else ", ".join(xs[:-1]) + " y " + xs[-1]
+
+
 @callback(Output("mi-bars", "figure"), Input("mi-metric", "value"), Input("pais", "value"))
 def bars(metric, c):
     return F.model_bars(c, metric, 420)
-
-
-# ------------------------------------------------------- laboratorio (Colombia)
-@callback(Output("lab-board", "children"), Output("lab-model", "options"), Output("lab-model", "value"), Input("lab-task", "value"))
-@U.safe
-def board(task):
-    df = D.leaderboard(task)
-    rows = [{"m": r["Modelo"], "b": r["Balanceo"], "o": r["Optimizador"], "v": r["Media ± desv."].replace(".", ","), "f": r["Finalista estadístico"], "e": r["Estado"],
-             "_cls": "hl" if r["Estado"] == "Modelo original" else ""} for _, r in df.iterrows()]
-    metric = "RMSE (menor es mejor)" if task == "reg" else "F1-macro (mayor es mejor)"
-    fr = D.friedman()
-    txt = ("ALEE es el de menor RMSE medio. El conjunto de confianza de modelos, con 240 meses muy heterogéneos, no descarta a ninguno." if task == "reg"
-           else f"KNN con SMOTE y algoritmo genético tiene el mayor F1-macro, pero Friedman no distingue a los siete (p = {N(fr['p_value'])}). ALEE es un modelo de regresión y no participa aquí.")
-    opts = [{"label": D.artifact_label(a).split(" · ")[1], "value": a} for a in D.artifact_names() if a.startswith(task + "_")]
-    return [U.table(rows, [("m", "Modelo"), ("b", "Balanceo"), ("o", "Optimizador"), ("v", metric), ("f", "Finalista"), ("e", "Estado")], numeric=("v",)), html.P(txt, className="li-cap")], opts, ("reg_ALEE" if task == "reg" else "clf_KNN")
 
 
 def _fig(fig, h=None):
@@ -337,35 +341,3 @@ def _fig(fig, h=None):
     if h:
         fig.update_layout(height=h)
     return U.graph(fig)
-
-
-@callback(Output("lab-diag", "children"), Input("lab-model", "value"))
-@U.safe
-def diag(name):
-    if not name:
-        return None
-    from sklearn.metrics import auc, average_precision_score, confusion_matrix, precision_recall_curve, roc_curve
-
-    from src.explain import acf
-
-    task, m = name.split("_", 1)
-    df = D.oof(task)
-    if task == "reg":
-        r = (df["y_true"] - df[f"pred_{m}"]).values
-        a1 = acf(r, 1)[1]
-        out = [html.H4("Observado frente a pronosticado"), _fig(P.real_vs_pred(df, f"pred_{m}", D.MODEL_LABELS.get(m, m)), 360), html.H4("Residuos"), _fig(P.residual_panels(r, df[f"pred_{m}"].values)),
-               html.P(f"RMSE agrupado de {N(np.sqrt(np.mean(r ** 2)), 3)} pp. Autocorrelación de los residuos en el rezago 1: {N(a1)}.", className="li-cap")]
-    else:
-        y, pred = df["y_true"].values.astype(int), df[f"pred_{m}"].values.astype(int)
-        pr = df[[f"proba_{m}_{k}" for k in config.CLASS_LABELS]].values
-        cm = confusion_matrix(y, pred, labels=[0, 1, 2])
-        roc, prc = {}, {}
-        for k, lab in enumerate(config.CLASS_LABELS):
-            yb = (y == k).astype(int)
-            fp, tp, _ = roc_curve(yb, pr[:, k])
-            p, rc, _ = precision_recall_curve(yb, pr[:, k])
-            roc[lab], prc[lab] = (fp, tp, auc(fp, tp)), (rc, p, average_precision_score(yb, pr[:, k]))
-        out = [html.Div([html.Div([html.H4("Matriz de confusión"), _fig(P.confusion_figure(cm, config.CLASS_LABELS))]), html.Div([html.H4("Curvas ROC"), _fig(P.curves_figure(roc, "roc"))]),
-                         html.Div([html.H4("Precisión y exhaustividad"), _fig(P.curves_figure(prc, "pr"))])], className="li-grid g3"),
-               html.P(f"Detecta {cm[2, 2]} de los {cm[2].sum()} meses de desempleo Alto.", className="li-cap")]
-    return out + [html.H4("Importancia global (valores de Shapley)"), U.graph(_shap(name, 400))]

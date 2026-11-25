@@ -108,6 +108,48 @@ def limitations(R):
     ]
 
 
+def key_limitations(R):
+    """Las cuatro limitaciones que más pesan en la lectura de los resultados (el resto queda desplegable)."""
+    return [f"La localización por estado, la idea central, solo aporta con significancia en {_list(R['loc'])}: la ventaja viene sobre todo de los expertos.",
+            f"El experto estacional por sí solo no se distingue de ALEE en {len(R['seas'])} de 9 países.",
+            "ALEE reacciona tarde al inicio de una crisis y solo pronostica un mes.",
+            "En Colombia se probaron diez iteraciones de diseño sobre los mismos meses: los ocho países adicionales, con el diseño congelado, son la evidencia más confiable."]
+
+
+QUESTION = ("¿Puede un modelo de combinación de expertos, con pesos que dependen del estado del mercado laboral, pronosticar la tasa "
+            "de desempleo del mes siguiente mejor que los modelos de regresión estudiados en clase?")
+
+
+def answer(R):
+    red = R["red"]
+    yes = "Sí. " if R["wins"] == 9 else ""
+    return (f"{yes}ALEE tuvo el menor RMSE en {R['wins']} de 9 países, con entre {N(100 * red.min(), 0)} % y {N(100 * red.max(), 0)} % menos error que el mejor "
+            f"modelo de comparación, y la diferencia es significativa en {R['n_sig']} de {R['n_tests']} comparaciones. Con un matiz: la ventaja viene sobre todo "
+            f"de los expertos; los pesos por estado solo aportan con significancia en {_list(R['loc'])}.")
+
+
+def contributions(R):
+    return [("Un modelo original", "ALEE combina tres expertos sencillos con pesos que resuelven un problema convexo con solución única, regularizado hacia una combinación global."),
+            ("Una validación amplia", f"{R['n_test']} meses fuera de muestra en nueve países, con protocolo pre-registrado; ocho países se evaluaron con el diseño ya congelado."),
+            ("Pronósticos explicables", "Cada pronóstico se descompone exactamente en el aporte de cada experto y viene con un intervalo del 90 % cuya cobertura se mide hacia adelante.")]
+
+
+def real_check():
+    """Primer dato oficial publicado después del corte que el modelo pudo pronosticar (Colombia)."""
+    v = E.later_validation(C.DEFAULT)
+    if v.empty or v["pred"].isna().all():
+        return None
+    r = v.dropna(subset=["pred"]).iloc[0]
+    inside = "dentro del intervalo" if r["dentro"] else "fuera del intervalo"
+    return html.Div([
+        html.Small("Comprobación con un dato real", className="ans-k"),
+        html.P([f"Con datos hasta {C.month_long(r['origen'])}, ALEE pronosticó ", html.B(f"{N(r['pred'])} %", className="est"),
+                f" para {C.month_long(r['objetivo'])} (intervalo del 90 %: {N(r['lo'])} a {N(r['hi'])} %). El DANE publicó después ", html.B(f"{N(r['obs'], 1)} %", className="obs"),
+                f": {inside}, con un error de {N(r['error'], 2, True)} pp."]),
+        html.P(["Es un solo mes: una comprobación, no una evaluación. ", html.A("Boletín del DANE", href=r["fuente"], target="_blank", rel="noopener"), "."], className="li-cap"),
+    ], className="ans-check")
+
+
 FUTURE = ["Variables de estado que reaccionen antes a los saltos bruscos: la volatilidad de tres meses y la brecha frente a la media anual se basan en meses ya observados.",
           "Pronóstico a más de un mes, que exige expertos y estados definidos para cada horizonte.",
           "Más conjuntos de datos, para dar más potencia a las pruebas entre países."]
@@ -117,8 +159,19 @@ def layout(**_):
     R = findings()
     red = R["red"]
     return html.Div([
-        U.head("06", "Insights & Conclusions", "Lo que deja", "esta investigación.", "Seis preguntas, respondidas con los resultados guardados de la evaluación. Todas las cifras se calculan al cargar la página."),
+        U.head("06", "Insights & Conclusions", "Lo que deja", "esta investigación.", "La respuesta a la pregunta de investigación, la evidencia que la sostiene y lo que no permite afirmar. Todas las cifras se calculan al cargar la página."),
         html.Div([
+            html.Section([
+                html.Div([
+                    html.Small("Pregunta de investigación", className="ans-k"),
+                    html.P(QUESTION, className="ans-q"),
+                    html.Small("Respuesta", className="ans-k"),
+                    html.P(answer(R), className="ans-a"),
+                ], className="ans-main"),
+                real_check(),
+            ], className="li-panel pad ans reveal"),
+            html.Div([html.Div([html.Span(f"{i + 1}", className="contrib-n"), html.H3(t), html.P(x)], className="contrib reveal")
+                      for i, (t, x) in enumerate(contributions(R))], className="contrib-grid"),
             U.kpis(U.kpi("Países con el menor RMSE", f"{R['wins']} de 9", "calc", foot="ALEE frente a nueve modelos de comparación"),
                    U.kpi("Reducción del error", f"{N(100 * red.min(), 0)} a {N(100 * red.max(), 0)} %", "calc", foot="RMSE frente al mejor modelo de cada país"),
                    U.kpi("Comparaciones significativas", f"{R['n_sig']} de {R['n_tests']}", "calc", foot="Diebold-Mariano-HLN con Holm"),
@@ -135,14 +188,15 @@ def layout(**_):
             U.panel("Comparación internacional de los modelos", U.graph(F.cd_fig(360)), sub="Rango medio en los nueve países (1 = mejor) y diferencia crítica de Nemenyi"),
             html.Section([
                 U.block("6.3 · Limitaciones y trabajo futuro", "Lo que esta evidencia no permite afirmar"),
-                html.Div([html.Div([html.H3(t), html.Ul([html.Li(x) for x in xs])], className="lim-card") for t, xs in limitations(R)]
-                         + [html.Div([html.H3("Trabajo futuro"), html.Ol([html.Li(x) for x in FUTURE])], className="lim-card future")], className="lim-grid reveal"),
+                html.Div([html.Div([html.H3("Las cuatro que más pesan"), html.Ul([html.Li(x) for x in key_limitations(R)])], className="lim-card"),
+                          html.Div([html.H3("Trabajo futuro"), html.Ol([html.Li(x) for x in FUTURE])], className="lim-card future")], className="lim-grid reveal"),
+                html.H3("Todas las limitaciones, por tipo", className="li-group"),
+                html.Div([html.Div([html.H3(t), html.Ul([html.Li(x) for x in xs])], className="lim-card compact") for t, xs in limitations(R)], className="lim-grid all reveal"),
             ], id="limitaciones"),
             html.Section([
                 U.block("6.4 · Referencias y documentación", "Fuentes de la investigación"),
-                U.grid(
-                    U.disclose("Referencias del paper", html.Ol(references(), className="refs"), open=True),
-                    html.Div([
+                U.panel("Referencias del paper", html.Ol(references(), className="refs cols")),
+                html.Div([
                         U.panel("Fuentes de datos", html.Ul([html.Li([html.B(m["name"] + ": "), f"{m['source']}. {m['definition']}."]) for m in C.COUNTRIES.values()], className="li-src")),
                         U.panel("Documentación metodológica", html.Ul([
                             html.Li("Paper: «EDA del mercado laboral colombiano y ALEE» (paper/EDA_Mercado_Laboral_Colombiano_ALEE.tex)."),
@@ -154,8 +208,7 @@ def layout(**_):
                             html.P("Resumen académico del país seleccionado: indicadores, pronóstico e intervalo, validación, evaluación, conclusiones, limitaciones y referencias, con los datos de la plataforma.", className="li-cap"),
                             html.A("Descargar el informe", id="in-pdf", href="/reporte.pdf?pais=colombia", className="btn-li primary"),
                         ])),
-                    ]),
-                ),
+                ], className="li-grid g3"),
             ], id="referencias"),
         ], className="li-wrap"),
         html.Section([

@@ -20,7 +20,7 @@ hero = html.Section([
         html.Div([dcc.Link("Ver el pronóstico", href="/forecast", className="btn-li primary"), dcc.Link("Cobertura internacional", href="/global", className="btn-li ghost")], className="hero-cta"),
         html.Div([html.Span(x, className="pill") for x in ("9 países evaluados", "Frecuencia mensual", "Horizonte: un mes", "Intervalo conforme del 90 %")], className="pills"),
     ], className="hero-copy"),
-    html.Div([html.Div(className="li-globe hero-globe", **{"data-mode": "hero"}), html.Span("Globo ilustrativo: ubica los países, no mide nada", className="illus"),
+    html.Div([html.Div(className="li-globe hero-globe", **{"data-mode": "hero"}),
               html.Div(id="ov-hero-card", className="hero-card")], className="hero-visual"),
 ], className="li-hero")
 
@@ -83,8 +83,8 @@ def context():
     ]
     return html.Section([
         U.block("Contexto del estudio", "Qué se pregunta, con qué datos y cómo se responde",
-                "El problema, la pregunta de investigación, los datos y el recorrido metodológico. Los datos detallados y el laboratorio de modelos "
-                "del curso son de Colombia; la evaluación internacional aplica el mismo método en ocho países más."),
+                "El problema, la pregunta de investigación, los datos y el recorrido metodológico. El análisis exploratorio detallado "
+                "es de Colombia; la evaluación internacional aplica el mismo método en ocho países más."),
         U.grid(
             U.panel("Por qué importa", html.Div([
                 html.P("La tasa de desempleo es el indicador laboral que más se sigue en Colombia: orienta la política monetaria y fiscal, los programas "

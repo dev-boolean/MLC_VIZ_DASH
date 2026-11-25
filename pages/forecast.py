@@ -91,13 +91,13 @@ def body(c):
                 f"{N(conf['hw'])} pp, se suma y se resta al pronóstico. Es simétrico y tiene el mismo ancho en cualquier mes."]),
         U.note("Los errores de una serie de tiempo dependen unos de otros, así que la cobertura del 90 % no está garantizada: por eso se mide hacia adelante, recalculando el intervalo de cada mes solo con los errores anteriores. "
                "El ancho tampoco crece en meses agitados como los de 2020.", "warn", "Limitación."),
-        U.disclose("Cálculo exacto", U.math(r"""
+        html.Div([html.H4("Cálculo exacto"), U.math(r"""
 Con los errores fuera de muestra $r_i = y_i - \hat y_i$, $i = 1,\dots,n$, el semiancho es el cuantil empírico de orden $\lceil (n+1)\cdot 0{,}9\rceil / n$ de $|r_i|$:
 
 $$q = |r|_{(\lceil (n+1)\,0{,}9\rceil)},\qquad \text{intervalo} = [\,\hat y_{t+1} - q,\ \hat y_{t+1} + q\,].$$
 
 La cobertura empírica se mide hacia adelante: para cada mes $t > 48$ se calcula $q_t$ solo con $r_1,\dots,r_{t-1}$ y se cuenta si $|r_t| \le q_t$.
-""")),
+""")], className="calc-box"),
     ], className="li-prose"))
 
     contribution = U.panel("Qué empuja el pronóstico", html.Div([U.graph(F.contribution(f, 320)), html.P(
@@ -112,8 +112,8 @@ La cobertura empírica se mide hacia adelante: para cada mes $t > 48$ se calcula
         U.reading(f"En los últimos {len(tr)} meses de prueba, el error absoluto medio fue de {N(tr['error'].abs().mean())} pp.",
                   f"{inside} de {int(has.sum())} observaciones cayeron dentro del intervalo disponible en su momento, y en {sign} de {len(tr)} ALEE acertó la dirección del cambio frente a repetir el último dato.",
                   "Cada pronóstico se hizo solo con meses anteriores y cada intervalo, solo con errores anteriores: así se habría comportado en la práctica."),
-        U.disclose(f"Tabla detallada de los últimos {len(tr)} pronósticos", U.table(rows, [("a", "Origen"), ("b", "Mes pronosticado"), ("c", "Pronóstico"), ("d", "Observado"), ("e", "Error"), ("f", "Intervalo del 90 %"), ("g", "¿Dentro?")],
-                                                                           numeric=("c", "d", "e", "f")), open=True),
+        html.H4(f"Tabla detallada de los últimos {len(tr)} pronósticos", className="li-h4"), U.table(rows, [("a", "Origen"), ("b", "Mes pronosticado"), ("c", "Pronóstico"), ("d", "Observado"), ("e", "Error"), ("f", "Intervalo del 90 %"), ("g", "¿Dentro?")],
+                                                                           numeric=("c", "d", "e", "f")),
     ]), sub="Validación anidada: pronósticos e intervalos calculados con información anterior a cada mes")
 
     kids = [hero, validation, U.grid(uncertainty, contribution), history]
