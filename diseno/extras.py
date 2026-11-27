@@ -1,4 +1,4 @@
-"""Paneles nuevos de la propuesta. Se suman a las páginas originales sin quitarles nada.
+"""Paneles agregados a las páginas originales, sin quitarles nada.
 
 * Pronóstico: «Anatomía del pronóstico» (qué dice cada experto, cuánto pesa y cuánto aporta)
   y «Bitácora» (cada mes reciente: lo que dijo el modelo, su intervalo y lo que pasó).
@@ -16,7 +16,7 @@ from labor import ui as U
 
 N = C.num
 EXPERTOS = ["Persistencia", "Núcleo del cambio", "Cambio estacional"]
-NUEVO = "Panel nuevo de la propuesta"
+NUEVO = "Lectura complementaria de los paneles anteriores"
 
 
 def agregar(registro):
@@ -131,7 +131,7 @@ def pronostico(c):
                "Es la misma información del «Historial reciente fuera de muestra», ordenada como un registro de aciertos y errores.",
                className="li-cap"),
     ]), sub=NUEVO, cls="px-panel")
-    return [U.block("Nuevo · Lectura del pronóstico", "El número, desarmado y puesto a prueba"), anatomia, bitacora]
+    return [U.block("Lectura del pronóstico", "El número, desarmado y puesto a prueba"), anatomia, bitacora]
 
 
 # ---------------------------------------------------------------------- modelo
@@ -185,4 +185,4 @@ def modelo(c):
                + (f"No se muestran {fuera} meses fuera de escala (eneros muy volátiles y choques como el de 2020)." if fuera else ""),
                className="li-cap"),
     ]), sub=NUEVO, cls="px-panel")
-    return [U.block("Nuevo · Localización", "Los meses que deciden los pesos de hoy"), mapa]
+    return [U.block("3.4 · Localización", "Los meses que deciden los pesos de hoy"), mapa]

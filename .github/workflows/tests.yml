@@ -9,12 +9,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          # La misma versión que Render (render.yaml): así se comprueba que los artefactos cargan allá.
-          python-version: "3.11.9"
+          # La misma versión que Render (runtime.txt y render.yaml): así se comprueba que los artefactos cargan allá.
+          python-version: "3.9"
           cache: pip
       - name: Instalar dependencias
         run: |
-          pip install -r requirements-dash.txt
+          pip install -r requirements.txt
           pip install imbalanced-learn==0.12.4 optuna==5.0.0 deap==1.4.3 pytest==8.4.2
       - name: Pruebas
         run: python -m pytest -q

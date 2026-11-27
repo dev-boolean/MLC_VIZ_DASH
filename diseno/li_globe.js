@@ -1,11 +1,11 @@
-/* Copia de assets/li_globe.js para la propuesta de diseño: solo cambian los colores (COL). */
+/* Copia de assets/li_globe.js para el diseño tipo artículo: solo cambian los colores (COL), para que el globo se distinga del fondo blanco. */
 /* Globo 3D de la portada (Three.js r128), en estilo claro y sin efectos permanentes.
    Es ilustrativo: ubica los nueve países, no mide nada. Se destruye al salir de la página. */
 (function () {
   "use strict";
   var ATLAS = "/vendor/countries-110m.json";  // copia local de world-atlas@2.0.2
   var R = 1, RAD = Math.PI / 180;
-  var COL = { sphere: 0xE8EDF3, grid: 0xC6CFDA, land: 0x93A0B0, active: 0x1D4E89, sel: 0xB4441F };  // propuesta: el globo se distingue del fondo blanco
+  var COL = { sphere: 0xE8EDF3, grid: 0xC6CFDA, land: 0x93A0B0, active: 0x1D4E89, sel: 0xB4441F };
   var reduced = !!window.LIReduced;
   var dataP = null, mapP = null, selected = "colombia", live = [];
 

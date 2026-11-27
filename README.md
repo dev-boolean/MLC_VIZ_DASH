@@ -13,9 +13,9 @@ ocho países más.
 | `paper/` | Paper en LaTeX (`EDA_Mercado_Laboral_Colombiano_ALEE.tex`), con la estructura de los artículos del curso, sus figuras y tablas, y `EDA_ALEE_Overleaf.zip` para compilarlo en Overleaf. El PDF `_version_anterior` es la versión previa a la reestructuración. |
 | `docs/revision_sistematica/` | Registro de la revisión sistemática en Scopus. |
 | `iniciar_dashboard.bat` | Abre el dashboard en el navegador (Windows). |
-| `app.py`, `pages/`, `assets/`, `labor/`, `vendor/` | Dashboard **LABOR INSIGHTS** en Dash, con seis secciones: Overview, Exploratory Analytics, Model Intelligence, Unemployment Forecast, Global Intelligence e Insights & Conclusions. Incluye el globo de la portada, la introducción animada, el pronóstico a un mes con intervalo conforme del 90 % en los nueve países y el informe PDF por país (`/reporte.pdf?pais=<id>`). `labor/engine.py` es la única puerta al modelo. Three.js, GSAP, Bootstrap y el mapa se sirven desde `vendor/`, así que funciona sin internet. |
+| `app.py`, `pages/`, `assets/`, `labor/`, `vendor/` | Dashboard **LABOR INSIGHTS** en Dash, con seis secciones: Panorama, Análisis exploratorio, Modelo, Pronóstico, Comparación internacional y Conclusiones. Incluye el globo de la portada, la introducción animada, el pronóstico a un mes con intervalo conforme del 90 % en los nueve países y el informe PDF por país (`/reporte.pdf?pais=<id>`). `labor/engine.py` es la única puerta al modelo. Three.js, GSAP, Bootstrap y el mapa se sirven desde `vendor/`, así que funciona sin internet. |
 | `artifacts/paises/`, `data/paises/` | ALEE ajustado con la serie de cada país, series y predicciones fuera de muestra del dashboard (`scripts/construir_paises.py` los regenera). `data/paises/colombia_posterior.csv` son las cifras del DANE de enero a septiembre de 2026, solo como contraste. |
-| `propuesta_diseno/` | Versión del dashboard con diseño de artículo académico. Usa las mismas seis páginas de `pages/` sin modificarlas, con otra hoja de estilos (`estilo.css`), otra paleta de gráficos (`tema.py`), navegación en español y tres paneles nuevos (`extras.py`): anatomía del pronóstico, bitácora de pronósticos y mapa de estados. Se abre con `.venv\Scripts\python propuesta_diseno\app_propuesta.py` en <http://127.0.0.1:8051>. |
+| `diseno/` | Diseño tipo artículo académico del dashboard, aplicado por `app.py` sin modificar las páginas: hoja de estilos (`estilo.css`, cargada después de `assets/labor.css`), paleta y letra de los gráficos (`tema.py`), colores del globo (`li_globe.js`) y tres paneles agregados (`extras.py`): anatomía del pronóstico y bitácora en Pronóstico, y mapa de estados en Modelo. |
 | `legacy/` | Interfaz anterior del dashboard (Contexto, EDA, Modelos, Resultados y Conclusiones) y sus pruebas, solo como referencia. |
 | `src/` | Código del proyecto: datos, modelos, validación anidada, búsqueda de hiperparámetros, pruebas estadísticas, modelo original (`original_model.py`), artefactos y dashboard. |
 | `artifacts/` | Modelos finales serializados con `joblib` (`model.joblib`, `metadata.json` y `roundtrip.npz` por modelo), resultados del paper (`resultados/`) y de la validación confirmatoria (`confirmatorio/`, `adicionales/`). |
@@ -34,7 +34,7 @@ Requiere Python 3.9 (con el que se crearon los artefactos).
 ```bash
 python -m venv .venv
 .venv\Scripts\activate          # en Linux o macOS: source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements-proyecto.txt   # todo el proyecto; solo el dashboard: requirements.txt
 python app.py                   # dashboard en http://127.0.0.1:8050
 python -m pytest                # pruebas
 ```
@@ -57,7 +57,8 @@ jupyter-book build book/                        # el libro
 
 ## Despliegue en Render
 
-`render.yaml` crea el servicio con `requirements-dash.txt` y `gunicorn app:server`. La clave `GROQ_API_KEY` se escribe
+Render instala `requirements.txt` (solo las dependencias del dashboard) y arranca con `gunicorn app:server` (ver `Procfile`
+y `render.yaml`). La clave `GROQ_API_KEY` se escribe
 a mano en el panel de Render. Las pruebas corren en GitHub Actions (`.github/workflows/tests.yml`).
 
 ## Resultados principales

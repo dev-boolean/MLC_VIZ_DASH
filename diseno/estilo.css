@@ -1,4 +1,4 @@
-/* Propuesta de diseño: se carga DESPUÉS de assets/labor.css y solo cambia el aspecto.
+/* Diseño tipo artículo académico: se carga DESPUÉS de assets/labor.css y solo cambia el aspecto.
    Ideas: informe académico impreso. Blanco, reglas finas en vez de tarjetas con sombra,
    una sola familia tipográfica (IBM Plex), cifras tabulares, sin mayúsculas espaciadas,
    sin pastillas y sin el titular con la segunda frase en cursiva de color.
@@ -207,7 +207,7 @@ h1, h2, h3, h4 { letter-spacing: 0; }
 .lii-date, .lii-val, .lii-count, .lii-range, .lii-f1, .lii-grid text { font-family: var(--sans) !important; }
 .lii-dot, .lii-fly { fill: var(--pred); background: var(--pred); }
 
-/* ----------------------------------------------- paneles nuevos de la propuesta */
+/* ----------------------------------------------- paneles agregados (diseno/extras.py) */
 .px-extra { margin-top: 6px; }
 .px-panel .li-sub { color: var(--pred); }
 .px-bar { display: inline-block; height: 8px; background: var(--dim); vertical-align: middle; }

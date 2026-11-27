@@ -1,4 +1,4 @@
-"""Paleta y tipografía de los gráficos de la propuesta.
+"""Paleta y tipografía de los gráficos del diseño tipo artículo.
 
 Mantiene la misma semántica de color del original (observado, pronosticado,
 ALEE, comparación, advertencia); solo cambia los tonos y la letra. Se aplica

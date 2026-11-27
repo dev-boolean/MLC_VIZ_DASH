@@ -1,5 +1,9 @@
 """LABOR INSIGHTS: punto de entrada de la plataforma.
 
+El diseño tipo artículo académico vive en diseno/: estilo.css (se carga después de assets/labor.css), tema.py
+(paleta y letra de las figuras), li_globe.js (colores del globo) y extras.py (anatomía del pronóstico, bitácora y
+mapa de estados). Las páginas de pages/ no cambian.
+
 Local:   python app.py                  (http://127.0.0.1:8050)
 Render:  gunicorn app:server
 """
@@ -13,33 +17,54 @@ from flask import Response, abort, jsonify, request
 from labor import catalog as C
 from labor import engine as E
 from labor import theme  # noqa: F401  (registra la plantilla de las figuras)
+from labor import ui as U
+from diseno import tema  # noqa: F401  (diseño tipo artículo: paleta y letra de las figuras; va antes de importar las páginas)
 from src.chatbot import chatbot_bp
 
+ROOT = os.path.dirname(os.path.abspath(__file__))
 # Three.js, GSAP, Bootstrap y el mapa del globo van en vendor/ (copias exactas de las versiones de CDN) para que la
 # plataforma funcione sin internet en la sustentación. Solo las fuentes de Google vienen de internet; sin ellas se usan
 # las de respaldo del sistema.
-VENDOR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vendor")
+VENDOR = os.path.join(ROOT, "vendor")
+DISENO = os.path.join(ROOT, "diseno")
 # El asistente no se ha probado: queda oculto salvo que se active con LI_CHATBOT=1.
 CHATBOT = os.environ.get("LI_CHATBOT") == "1"
+
+# Nombres de las secciones en español. Las páginas de pages/ no se modifican: solo cambia cómo se rotulan.
+NOMBRES = {"Overview": "Panorama", "Exploratory Analytics": "Análisis exploratorio", "Model Intelligence": "Modelo",
+           "Unemployment Forecast": "Pronóstico", "Global Intelligence": "Comparación internacional",
+           "Insights & Conclusions": "Conclusiones"}
+_head = U.head
+U.head = lambda num, kicker, title, accent, lead: _head(num, NOMBRES.get(kicker, kicker), title, accent, lead)
+
 app = dash.Dash(
     __name__,
     use_pages=True,
     external_stylesheets=[
         "/vendor/bootstrap.min.css",
-        "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600"
-        "&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,500&display=swap",
+        "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400"
+        "&family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&display=swap",
     ],
-    external_scripts=["/vendor/three.min.js", "/vendor/gsap.min.js", "/vendor/ScrollTrigger.min.js"],
-    assets_ignore="" if CHATBOT else r"chatbot\.js",
+    # El globo sale de diseno/li_globe.js (misma lógica, colores que se distinguen del fondo blanco).
+    external_scripts=["/vendor/three.min.js", "/vendor/gsap.min.js", "/vendor/ScrollTrigger.min.js", "/diseno/li_globe.js"],
+    assets_ignore=r"li_globe\.js" if CHATBOT else r"chatbot\.js|li_globe\.js",
     title="LABOR INSIGHTS",
     update_title=None,
     suppress_callback_exceptions=True,
     meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"},
-               {"name": "theme-color", "content": "#F6F7F5"}],
+               {"name": "theme-color", "content": "#FFFFFF"}],
 )
-app.index_string = app.index_string.replace("<html>", '<html lang="es" data-bs-theme="light">')
+app.index_string = (app.index_string.replace("<html>", '<html lang="es" data-bs-theme="light">')
+                    .replace("{%css%}", '{%css%}\n<link rel="stylesheet" href="/diseno/estilo.css">'))
 server = app.server
 server.register_blueprint(chatbot_bp)
+
+from diseno import extras  # noqa: E402  (paneles agregados a Pronóstico y Modelo; registra sus callbacks)
+
+for _p in dash.page_registry.values():
+    _p["name"] = NOMBRES.get(_p["name"], _p["name"])
+    _p["title"] = f"{_p['name']} · LABOR INSIGHTS"
+extras.agregar(dash.page_registry)
 
 
 @server.route("/vendor/<path:name>")
@@ -47,6 +72,13 @@ def vendor(name):
     from flask import send_from_directory
 
     return send_from_directory(VENDOR, name, max_age=86400)
+
+
+@server.route("/diseno/<any('estilo.css', 'li_globe.js'):name>")
+def diseno(name):
+    from flask import send_from_directory
+
+    return send_from_directory(DISENO, name, max_age=3600)
 
 
 @server.route("/health")
@@ -96,8 +128,8 @@ def _intro_data():
 app.index_string = app.index_string.replace(
     "{%app_entry%}", f'<script id="li-intro-data" type="application/json">{_intro_data()}</script>\n{{%app_entry%}}')
 
-NAV = [("01", "Overview", "/"), ("02", "Exploratory Analytics", "/analytics"), ("03", "Model Intelligence", "/modelo"),
-       ("04", "Unemployment Forecast", "/forecast"), ("05", "Global Intelligence", "/global"), ("06", "Insights & Conclusions", "/insights")]
+NAV = [("01", "Panorama", "/"), ("02", "Análisis exploratorio", "/analytics"), ("03", "Modelo", "/modelo"),
+       ("04", "Pronóstico", "/forecast"), ("05", "Comparación internacional", "/global"), ("06", "Conclusiones", "/insights")]
 
 sidebar = html.Aside([
     dcc.Link([html.Img(src=app.get_asset_url("logo.png"), alt="Logo del Banco de la República", className="li-logo"),
