@@ -13,14 +13,17 @@ ocho países más.
 | `paper/` | Paper en LaTeX (`EDA_Mercado_Laboral_Colombiano_ALEE.tex`), con la estructura de los artículos del curso, sus figuras y tablas, y `EDA_ALEE_Overleaf.zip` para compilarlo en Overleaf. El PDF `_version_anterior` es la versión previa a la reestructuración. |
 | `docs/revision_sistematica/` | Registro de la revisión sistemática en Scopus. |
 | `iniciar_dashboard.bat` | Abre el dashboard en el navegador (Windows). |
-| `app.py`, `pages/`, `assets/` | Dashboard en Dash: Contexto, EDA, Modelos, Resultados y Conclusiones, con el diseño del dashboard del primer entregable (video de entrada, encabezado y asistente). |
+| `app.py`, `pages/`, `assets/`, `labor/`, `vendor/` | Dashboard **LABOR INSIGHTS** en Dash, con seis secciones: Overview, Exploratory Analytics, Model Intelligence, Unemployment Forecast, Global Intelligence e Insights & Conclusions. Incluye el globo de la portada, la introducción animada, el pronóstico a un mes con intervalo conforme del 90 % en los nueve países y el informe PDF por país (`/reporte.pdf?pais=<id>`). `labor/engine.py` es la única puerta al modelo. Three.js, GSAP, Bootstrap y el mapa se sirven desde `vendor/`, así que funciona sin internet. |
+| `artifacts/paises/`, `data/paises/` | ALEE ajustado con la serie de cada país, series y predicciones fuera de muestra del dashboard (`scripts/construir_paises.py` los regenera). `data/paises/colombia_posterior.csv` son las cifras del DANE de enero a septiembre de 2026, solo como contraste. |
+| `propuesta_diseno/` | Versión del dashboard con diseño de artículo académico. Usa las mismas seis páginas de `pages/` sin modificarlas, con otra hoja de estilos (`estilo.css`), otra paleta de gráficos (`tema.py`), navegación en español y tres paneles nuevos (`extras.py`): anatomía del pronóstico, bitácora de pronósticos y mapa de estados. Se abre con `.venv\Scripts\python propuesta_diseno\app_propuesta.py` en <http://127.0.0.1:8051>. |
+| `legacy/` | Interfaz anterior del dashboard (Contexto, EDA, Modelos, Resultados y Conclusiones) y sus pruebas, solo como referencia. |
 | `src/` | Código del proyecto: datos, modelos, validación anidada, búsqueda de hiperparámetros, pruebas estadísticas, modelo original (`original_model.py`), artefactos y dashboard. |
 | `artifacts/` | Modelos finales serializados con `joblib` (`model.joblib`, `metadata.json` y `roundtrip.npz` por modelo), resultados del paper (`resultados/`) y de la validación confirmatoria (`confirmatorio/`, `adicionales/`). |
 | `data/` | `MLC.xlsx` (DANE, vía Banco de la República), series de los países adicionales (`adicionales/`) y datos precalculados del dashboard (`dashboard/`). |
 | `experiments/` | Protocolo pre-registrado (`protocolo.md`), scripts de los experimentos, tabla maestra de las 140 combinaciones y registros de ejecución (`logs/`). |
 | `book/` | Jupyter Book con los 11 capítulos de la guía. |
 | `docs/` | Registro de las iteraciones de diseño, diseño del modelo original, guion de la sustentación (`ponencia/`) y código del dashboard del primer entregable (`dash_antiguo/`, solo como referencia). |
-| `tests/` | Pruebas de los artefactos, del modelo original y del dashboard. |
+| `tests/` | Pruebas de los artefactos, del modelo original y del dashboard (`test_labor.py`). |
 | `MODEL_CARD.md`, `DATA_STATEMENT.md` | Ficha del modelo y declaración de los datos. |
 | `historial_claude/` | Historial de las sesiones de trabajo con Claude. |
 
@@ -36,8 +39,8 @@ python app.py                   # dashboard en http://127.0.0.1:8050
 python -m pytest                # pruebas
 ```
 
-El asistente del dashboard usa la API de Groq y necesita la variable de entorno `GROQ_API_KEY`; sin ella el resto
-del dashboard funciona igual.
+En Windows también sirve `iniciar_dashboard.bat`. El asistente está oculto por defecto: se activa con `LI_CHATBOT=1`
+y usa la API de Groq, que necesita la variable de entorno `GROQ_API_KEY`.
 
 ### Regenerar los resultados
 

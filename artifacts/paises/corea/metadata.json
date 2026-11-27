@@ -1,0 +1,63 @@
+{
+  "pais": "corea",
+  "modelo": "ALEE",
+  "estado": "mismo diseño congelado del paper; ajuste final con toda la serie del país",
+  "hiperparametros": {
+    "bandwidth": 1.5303300215921807,
+    "half_life": 119.4666986903606,
+    "lam": 0.003939902121118361
+  },
+  "semilla": 42,
+  "busqueda": {
+    "optimizador": "bayesiano (TPE)",
+    "evaluaciones": 40,
+    "validacion_interna": "TimeSeriesSplit(n_splits=3, gap=1)",
+    "mejor_rmse_interno": 0.3236875094753559,
+    "segundos": 77.79426121711731
+  },
+  "entrenamiento": {
+    "observaciones": 441,
+    "primer_mes": "1989-12-01",
+    "ultimo_mes": "2026-08-01",
+    "segundos": 2.601079225540161,
+    "variables": [
+      "td_nacional_lag1",
+      "td_nacional_lag2",
+      "td_nacional_lag3",
+      "td_nacional_lag6",
+      "td_nacional_lag12",
+      "td_nacional_rollmean3",
+      "td_nacional_rollstd3",
+      "td_nacional_rollmean6",
+      "td_nacional_rollstd6",
+      "td_nacional_rollmean12",
+      "td_nacional_rollstd12",
+      "mes_sin",
+      "mes_cos",
+      "trend_idx"
+    ]
+  },
+  "metricas_bucle_externo": {
+    "RMSE": {
+      "media": 0.3254191784702471,
+      "desv": 0.1255345258589773
+    },
+    "MAE": {
+      "media": 0.2335751422664038,
+      "desv": 0.08337252454606234
+    },
+    "MAPE": {
+      "media": 6.469381650754343,
+      "desv": 2.84633600919554
+    },
+    "R2": {
+      "media": 0.708703869819122,
+      "desv": 0.17010503119161405
+    },
+    "MASE": {
+      "media": 0.4774268816597823,
+      "desv": 0.3397961683556393
+    }
+  },
+  "creado_utc": "2026-11-23T00:32:39+00:00"
+}

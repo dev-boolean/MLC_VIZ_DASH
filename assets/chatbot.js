@@ -35,7 +35,7 @@
     "¿Qué es ALEE y por qué gana a los modelos del curso?",
     "¿En qué países se evaluó el modelo?",
     "¿Qué diferencia hay entre TGD nacional y 13 áreas?",
-    "¿Cómo interpreto la matriz de correlación?",
+    "¿Qué tan ancho es el intervalo del pronóstico?",
   ];
 
   function buildUI() {
@@ -256,8 +256,8 @@
       <div id="mlc-chat-header">
         <div class="mlc-chat-avatar">📊</div>
         <div class="mlc-chat-header-info">
-          <div class="mlc-chat-header-name">Asistente MLC</div>
-          <div class="mlc-chat-header-sub">Datos: DANE · Banco de la República</div>
+          <div class="mlc-chat-header-name">Asistente de LABOR INSIGHTS</div>
+          <div class="mlc-chat-header-sub">Responde con los datos de la plataforma</div>
         </div>
         <button id="mlc-chat-close" title="Cerrar">✕</button>
       </div>
@@ -285,7 +285,7 @@
     });
 
     // Mensaje de bienvenida
-    appendBot('¡Hola! Soy el asistente del Mercado Laboral Colombiano 🇨🇴. Tienes 20 preguntas disponibles. ¿En qué te ayudo?');
+    appendBot('Hola. Soy el asistente de LABOR INSIGHTS. Tienes 20 preguntas disponibles. ¿En qué te ayudo?');
 
     // Eventos
     btn.addEventListener('click', togglePanel);

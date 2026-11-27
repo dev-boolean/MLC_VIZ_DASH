@@ -8,31 +8,18 @@ o de marcador, y cada figura lleva título, ejes con unidades y texto en el
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-import plotly.io as pio
+from labor import theme  # noqa: F401  (plantilla común de la plataforma)
 
 from .explain import acf, pacf
 
-NAVY, BLUE, VIOLET, SLATE, AMBER = "#0f172a", "#2563eb", "#7c3aed", "#64748b", "#d97706"
+# Misma semántica que labor/theme.py: marino (modelo), azul acero (observado), verde azulado (pronóstico), gris, ocre.
+NAVY, BLUE, VIOLET, SLATE, AMBER = "#183B56", "#47799D", "#258477", "#687585", "#C18B43"
 PALETTE = [BLUE, VIOLET, AMBER, SLATE, NAVY]
 DASHES = ["solid", "dash", "dot", "dashdot", "longdash"]
 SYMBOLS = ["circle", "diamond", "square", "triangle-up", "x"]
 COVID = ("2020-03-01", "2021-06-30")
 
-pio.templates["mlc"] = go.layout.Template(
-    layout=dict(
-        font=dict(family="Inter, Segoe UI, Arial, sans-serif", size=13, color=NAVY),
-        title=dict(x=0.01, xanchor="left", font=dict(size=16)),
-        paper_bgcolor="white",
-        plot_bgcolor="white",
-        colorway=PALETTE,
-        margin=dict(l=60, r=20, t=60, b=50),
-        hoverlabel=dict(bgcolor="white", font_size=12),
-        legend=dict(orientation="h", y=-0.22, x=0, font=dict(size=11)),
-        xaxis=dict(gridcolor="#e2e8f0", zeroline=False, automargin=True),
-        yaxis=dict(gridcolor="#e2e8f0", zeroline=False, automargin=True),
-    )
-)
-pio.templates.default = "mlc"
+
 
 
 def empty_figure(message: str) -> go.Figure:
@@ -92,7 +79,7 @@ def scatter_explorer(df, x, y, color, labels) -> go.Figure:
                                      hovertemplate=f"{labels[x]}: %{{x:.2f}}<br>{labels[y]}: %{{y:.2f}}<extra>{g}</extra>"))
     else:
         fig.add_trace(go.Scatter(x=df[x], y=df[y], mode="markers",
-                                 marker=dict(color=df[color], colorscale=[[0, "#dbeafe"], [1, NAVY]], size=7,
+                                 marker=dict(color=df[color], colorscale=[[0, "#C9D6E0"], [1, NAVY]], size=7,
                                              colorbar=dict(title=labels.get(color, color)), showscale=True),
                                  hovertemplate=f"{labels[x]}: %{{x:.2f}}<br>{labels[y]}: %{{y:.2f}}<extra></extra>"))
     fig.update_layout(title=f"{labels[y]} frente a {labels[x]}", xaxis_title=f"{labels[x]} (%)",
@@ -103,7 +90,7 @@ def scatter_explorer(df, x, y, color, labels) -> go.Figure:
 def correlation_heatmap(corr: pd.DataFrame, labels: dict) -> go.Figure:
     names = [labels.get(c, c) for c in corr.columns]
     fig = go.Figure(go.Heatmap(z=corr.values, x=names, y=names, zmin=-1, zmax=1,
-                               colorscale=[[0, AMBER], [0.5, "white"], [1, BLUE]],
+                               colorscale=[[0, AMBER], [0.5, "#FFFFFF"], [1, BLUE]],
                                text=np.round(corr.values, 2), texttemplate="%{text}", colorbar=dict(title="r"),
                                hovertemplate="%{y} y %{x}: r = %{z:.3f}<extra></extra>"))
     fig.update_layout(title="Correlación de Pearson entre las tasas", height=460, xaxis=dict(tickangle=-30))
@@ -179,7 +166,7 @@ def shap_summary(phi: np.ndarray, X: pd.DataFrame, labels: dict, title: str, top
         norm = (v - v.min()) / (np.ptp(v) or 1.0)
         fig.add_trace(go.Scatter(
             x=phi[:, j], y=rank + rng.uniform(-0.25, 0.25, len(v)), mode="markers", showlegend=False,
-            marker=dict(color=norm, colorscale=[[0, "#bfdbfe"], [1, VIOLET]], size=6, opacity=0.75,
+            marker=dict(color=norm, colorscale=[[0, "#C9D6E0"], [1, NAVY]], size=6, opacity=0.75,
                         cmin=0, cmax=1, colorbar=dict(title="Valor de la<br>variable", tickvals=[0, 1],
                                                       ticktext=["bajo", "alto"]) if rank == 0 else None,
                         showscale=rank == 0),
@@ -229,7 +216,7 @@ def residual_panels(resid, fitted) -> go.Figure:
 def confusion_figure(cm: np.ndarray, labels: list) -> go.Figure:
     pct = cm / cm.sum(axis=1, keepdims=True).clip(min=1) * 100
     text = [[f"{cm[i, j]}<br>({pct[i, j]:.0f} %)" for j in range(len(labels))] for i in range(len(labels))]
-    fig = go.Figure(go.Heatmap(z=pct, x=labels, y=labels, colorscale=[[0, "white"], [1, BLUE]], zmin=0, zmax=100,
+    fig = go.Figure(go.Heatmap(z=pct, x=labels, y=labels, colorscale=[[0, "#FFFFFF"], [1, BLUE]], zmin=0, zmax=100,
                                text=text, texttemplate="%{text}", colorbar=dict(title="% de la fila"),
                                hovertemplate="real %{y}, predicho %{x}<extra></extra>"))
     fig.update_layout(title="Matriz de confusión (fuera de muestra)", xaxis_title="Clase predicha",
@@ -240,7 +227,7 @@ def confusion_figure(cm: np.ndarray, labels: list) -> go.Figure:
 def curves_figure(curves: dict, kind: str) -> go.Figure:
     fig = go.Figure()
     for i, (name, (x, y, score)) in enumerate(curves.items()):
-        fig.add_trace(go.Scatter(x=x, y=y, mode="lines", name=f"{name} ({'AUC' if kind == 'roc' else 'AP'} {score:.2f})",
+        fig.add_trace(go.Scatter(x=x, y=y, mode="lines", name=f"{name} ({'AUC' if kind == 'roc' else 'AP'} {score:.2f})".replace(".", ","),
                                  line=dict(color=PALETTE[i], dash=DASHES[i], width=2)))
     if kind == "roc":
         fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode="lines", name="Azar", line=dict(color=SLATE, dash="dot")))
@@ -303,7 +290,7 @@ def relative_heatmap(table: pd.DataFrame, row_labels: dict, col_labels: dict) ->
     fig = go.Figure(go.Heatmap(
         z=rel.values, x=[col_labels.get(c, c) for c in rel.columns], y=[row_labels.get(r, r) for r in rel.index],
         text=table.round(3).values, texttemplate="%{text}", textfont=dict(size=10),
-        colorscale=[[0, "#ffffff"], [0.5, "#c4b5fd"], [1, VIOLET]], zmin=1, zmax=max(2.0, float(np.nanmax(rel.values))),
+        colorscale=[[0, "#FFFFFF"], [1, NAVY]], zmin=1, zmax=max(2.0, float(np.nanmax(rel.values))),
         colorbar=dict(title="Error / ALEE"),
         hovertemplate="%{y} · %{x}<br>RMSE %{text}<br>%{z:.2f} veces el de ALEE<extra></extra>"))
     fig.update_layout(title="RMSE medio por pliegue en los nueve conjuntos (color: veces el error de ALEE)",

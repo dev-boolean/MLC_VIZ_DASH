@@ -9,7 +9,7 @@ services:
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.9
+        value: 3.9.13
       # Clave del asistente (chatbot). Se escribe a mano en el panel de Render; sin ella el resto funciona igual.
       - key: GROQ_API_KEY
         sync: false

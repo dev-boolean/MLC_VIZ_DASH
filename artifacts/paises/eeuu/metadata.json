@@ -1,0 +1,63 @@
+{
+  "pais": "eeuu",
+  "modelo": "ALEE",
+  "estado": "mismo diseño congelado del paper; ajuste final con toda la serie del país",
+  "hiperparametros": {
+    "bandwidth": 0.8838462387101291,
+    "half_life": 6.778146065207408,
+    "lam": 0.008427454900546636
+  },
+  "semilla": 42,
+  "busqueda": {
+    "optimizador": "bayesiano (TPE)",
+    "evaluaciones": 40,
+    "validacion_interna": "TimeSeriesSplit(n_splits=3, gap=1)",
+    "mejor_rmse_interno": 0.39818375909727083,
+    "segundos": 177.06546187400818
+  },
+  "entrenamiento": {
+    "observaciones": 934,
+    "primer_mes": "1948-12-01",
+    "ultimo_mes": "2026-09-01",
+    "segundos": 23.057964324951172,
+    "variables": [
+      "td_nacional_lag1",
+      "td_nacional_lag2",
+      "td_nacional_lag3",
+      "td_nacional_lag6",
+      "td_nacional_lag12",
+      "td_nacional_rollmean3",
+      "td_nacional_rollstd3",
+      "td_nacional_rollmean6",
+      "td_nacional_rollstd6",
+      "td_nacional_rollmean12",
+      "td_nacional_rollstd12",
+      "mes_sin",
+      "mes_cos",
+      "trend_idx"
+    ]
+  },
+  "metricas_bucle_externo": {
+    "RMSE": {
+      "media": 0.37990688772826064,
+      "desv": 0.29240015460329316
+    },
+    "MAE": {
+      "media": 0.21046836446201408,
+      "desv": 0.05379431467086077
+    },
+    "MAPE": {
+      "media": 3.6478543311231455,
+      "desv": 1.2428351565230045
+    },
+    "R2": {
+      "media": 0.9014771275450839,
+      "desv": 0.1231367064769026
+    },
+    "MASE": {
+      "media": 0.22018782823334124,
+      "desv": 0.06616423349829095
+    }
+  },
+  "creado_utc": "2026-11-23T00:34:28+00:00"
+}

@@ -1,30 +1,52 @@
-"""Punto de entrada del dashboard: crea la aplicación multipágina y expone ``server``.
-
-El diseño (video de entrada, encabezado, pestañas y asistente) viene del
-dashboard del primer entregable, MLC_VIZ_DASH; el contenido es el del proyecto
-de machine learning.
+"""LABOR INSIGHTS: punto de entrada de la plataforma.
 
 Local:   python app.py                  (http://127.0.0.1:8050)
 Render:  gunicorn app:server
 """
-import dash
-import dash_bootstrap_components as dbc
-from dash import Input, Output, dcc, html
+import json
+import os
 
-from src import dash_data as D
-from src import dash_plots  # noqa: F401  (registra la plantilla de las figuras)
+import dash
+from dash import Input, Output, dcc, html
+from flask import Response, abort, jsonify, request
+
+from labor import catalog as C
+from labor import engine as E
+from labor import theme  # noqa: F401  (registra la plantilla de las figuras)
 from src.chatbot import chatbot_bp
 
+# Three.js, GSAP, Bootstrap y el mapa del globo van en vendor/ (copias exactas de las versiones de CDN) para que la
+# plataforma funcione sin internet en la sustentación. Solo las fuentes de Google vienen de internet; sin ellas se usan
+# las de respaldo del sistema.
+VENDOR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vendor")
+# El asistente no se ha probado: queda oculto salvo que se active con LI_CHATBOT=1.
+CHATBOT = os.environ.get("LI_CHATBOT") == "1"
 app = dash.Dash(
     __name__,
     use_pages=True,
-    external_stylesheets=[dbc.themes.BOOTSTRAP],
-    title="Mercado Laboral Colombiano · Machine Learning",
+    external_stylesheets=[
+        "/vendor/bootstrap.min.css",
+        "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600"
+        "&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,500&display=swap",
+    ],
+    external_scripts=["/vendor/three.min.js", "/vendor/gsap.min.js", "/vendor/ScrollTrigger.min.js"],
+    assets_ignore="" if CHATBOT else r"chatbot\.js",
+    title="LABOR INSIGHTS",
+    update_title=None,
     suppress_callback_exceptions=True,
-    meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
+    meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"},
+               {"name": "theme-color", "content": "#F6F7F5"}],
 )
+app.index_string = app.index_string.replace("<html>", '<html lang="es" data-bs-theme="light">')
 server = app.server
 server.register_blueprint(chatbot_bp)
+
+
+@server.route("/vendor/<path:name>")
+def vendor(name):
+    from flask import send_from_directory
+
+    return send_from_directory(VENDOR, name, max_age=86400)
 
 
 @server.route("/health")
@@ -32,81 +54,105 @@ def health():
     return "ok", 200
 
 
-# Carga única de datos y modelos al iniciar el servidor (no en cada interacción).
-D.dataset()
-for _name in D.artifact_names():
-    D.model(_name)
-
-AUTHORS = [
-    ("Andrés Parejo", "https://github.com/dev-boolean", "https://www.linkedin.com/in/andres-parejo-40a653168/",
-     "mailto:aeparejo@uninorte.edu.co"),
-    ("Santiago Hurtado", "https://github.com/SHurtado26", "https://www.linkedin.com/in/santiago-hurtado-369687291/",
-     "mailto:hurtadosantiago@uninorte.edu.co"),
-    ("Juan Marín", None, None, None),
-]
-PAGES = [("Contexto", "/"), ("EDA", "/eda"), ("Modelos", "/modelos"), ("Resultados", "/resultados"),
-         ("Conclusiones", "/conclusiones")]
+@server.route("/api/globo")
+def globe_data():
+    """Datos del globo: posición, último dato y pronóstico de cada país."""
+    out = []
+    for c, m in C.COUNTRIES.items():
+        f = E.forecast(c)
+        out.append({"id": c, "name": m["name"], "iso": m["iso"], "lat": m["lat"], "lon": m["lon"],
+                    "obs": C.num(f["observed"]), "pred": C.num(f["pred"]), "last": C.month_short(f["last_date"]),
+                    "target": C.month_short(f["target_date"])})
+    return jsonify(out)
 
 
-def author_links():
-    out = [html.Span("Autores: ", style={"marginRight": "6px"})]
-    for i, (name, gh, li, mail) in enumerate(AUTHORS):
-        if i:
-            out.append(html.Span(" · ", style={"margin": "0 6px"}))
-        out.append(html.A(name, href=gh, target="_blank", className="github-author-link") if gh else html.Span(name))
-        if li:
-            out.append(html.A("", href=li, target="_blank", className="linkedin-author-link", title=f"LinkedIn de {name}"))
-        if mail:
-            out.append(html.A("", href=mail, className="email-author-link", title=mail.replace("mailto:", "")))
-    return out
+@server.route("/reporte.pdf")
+def report_pdf():
+    """Informe académico en PDF del país seleccionado, generado con los datos y resultados de la plataforma."""
+    from labor.report import build_report
+
+    c = request.args.get("pais", C.DEFAULT)
+    if c not in C.COUNTRIES:
+        abort(404)
+    pdf = build_report(c)
+    name = f"LABOR_INSIGHTS_{C.COUNTRIES[c]['short']}.pdf"
+    return Response(pdf, mimetype="application/pdf", headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
 
-splash = html.Div(id="splash", children=[
-    html.Video(id="intro-video", src=dash.get_asset_url("intro.mp4"), autoPlay=True, muted=True, playsInline=True,
-               className="splash-video"),
-    html.Div(id="splash-white", className="splash-white"),
-    html.Img(id="flying-logo", src=dash.get_asset_url("logo.png"), alt="", className="flying-logo"),
-    html.Button("Saltar intro ▶", id="skip-intro", className="skip-intro"),
-], className="splash")
+# Los nueve pronósticos se calculan una sola vez, al iniciar.
+for _c in C.COUNTRIES:
+    E.forecast(_c)
 
-hero = html.Div(className="hero-header", children=[
-    html.Div(className="hero-left", children=[
-        html.Img(id="logo-target", src=dash.get_asset_url("logo.png"), alt="Logo del proyecto", className="hero-logo"),
-    ]),
-    html.Div(className="hero-right", children=[
-        html.Div("Mercado Laboral Colombiano", className="hero-title"),
-        html.Div("Pronóstico de la tasa de desempleo con machine learning y un modelo original, ALEE, evaluado en "
-                 "Colombia y ocho países más.", className="hero-subtitle"),
-        html.Div(author_links(), className="hero-authors"),
-        html.A([html.Span(className="yt-icon"), html.Span("Mira nuestro video de YouTube")],
-               href="https://www.youtube.com/watch?v=2pBUO-to_KM", target="_blank", className="hero-youtube-link"),
-    ]),
-])
+
+def _intro_data():
+    """Serie de Colombia para la introducción animada: la misma fuente del EDA (``E.series``), sin transformar."""
+    f = E.frame(C.DEFAULT)
+    return json.dumps({"fechas": f["fecha"].dt.strftime("%Y-%m").tolist(), "valores": [float(v) for v in f["valor"]],
+                       "interpolados": int(f["interpolado"].sum()), "fuente": C.COUNTRIES[C.DEFAULT]["source"]},
+                      ensure_ascii=False).replace("</", "<\\/")
+
+
+# Va dentro del HTML para que la introducción no necesite otra petición.
+app.index_string = app.index_string.replace(
+    "{%app_entry%}", f'<script id="li-intro-data" type="application/json">{_intro_data()}</script>\n{{%app_entry%}}')
+
+NAV = [("01", "Overview", "/"), ("02", "Exploratory Analytics", "/analytics"), ("03", "Model Intelligence", "/modelo"),
+       ("04", "Unemployment Forecast", "/forecast"), ("05", "Global Intelligence", "/global"), ("06", "Insights & Conclusions", "/insights")]
+
+sidebar = html.Aside([
+    dcc.Link([html.Img(src=app.get_asset_url("logo.png"), alt="Logo del Banco de la República", className="li-logo"),
+              html.Span([html.B("LABOR INSIGHTS"), html.Small("Global Labor Market Intelligence")])], href="/", className="li-brand"),
+    html.Nav(id="li-nav", className="li-nav", **{"aria-label": "Secciones"}),
+    html.Div([
+        html.P("Investigación académica", className="li-side-k"),
+        html.P("Pronóstico a un mes de la tasa de desempleo con ALEE, un modelo original de combinación de expertos."),
+    ], className="li-side-about"),
+    html.Div([html.P("Andrés Parejo, Santiago Hurtado y Juan Marín"), html.P("Universidad del Norte · 2026"),
+              html.A("Video del proyecto", href="https://www.youtube.com/watch?v=2pBUO-to_KM", target="_blank", rel="noopener"),
+              html.Div(html.Button("Ver la introducción", id="li-intro-replay", className="li-replay", title="Repetir la introducción animada"))],
+             className="li-credits"),
+], className="li-side")
+
+topbar = html.Div([
+    html.Button("☰", id="li-burger", className="li-burger", **{"aria-label": "Abrir menú"}),
+    html.Div(id="li-crumb", className="li-crumb"),
+    html.Div([
+        html.Div(id="li-prov"),
+        html.Div([
+            html.Label("País", htmlFor="pais"),
+            dcc.Dropdown(id="pais", options=[{"label": m["name"], "value": c} for c, m in C.COUNTRIES.items()], value=C.DEFAULT,
+                         clearable=False, searchable=False, persistence=True, persistence_type="session", className="li-country"),
+        ], className="li-country-wrap"),
+        html.A("Informe PDF", id="li-pdf", href=f"/reporte.pdf?pais={C.DEFAULT}", className="btn-li ghost sm li-pdf",
+               title="Descargar el informe del país seleccionado"),
+    ], className="li-top-right"),
+    html.Div(html.Div(id="li-progress-bar"), className="li-progress", **{"aria-hidden": "true"}),
+], className="li-top")
 
 app.layout = html.Div([
     dcc.Location(id="url"),
-    splash,
-    html.Div(id="main-app", className="main-app", children=[
-        dbc.Container(fluid=True, className="app-container", children=[
-            hero,
-            html.Nav(id="main-nav", className="custom-tabs page-tabs"),
-            html.Div(dash.page_container, className="mlc-page"),
-            html.Footer([
-                html.Span("Andrés Parejo, Santiago Hurtado y Juan Marín · Proyecto de Machine Learning, Universidad del "
-                          "Norte · "),
-                html.Span("Datos: DANE (GEIH), vía Banco de la República, y OCDE, FRED y Eurostat para los países adicionales."),
-            ], className="mlc-footer"),
-        ]),
-    ]),
-])
+    sidebar,
+    html.Div([topbar, html.Main(dash.page_container, id="li-main", className="li-main"),
+              html.Footer(["Plataforma académica. No sustituye las cifras oficiales. Datos: DANE (GEIH), vía Banco de la República; BLS, vía FRED; "
+                           "Eurostat y OCDE."], className="li-foot")], className="li-shell"),
+], id="li-app")
 
 
-@app.callback(Output("main-nav", "children"), Input("url", "pathname"))
-def update_nav(path):
+@app.callback(Output("li-nav", "children"), Output("li-crumb", "children"), Input("url", "pathname"))
+def nav(path):
     path = path or "/"
-    return [dcc.Link(label, href=href, className="tab tab--selected" if path == href else "tab")
-            for label, href in PAGES]
+    links = [dcc.Link([html.Span(n, className="n"), html.Span(t)], href=h, className="on" if h == path else "") for n, t, h in NAV]
+    here = next(((n, t) for n, t, h in NAV if h == path), ("", ""))
+    return links, [html.Span(here[0], className="n"), html.Span(here[1])]
+
+
+@app.callback(Output("li-prov", "children"), Output("li-pdf", "href"), Input("pais", "value"))
+def prov(c):
+    from labor.ui import provenance
+
+    c = c or C.DEFAULT
+    return provenance(c), f"/reporte.pdf?pais={c}"
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=os.environ.get("LI_DEBUG") == "1")

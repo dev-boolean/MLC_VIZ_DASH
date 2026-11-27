@@ -1,0 +1,63 @@
+{
+  "pais": "japon",
+  "modelo": "ALEE",
+  "estado": "mismo diseño congelado del paper; ajuste final con toda la serie del país",
+  "hiperparametros": {
+    "bandwidth": 0.4895730444141607,
+    "half_life": 6.530214162361577,
+    "lam": 0.24851371696001884
+  },
+  "semilla": 42,
+  "busqueda": {
+    "optimizador": "bayesiano (TPE)",
+    "evaluaciones": 40,
+    "validacion_interna": "TimeSeriesSplit(n_splits=3, gap=1)",
+    "mejor_rmse_interno": 0.14745268244101792,
+    "segundos": 67.36861801147461
+  },
+  "entrenamiento": {
+    "observaciones": 849,
+    "primer_mes": "1955-12-01",
+    "ultimo_mes": "2026-08-01",
+    "segundos": 18.050435543060303,
+    "variables": [
+      "td_nacional_lag1",
+      "td_nacional_lag2",
+      "td_nacional_lag3",
+      "td_nacional_lag6",
+      "td_nacional_lag12",
+      "td_nacional_rollmean3",
+      "td_nacional_rollstd3",
+      "td_nacional_rollmean6",
+      "td_nacional_rollstd6",
+      "td_nacional_rollmean12",
+      "td_nacional_rollstd12",
+      "mes_sin",
+      "mes_cos",
+      "trend_idx"
+    ]
+  },
+  "metricas_bucle_externo": {
+    "RMSE": {
+      "media": 0.14924599515820314,
+      "desv": 0.02656002832151372
+    },
+    "MAE": {
+      "media": 0.1180785805720002,
+      "desv": 0.022366885655928904
+    },
+    "MAPE": {
+      "media": 4.5035527172914405,
+      "desv": 1.948157677722915
+    },
+    "R2": {
+      "media": 0.8844136390688412,
+      "desv": 0.05951692647804927
+    },
+    "MASE": {
+      "media": 0.5539172270593056,
+      "desv": 0.10574752443832877
+    }
+  },
+  "creado_utc": "2026-11-23T00:32:28+00:00"
+}

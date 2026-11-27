@@ -1,0 +1,63 @@
+{
+  "pais": "australia",
+  "modelo": "ALEE",
+  "estado": "mismo diseño congelado del paper; ajuste final con toda la serie del país",
+  "hiperparametros": {
+    "bandwidth": 0.48964159741428953,
+    "half_life": 26.53182555408783,
+    "lam": 0.44439007612266107
+  },
+  "semilla": 42,
+  "busqueda": {
+    "optimizador": "bayesiano (TPE)",
+    "evaluaciones": 40,
+    "validacion_interna": "TimeSeriesSplit(n_splits=3, gap=1)",
+    "mejor_rmse_interno": 0.2498733263300007,
+    "segundos": 29.840625047683716
+  },
+  "entrenamiento": {
+    "observaciones": 572,
+    "primer_mes": "1979-01-01",
+    "ultimo_mes": "2026-08-01",
+    "segundos": 5.435965299606323,
+    "variables": [
+      "td_nacional_lag1",
+      "td_nacional_lag2",
+      "td_nacional_lag3",
+      "td_nacional_lag6",
+      "td_nacional_lag12",
+      "td_nacional_rollmean3",
+      "td_nacional_rollstd3",
+      "td_nacional_rollmean6",
+      "td_nacional_rollstd6",
+      "td_nacional_rollmean12",
+      "td_nacional_rollstd12",
+      "mes_sin",
+      "mes_cos",
+      "trend_idx"
+    ]
+  },
+  "metricas_bucle_externo": {
+    "RMSE": {
+      "media": 0.2398781388911091,
+      "desv": 0.04611658847306318
+    },
+    "MAE": {
+      "media": 0.19321332326297896,
+      "desv": 0.036192385826330914
+    },
+    "MAPE": {
+      "media": 3.258330522436002,
+      "desv": 0.9621412047127292
+    },
+    "R2": {
+      "media": 0.9135423209470049,
+      "desv": 0.05785943169602687
+    },
+    "MASE": {
+      "media": 0.22595996685496705,
+      "desv": 0.06515488143587082
+    }
+  },
+  "creado_utc": "2026-11-23T00:32:48+00:00"
+}
