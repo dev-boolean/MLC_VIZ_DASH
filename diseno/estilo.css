@@ -215,3 +215,5 @@ h1, h2, h3, h4 { letter-spacing: 0; }
 
 /* asistente */
 #mlc-chat-btn { box-shadow: none !important; }
+.li-src code, .li-prose code, .li-cap code { color: var(--text); background: var(--elev); padding: 0 4px; font-size: .92em; }
+.math-card, .li-math { overflow-x: auto; overflow-y: hidden; max-width: 100%; }

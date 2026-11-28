@@ -1,8 +1,8 @@
 """LABOR INSIGHTS: punto de entrada de la plataforma.
 
 El diseño tipo artículo académico vive en diseno/: estilo.css (se carga después de assets/labor.css), tema.py
-(paleta y letra de las figuras), li_globe.js (colores del globo) y extras.py (anatomía del pronóstico, bitácora y
-mapa de estados). Las páginas de pages/ no cambian.
+(paleta y letra de las figuras), li_globe.js (colores del globo) y extras.py (bloques agregados para la rúbrica:
+2.7 formulación y preprocesamiento; 3.4 diseño experimental; 3.5 sobreajuste y robustez). Las páginas de pages/ no cambian.
 
 Local:   python app.py                  (http://127.0.0.1:8050)
 Render:  gunicorn app:server
@@ -78,7 +78,7 @@ def vendor(name):
 def diseno(name):
     from flask import send_from_directory
 
-    return send_from_directory(DISENO, name, max_age=3600)
+    return send_from_directory(DISENO, name, max_age=0)  # sin caché: un cambio de diseño se ve en la siguiente recarga
 
 
 @server.route("/health")

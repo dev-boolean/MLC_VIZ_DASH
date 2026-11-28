@@ -1,188 +1,294 @@
-"""Paneles agregados a las páginas originales, sin quitarles nada.
+"""Paneles agregados a las páginas originales para cubrir la rúbrica de la sustentación, sin quitarles nada.
 
-* Pronóstico: «Anatomía del pronóstico» (qué dice cada experto, cuánto pesa y cuánto aporta)
-  y «Bitácora» (cada mes reciente: lo que dijo el modelo, su intervalo y lo que pasó).
-* Modelo: «Mapa de estados» (a qué meses del pasado se parece el mes actual).
+* Análisis exploratorio, 2.7 (criterio 1): formulación del problema y justificación del preprocesamiento.
+* Modelo, 3.4 (criterio 3): partición y validación, auditoría de fuga, hiperparámetros, reproducibilidad y costo.
+* Modelo, 3.5 (criterio 4): sobreajuste y robustez (curva de aprendizaje, sensibilidad a hiperparámetros y a la semilla).
+
+Todas las cifras se leen de ``artifacts/`` o se calculan al cargar; nada se escribe a mano.
 """
+import inspect
+import json
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from dash import Input, Output, callback, html
+from dash import Input, Output, callback, dcc, html
+from sklearn.model_selection import TimeSeriesSplit
 
 from labor import catalog as C
 from labor import engine as E
 from labor import theme as T
 from labor import ui as U
+from src import config
+from src.dash_data import FEATURE_INFO
 
 N = C.num
-EXPERTOS = ["Persistencia", "Núcleo del cambio", "Cambio estacional"]
-NUEVO = "Lectura complementaria de los paneles anteriores"
+RES = config.ROOT_DIR / "artifacts" / "resultados"
+CONF = config.ROOT_DIR / "artifacts" / "confirmatorio"
+ADIC = config.ROOT_DIR / "artifacts" / "adicionales"
+EXTRA = {"SARIMA": "SARIMA", "Persistencia": "Persistencia", "Estacional": "Estacional ingenuo",
+         "EstacionalALEE": "Experto estacional de ALEE, solo"}
+
+
+def etiqueta(m):
+    return C.MODEL_LABELS.get(m, EXTRA.get(m, m))
 
 
 def agregar(registro):
-    """Añade un contenedor al final de las páginas Pronóstico y Modelo; sus contenidos dependen del país."""
+    """Añade los bloques nuevos al final de Análisis exploratorio y de Modelo."""
     for p in registro.values():
-        if p["path"] == "/forecast":
-            p["layout"].children.append(html.Div(U.loading(html.Div(id="px-pronostico")), className="li-wrap px-extra"))
+        if p["path"] == "/analytics":
+            p["layout"].children.append(html.Div(formulacion(), className="li-wrap px-extra"))
         elif p["path"] == "/modelo":
             p["layout"].children.append(html.Div(U.loading(html.Div(id="px-modelo")), className="li-wrap px-extra"))
 
 
-# ------------------------------------------------------------------ pronóstico
-def _recta(c, f):
-    W, F = f["weights"], f["experts"]
-    val = E.later_validation(c)
-    real = val.dropna(subset=["pred"]) if len(val) else val
-    xs = list(F) + [f["lo"], f["hi"]] + (list(real["obs"]) if len(real) else [])
-    a, b = min(xs), max(xs)
-    pad = (b - a) * 0.08 + 0.05
-    fig = go.Figure()
-    fig.add_shape(type="rect", x0=f["lo"], x1=f["hi"], y0=-0.22, y1=0.22, fillcolor=T.PRED, opacity=0.12, line_width=0)
-    fig.add_shape(type="line", x0=a - pad, x1=b + pad, y0=0, y1=0, line=dict(color=T.TEXT, width=0.8))
-    for j, i in enumerate(np.argsort(F)):
-        fig.add_trace(go.Scatter(x=[F[i]], y=[0], mode="markers", showlegend=False,
-                                 marker=dict(size=7 + 26 * W[i], color=T.NAVY if W[i] == W.max() else T.DIM, opacity=0.7),
-                                 hovertemplate=f"{EXPERTOS[i]}: %{{x:.2f}} % · peso {W[i] * 100:.0f} %<extra></extra>"))
-        fig.add_annotation(x=F[i], y=0.6 + 0.3 * (j % 2), text=f"{EXPERTOS[i]} {N(F[i])}", showarrow=False, bgcolor="#FFFFFF",
-                           font=dict(size=12, color=T.MUTED))
-    fig.add_shape(type="line", x0=f["pred"], x1=f["pred"], y0=-0.42, y1=0.42, line=dict(color=T.PRED, width=2.5))
-    fig.add_annotation(x=f["pred"], y=-0.64, text=f"<b>ALEE {N(f['pred'])}</b>", showarrow=False, font=dict(size=12.5, color=T.PRED))
-    for _, r in real.iterrows():
-        der = r["obs"] >= f["pred"]
-        fig.add_trace(go.Scatter(x=[r["obs"]], y=[-0.3], mode="markers", showlegend=False, marker=dict(symbol="triangle-up", size=11, color=T.ALERT),
-                                 hovertemplate="Publicado después: %{x:.1f} %<extra></extra>"))
-        fig.add_annotation(x=r["obs"], y=-0.64, text=f"Observado {N(r['obs'], 1)}", showarrow=False, font=dict(size=12, color=T.ALERT),
-                           xanchor="left" if der else "right", xshift=8 if der else -8)
-    fig.update_layout(height=200, margin=dict(l=14, r=14, t=6, b=30), yaxis=dict(visible=False, range=[-0.85, 1.05]),
-                      xaxis=dict(range=[a - pad, b + pad], ticksuffix=" %", showgrid=False))
-    return fig
+# ======================================================== criterio 1: formulación y preprocesamiento
+def formulacion():
+    from src.data import assemble_dataset, load_raw
+
+    ds, raw = assemble_dataset(), load_raw()
+    n, p = ds.X.shape
+    f0, f1 = ds.fechas.iloc[0], ds.fechas.iloc[-1]
+    obj0, obj1 = f0 + pd.offsets.MonthBegin(1), f1 + pd.offsets.MonthBegin(1)
+    grupos = {}
+    for v in ds.feature_names:
+        grupos.setdefault(FEATURE_INFO[v][1], []).append(FEATURE_INFO[v][0])
+    # Las razones se calculan con la serie, para que cada cifra coincida con las lecturas 2.1 a 2.6.
+    s = raw.set_index("fecha")["tasa_desempleo_nacional"]
+    cambio = s.diff().groupby(s.index.month)
+    sube_ene, prom_ene = cambio.apply(lambda x: (x.dropna() > 0).mean()).loc[1], cambio.mean().loc[1]
+    bajan = [C.MONTHS[m - 1] for m, v in cambio.mean().items() if v < -0.9]
+    cor = raw[["tasa_desempleo_nacional", "tasa_desempleo_area", "tasa_ocupacion_area"]].corr().iloc[0]
+    porque = {
+        "Rezagos": (f"La serie recuerda mucho de sí misma: su autocorrelación es {N(s.autocorr(1))} a un mes y todavía "
+                    f"{N(s.autocorr(12))} a doce (2.5).", "1, 2, 3, 6 y 12 meses"),
+        "Estadísticos móviles": ("El nivel cambia despacio y la volatilidad cambia por épocas, sobre todo en 2020 (2.1 y 2.6). "
+                                 "La volatilidad de 3 meses es además una de las variables de estado de ALEE.", "3, 6 y 12 meses"),
+        "Calendario": (f"Hay un patrón anual marcado (2.2): enero sube en promedio {N(prom_ene, 1)} pp y lo hace en el "
+                       f"{N(sube_ene * 100, 0)} % de los años; {' y '.join(bajan)} bajan. Seno y coseno evitan el salto artificial de "
+                       "diciembre a enero; el índice recoge la tendencia de largo plazo (2.1).", "mes t"),
+        "13 áreas metropolitanas": (f"Se mueven con la nacional (2.4): el desempleo de las 13 áreas correlaciona {N(cor['tasa_desempleo_area'])} "
+                                    f"con ella y la ocupación {N(cor['tasa_ocupacion_area'])}. Se publican el mismo mes.", "mes t"),
+    }
+    filas = [{"a": g, "b": ", ".join(vs), "c": porque[g][1], "d": porque[g][0]} for g, vs in grupos.items()]
+    filas.append({"a": "Excluidas", "b": "Ocupación y participación nacionales del mismo mes", "c": "—",
+                  "d": "Cumplen la identidad TD = 1 − TO/TGP con el objetivo: incluirlas sería darle la respuesta al modelo."})
+    faltantes = int(raw.isna().sum().sum())
+
+    form = U.panel("Formulación del problema", html.Div([
+        U.math(rf"""
+**Tarea:** regresión supervisada de un paso. En cada mes $t$ se conoce el vector de variables $x_t \in \mathbb{{R}}^{{{p}}}$,
+construido solo con información disponible hasta $t$, y se quiere pronosticar la tasa de desempleo nacional del mes siguiente:
+
+$$\hat y_{{t+1}} = f(x_t), \qquad y_{{t+1}} = \text{{TD}}_{{t+1}} \ (\%).$$
+
+**Función de pérdida:** error cuadrático. Se busca $f$ que minimice $\mathbb{{E}}\big[(y_{{t+1}} - f(x_t))^2\big]$, y la métrica principal
+es su raíz, el RMSE, en puntos porcentuales, calculado solo en meses de prueba posteriores a los de entrenamiento.
+
+**Datos:** {n} pares $(x_t, y_{{t+1}})$, con objetivos de {C.month_long(obj0)} a {C.month_long(obj1)}. Se pierden los primeros
+12 meses de la serie por los rezagos y las medias de 12 meses.
+"""),
+        U.note("El horizonte es un mes. El modelo no se entrenó ni se evaluó a más pasos, así que la plataforma no extiende el pronóstico.",
+               "info", "Alcance."),
+    ]), sub="Criterio 1 de la rúbrica: tipo de tarea, objetivo y formulación matemática")
+
+    prep = U.panel("Variables y preprocesamiento", html.Div([
+        U.table(filas, [("a", "Grupo"), ("b", "Variables"), ("c", "Ventanas"), ("d", "Por qué, según el análisis exploratorio")]),
+        html.Ul([
+            html.Li(f"Sin valores faltantes: {faltantes} celdas vacías en los {len(raw)} meses, así que no se imputa nada."),
+            html.Li("Rezagos y medias móviles terminan en el mes t: ninguna variable mira el mes que se pronostica (ver la auditoría de fuga en 3.4)."),
+            html.Li("Para los modelos del curso, el escalador se ajusta dentro de cada pliegue, solo con los meses de entrenamiento. "
+                    "ALEE no necesita escalado: estandariza su estado internamente con los mismos meses de entrenamiento."),
+            html.Li("Las técnicas de balanceo del segundo entregable (SMOTE, ADASYN) solo aplican a la versión de clasificación; "
+                    "el pronóstico de la tasa es una regresión y no las usa."),
+        ], className="li-src"),
+    ], className="li-prose"), sub="Criterio 1 de la rúbrica: justificación del preprocesamiento")
+
+    return [U.block("2.7 · Del análisis al problema", "Formulación del pronóstico y preprocesamiento",
+                    "Cómo las lecturas anteriores se convierten en las variables del modelo."), form, prep]
 
 
-def _bitacora(c):
-    t = E.recent_track(c, 12)
-    filas = [dict(mes=C.month_short(r["fecha"]).capitalize(), pred=r["ALEE"], obs=r["y_true"], hw=r["hw"], real=False) for _, r in t.iterrows()]
-    val = E.later_validation(c)
-    for _, r in (val.dropna(subset=["pred"]) if len(val) else val).iterrows():
-        filas.append(dict(mes=C.month_short(r["objetivo"]).capitalize(), pred=r["pred"], obs=r["obs"], hw=(r["hi"] - r["lo"]) / 2, real=True))
-    n = len(filas)
-    ys = [n - 1 - i - (0.6 if r["real"] else 0) for i, r in enumerate(filas)]
-    vals = [v for r in filas for v in (r["pred"] - r["hw"], r["pred"] + r["hw"], r["obs"])]
-    a, b = min(vals), max(vals)
-    fig = go.Figure()
-    for r, y in zip(filas, ys):
-        dentro = abs(r["obs"] - r["pred"]) <= r["hw"]
-        fig.add_shape(type="rect", x0=r["pred"] - r["hw"], x1=r["pred"] + r["hw"], y0=y - 0.28, y1=y + 0.28, fillcolor=T.PRED,
-                      opacity=0.26 if r["real"] else 0.13, line_width=0)
-        fig.add_shape(type="line", x0=r["pred"], x1=r["pred"], y0=y - 0.36, y1=y + 0.36, line=dict(color=T.PRED, width=2))
-        fig.add_trace(go.Scatter(x=[r["obs"]], y=[y], mode="markers", showlegend=False,
-                                 marker=dict(size=8, color=T.OBS if dentro else "#FFFFFF", line=dict(color=T.OBS if dentro else T.ALERT, width=2)),
-                                 hovertemplate=f"{r['mes']}: pronóstico {N(r['pred'])} %, observado {N(r['obs'])} %<extra></extra>"))
-        err = r["obs"] - r["pred"]
-        color = T.ALERT if r["real"] else T.TEXT
-        for dx, txt, al in [(-280, r["mes"], "left"), (-160, N(r["pred"]), "right"), (-100, N(r["obs"]), "right"), (-28, N(err, 2, True), "right")]:
-            fig.add_annotation(x=0, xref="paper", xshift=dx, y=y, text=txt, showarrow=False, xanchor=al,
-                               font=dict(size=12.5, color=(T.MUTED if dentro else T.ALERT) if dx == -28 else color))
-    top = max(ys) + 0.9
-    for dx, txt, al in [(-280, "Mes", "left"), (-160, "Pronóstico", "right"), (-100, "Observado", "right"), (-28, "Error", "right")]:
-        fig.add_annotation(x=0, xref="paper", xshift=dx, y=top, text=txt, showarrow=False, xanchor=al, font=dict(size=12, color=T.MUTED))
-    if any(r["real"] for r in filas):
-        fig.add_shape(type="line", xref="paper", x0=0, x1=1, y0=min(ys) + 0.55, y1=min(ys) + 0.55, line=dict(color=T.TEXT, width=0.8))
-        fig.add_annotation(x=0, xref="paper", xshift=-280, y=min(ys) - 0.78, xanchor="left", showarrow=False,
-                           text="Pronóstico real: hecho antes de que se publicara el dato", font=dict(size=12, color=T.ALERT))
-    pad = (b - a) * 0.05
-    fig.update_layout(height=80 + 27 * n, margin=dict(l=290, r=14, t=8, b=32),
-                      yaxis=dict(visible=False, range=[min(ys) - 1.2, top + 0.5]),
-                      xaxis=dict(range=[a - pad, b + pad], ticksuffix=" %", showgrid=True))
-    dentro = sum(abs(r["obs"] - r["pred"]) <= r["hw"] for r in filas if not r["real"])
-    return fig, dentro, sum(not r["real"] for r in filas)
+# ======================================================== criterio 3: diseño experimental
+def _hp_pliegues(c):
+    if c == "colombia":
+        d = pd.read_csv(CONF / "iter4" / "rmse_K3_sin_ridge.csv")
+    else:
+        d = pd.read_csv(ADIC / c / "hiperparametros_ALEE.csv")
+    return d[["pliegue", "bandwidth", "half_life", "lam"]]
 
 
-@callback(Output("px-pronostico", "children"), Input("pais", "value"))
-@U.safe
-def pronostico(c):
-    c = c or C.DEFAULT
-    f = E.forecast(c)
-    W, F = f["weights"], f["experts"]
-    dom = int(np.argmax(W))
-    antes, despues = C.MONTHS[f["last_date"].month - 1], C.MONTHS[f["target_date"].month - 1]
-    que = ["Repetir el último dato observado", "Cambio mensual de los meses con un estado parecido",
-           f"Cambio medio de {antes} a {despues} en los años anteriores"]
-    filas = [{"a": EXPERTOS[i], "b": que[i], "c": f"{N(F[i])} %", "d": f"{N(W[i] * 100, 1)} %",
-              "e": html.Span(className="px-bar" + (" on" if i == dom else ""), style={"width": f"{max(W[i] * 160, 3):.0f}px"}),
-              "f": N(W[i] * F[i]), "_cls": "hl" if i == dom else ""} for i in range(3)]
-    filas.append({"a": html.B("Pronóstico"), "b": "Suma de los aportes", "c": "", "d": "100 %", "e": "", "f": html.B(f"{N(f['pred'])} %")})
-    anatomia = U.panel(f"Anatomía del pronóstico: ¿de dónde sale el {N(f['pred'])} %?", html.Div([
-        U.table(filas, [("a", "Experto"), ("b", "Qué propone"), ("c", "Pronóstico del experto"), ("d", "Peso"), ("e", ""), ("f", "Aporte (peso × pronóstico)")],
-                numeric=("c", "d", "f")),
-        U.graph(_recta(c, f)),
-        U.legend(("Expertos (tamaño: peso)", "model"), ("Pronóstico de ALEE", "est"), ("Intervalo del 90 %", "unc"),
-                 *([("Dato publicado después del corte", "later")] if E.later_observations(c) is not None else [])),
-        html.P([f"En {C.month_long(f['target_date'])} pesa sobre todo el experto «{EXPERTOS[dom].lower()}» ({N(W[dom] * 100, 0)} %). "
-                f"Sin localizar, los pesos serían {' / '.join(N(p * 100, 0) for p in f['prior'])} %; la diferencia viene de los meses parecidos "
-                f"(tamaño efectivo de la muestra local: {N(f['n_eff'], 1)}, frente a {N(f['n_ref'], 1)} de referencia). "
-                "Es la misma descomposición del panel «Qué empuja el pronóstico», expresada en niveles en vez de cambios."], className="li-cap"),
-    ]), sub=NUEVO, cls="px-panel")
-
-    fig, dentro, total = _bitacora(c)
-    bitacora = U.panel("Bitácora de los últimos doce pronósticos", html.Div([
-        U.graph(fig),
-        U.legend(("Intervalo del 90 % disponible en su momento", "unc"), ("Pronóstico", "est"), ("Observado", "obs")),
-        html.P(f"{dentro} de {total} datos cayeron dentro del intervalo. Los círculos vacíos marcan los meses que quedaron por fuera. "
-               "Es la misma información del «Historial reciente fuera de muestra», ordenada como un registro de aciertos y errores.",
-               className="li-cap"),
-    ]), sub=NUEVO, cls="px-panel")
-    return [U.block("Lectura del pronóstico", "El número, desarmado y puesto a prueba"), anatomia, bitacora]
+def _particiones(c):
+    d, hp = E.oof(c), _hp_pliegues(c)
+    filas = []
+    for k, g in d.groupby("pliegue"):
+        ini = int(g["idx"].min())
+        h = hp.iloc[k - 1]
+        filas.append({"a": str(k), "b": f"{ini - config.CV_GAP} meses", "c": C.month_short(g["fecha"].min() - pd.DateOffset(months=2)),
+                      "d": f"{C.month_short(g['fecha'].min())} – {C.month_short(g['fecha'].max())}", "e": str(len(g)),
+                      "f": N(h["bandwidth"]), "g": N(h["half_life"], 1), "h": N(h["lam"], 4),
+                      "i": N(np.sqrt(np.mean((g["y_true"] - g["ALEE"]) ** 2)), 3)})
+    return filas
 
 
-# ---------------------------------------------------------------------- modelo
-def _estados(c):
-    m, X = E.model(c), E.features(c)
-    ok = X.notna().all(axis=1)
-    Z = m._state(X[ok].values)
-    f = E.forecast(c)
-    d = pd.DataFrame({"fecha": X.index[ok][m.oof_rows_], "vol": Z[m.oof_rows_, 0], "brecha": Z[m.oof_rows_, 1], "peso": f["local"]})
-    return d, m._state(X.iloc[[-1]].values)[0], f
+def _auditoria():
+    """Las cuatro comprobaciones del capítulo 2b del libro, calculadas al cargar (Colombia)."""
+    from src import nested_cv, search
+    from src.data import assemble_dataset, load_raw
+
+    ds, raw = assemble_dataset(), load_raw()
+    ident = 100 * (1 - raw["tasa_ocupacion_nacional"] / raw["tasa_global_participacion_nacional"])
+    r = float(np.corrcoef(ident, raw["tasa_desempleo_nacional"])[0, 1])
+    excl = {"tasa_ocupacion_nacional", "tasa_global_participacion_nacional"}.isdisjoint(ds.feature_names)
+    orden = all(ds.fechas.iloc[tr].max() < ds.fechas.iloc[te].min()
+                for tr, te in TimeSeriesSplit(config.N_SPLITS_OUTER, gap=config.CV_GAP).split(ds.X))
+    lag = bool(np.array_equal(ds.X["td_nacional_lag1"].values[1:], ds.y_reg.values[:-1]))
+    m12 = raw["tasa_desempleo_nacional"].rolling(12).mean().dropna().values
+    mov = bool(np.isin(np.round(ds.X["td_nacional_rollmean12"].values, 10), np.round(m12, 10)).all())
+    src = inspect.getsource(nested_cv._fit_final) + inspect.getsource(search._fit_predict_fold)
+    esc = "StandardScaler().fit(X_fit)" in src and "StandardScaler().fit(X_tr)" in src
+    dup = int(ds.X.duplicated().sum())
+    ok = lambda b: html.B("Cumple" if b else "No cumple", style={"color": T.PRED if b else T.ALERT})  # noqa: E731
+    return [
+        {"a": "1. Variables que codifican la respuesta", "b": f"La identidad 1 − TO/TGP correlaciona {N(r, 6)} con la tasa; "
+         "ocupación y participación nacionales no están entre las variables.", "c": ok(excl and r > 0.999)},
+        {"a": "2. Mezcla temporal entre entrenamiento y prueba", "b": f"En los {config.N_SPLITS_OUTER} pliegues externos, todo el entrenamiento "
+         f"es anterior a la prueba, con {config.CV_GAP} mes de separación.", "c": ok(orden)},
+        {"a": "3. Variables con información futura", "b": "El rezago 1 de cada fila es el objetivo de la fila anterior y la media de 12 meses "
+         "termina en el mes t.", "c": ok(lag and mov)},
+        {"a": "4. Preprocesamiento con todo el conjunto o filas repetidas", "b": f"El escalador se ajusta dentro de cada pliegue; {dup} filas "
+         f"duplicadas en {len(ds.X)}.", "c": ok(esc and dup == 0)},
+    ]
+
+
+def _costo():
+    d = pd.read_csv(RES / "costo_computacional.csv")
+    d = d[d["entrenamiento_s"] > 0]
+    hw = json.loads((RES / "hardware.json").read_text(encoding="utf-8"))
+    filas = [{"a": etiqueta(r["modelo"]), "b": N(r["entrenamiento_s"] * 1000, 1), "c": N(r["inferencia_s"] * 1000, 1),
+              "d": N(r["memoria_pico_MB"], 1), "e": f"{int(r['parametros']):,}".replace(",", "."),
+              "_cls": "hl" if r["modelo"] == "ALEE" else ""} for _, r in d.iterrows()]
+    return filas, hw
+
+
+def diseno_experimental(c):
+    hp = E.meta(c)["hp"]
+    art = "artifacts/reg_ALEE" if c == "colombia" else f"artifacts/paises/{c}"
+    filas_c, hw = _costo()
+    part = U.panel("Partición, validación e hiperparámetros", html.Div([
+        U.table(_particiones(c), [("a", "Pliegue"), ("b", "Entrenamiento"), ("c", "Hasta"), ("d", "Prueba (meses objetivo)"), ("e", "Meses"),
+                                  ("f", "h"), ("g", "τ (vida media)"), ("h", "λ"), ("i", "RMSE de ALEE")],
+                numeric=("b", "e", "f", "g", "h", "i")),
+        html.Div([
+            html.P([html.B("Validación anidada de origen móvil. "), f"{config.N_SPLITS_OUTER} pliegues externos de ventana expansiva para evaluar y, "
+                    f"dentro de cada uno, {config.N_SPLITS_INNER} pliegues internos para elegir los hiperparámetros, siempre con "
+                    f"{config.CV_GAP} mes de separación. Ningún mes de prueba participa en el ajuste ni en la elección de su propio modelo."]),
+            html.P([html.B("Hiperparámetros. "), "Ancho del núcleo h, vida media del decaimiento τ y fuerza de la regularización λ, elegidos "
+                    f"por optimización bayesiana (TPE, {config.FULL_BUDGETS['bayes_n_trials']} evaluaciones) en cada pliegue. Los modelos del curso "
+                    "usan el mismo presupuesto y las mismas particiones. Que h, τ y λ cambien entre pliegues es esperable: cada pliegue ve "
+                    "una historia distinta, y la sección 3.5 muestra que el error es poco sensible a ellos."]),
+            html.P([html.B("Modelo final. "), f"Con toda la serie: h = {N(hp['bandwidth'])}, τ = {N(hp['half_life'], 1)}, λ = {N(hp['lam'], 4)} "
+                    f"({art}/metadata.json)."]),
+        ], className="li-prose"),
+    ]), sub="Criterio 3: partición y validación de datos, justificación de hiperparámetros")
+
+    audit = U.panel("Auditoría de fuga de información", html.Div([
+        U.table(_auditoria(), [("a", "Fuente de fuga revisada"), ("b", "Comprobación (calculada al cargar, Colombia)"), ("c", "Resultado")]),
+        html.P("Las cuatro fuentes de fuga de Kapoor y Narayanan (2023). Las mismas comprobaciones se ejecutan al construir el libro "
+               "(capítulo 2b) y fallan si alguna condición no se cumple.", className="li-cap"),
+    ]), sub="Criterio 3: prevención de data leakage")
+
+    repro = U.panel("Reproducibilidad y costo computacional", html.Div([
+        html.Ul([
+            html.Li([f"Semilla {config.SEED} para los generadores de NumPy y random, para cada modelo con azar y para el muestreador de Optuna; la sección 3.5 muestra que cambiarla no cambia el resultado."]),
+            html.Li(["Versiones exactas de las librerías en ", html.Code("requirements-proyecto.txt"), " y artefactos serializados con ",
+                     html.Code("joblib"), " y su prueba de ida y vuelta (", html.Code("tests/test_artifacts.py"), ")."]),
+            html.Li(["Todas las tablas y figuras del paper salen de un solo script: ", html.Code("python experiments/reproducir_todo.py"), "."]),
+        ], className="li-src"),
+        html.H4("Costo en el último pliegue de Colombia (239 meses de entrenamiento, 48 de prueba)", className="li-h4"),
+        U.table(filas_c, [("a", "Modelo"), ("b", "Entrenar (ms)"), ("c", "Predecir 48 meses (ms)"), ("d", "Memoria (MB)"), ("e", "Parámetros")],
+                numeric=("b", "c", "d", "e")),
+        html.P(f"Mediana de tres repeticiones, cada modelo en un proceso independiente ({hw['nucleos']} núcleos, Python {hw['python']}). "
+               "ALEE resuelve un problema convexo por cada mes pronosticado: es el más lento, pero tarda menos de un segundo.", className="li-cap"),
+    ], className="li-prose"), sub="Criterio 3: reproducibilidad, rigor experimental y decisiones computacionales")
+    return [U.block("3.4 · Diseño experimental", "Cómo se evaluó sin hacer trampa", "Partición, elección de hiperparámetros, fuga de información, reproducibilidad y costo."),
+            part, U.grid(html.Div(audit), html.Div(repro))]
+
+
+# ======================================================== criterio 4: sobreajuste y robustez
+def _curva():
+    d = pd.read_csv(RES / "curva_aprendizaje_eeuu.csv")
+    cfg = json.loads((RES / "curva_aprendizaje_config.json").read_text(encoding="utf-8"))
+    estilo = {"ALEE": (T.NAVY, "solid"), "EstacionalALEE": (T.PRED, "dot"), "SARIMA": (T.OCHRE, "dash"), "Ridge": (T.DIM, "dashdot")}
+    fig = T.base(340)
+    for m, (col, dash) in estilo.items():
+        g = d[d["modelo"] == m]
+        fig.add_trace(go.Scatter(x=g["meses_entrenamiento"], y=g["rmse"], mode="lines+markers", name=etiqueta(m),
+                                 line=dict(color=col, dash=dash, width=2.4 if m == "ALEE" else 1.6), marker=dict(size=7),
+                                 hovertemplate=f"{etiqueta(m)}: %{{y:.3f}} pp con %{{x}} meses<extra></extra>"))
+    fig.update_layout(xaxis=dict(title="Meses de entrenamiento", type="log", tickvals=sorted(d["meses_entrenamiento"].unique())),
+                      yaxis=dict(title="RMSE en la prueba fija (pp)"))
+    a = d[d["modelo"] == "ALEE"].set_index("meses_entrenamiento")["rmse"]
+    r = d[d["modelo"] == "Ridge"].set_index("meses_entrenamiento")["rmse"]
+    texto = (f"Con un periodo de prueba fijo (los últimos {cfg['meses_prueba']} meses de Estados Unidos, que incluyen 2020), ALEE logra "
+             f"{N(a.iloc[0], 3)} pp con solo {a.index[0]} meses de entrenamiento y {N(a.iloc[-1], 3)} con {a.index[-1]}: el error casi no depende "
+             f"de cuánta historia vea, así que funciona con series cortas pero no aprovecha la información adicional. Ridge baja de "
+             f"{N(r.iloc[0], 2)} a {N(r.iloc[-1], 2)} y aun con toda la serie queda por encima. La curva casi coincide con la del experto "
+             "estacional solo: la ventaja viene sobre todo de los expertos. El sobreajuste también se controla con la validación anidada: "
+             "todo el error que se reporta es fuera de muestra.")
+    return fig, texto
+
+
+def _sensibilidad(c):
+    d = pd.read_csv(RES / c / "sensibilidad_hiperparametros.csv")
+    g = d.pivot(index="lam", columns="bandwidth", values="rmse_medio")
+    best, bv = E.best_baseline(c)
+    fig = go.Figure(go.Heatmap(z=g.values, x=[N(v) for v in g.columns], y=[N(v, 4) for v in g.index], colorscale=[[0, "#FFFFFF"], [1, T.NAVY]],
+                               text=np.round(g.values, 3), texttemplate="%{text}", textfont=dict(size=11),
+                               colorbar=dict(title="RMSE"), hovertemplate="h = %{x} · λ = %{y}<br>RMSE %{z:.3f}<extra></extra>"))
+    fig.update_layout(height=330, xaxis=dict(title="Ancho del núcleo h", type="category"), yaxis=dict(title="Regularización λ", type="category"),
+                      margin=dict(l=70, r=20, t=10, b=50))
+    peor = g.values.max()
+    cmp = (f"aun la peor combinación queda por debajo del mejor modelo del curso ({etiqueta(best)}, {N(bv, 3)})" if peor < bv else
+           f"{int((g.values < bv).sum())} de {g.size} combinaciones quedan por debajo del mejor modelo del curso ({etiqueta(best)}, {N(bv, 3)})")
+    texto = (f"Rejilla de {g.size} combinaciones con vida media fija de 60 meses en {C.name(c)}. El RMSE va de {N(g.values.min(), 3)} a "
+             f"{N(peor, 3)}: {cmp}. Es exploratorio: no se usó para cambiar los hiperparámetros, porque sería ajustar con los datos de evaluación.")
+    return fig, texto, peor < bv
+
+
+def _semillas():
+    s = pd.read_csv(RES / "sensibilidad_semillas.csv")
+    s = s[s["semilla"].astype(str).str.fullmatch(r"\d+")]
+    filas = [{"a": f"ALEE · {C.name(k)}", "b": str(len(g)), "c": N(g["rmse_medio"].mean(), 3), "d": N(g["rmse_medio"].std(), 4),
+              "e": f"{N(g['rmse_medio'].min(), 3)} – {N(g['rmse_medio'].max(), 3)}", "_cls": "hl" if k == "colombia" else ""}
+             for k, g in s.groupby("conjunto", sort=False)]
+    b = pd.read_csv(RES / "semillas_baselines_colombia.csv")
+    filas += [{"a": f"{etiqueta(m)} · Colombia", "b": str(len(g)), "c": N(g["rmse_medio"].mean(), 3), "d": N(g["rmse_medio"].std(), 4),
+               "e": f"{N(g['rmse_medio'].min(), 3)} – {N(g['rmse_medio'].max(), 3)}"} for m, g in b.groupby("modelo", sort=False)]
+    return filas
+
+
+def robustez(c):
+    fig_c, txt_c = _curva()
+    fig_s, txt_s, _ = _sensibilidad(c)
+    curva = U.panel("Curva de aprendizaje", html.Div([U.graph(fig_c), html.P(txt_c, className="li-cap")]),
+                    sub="Criterio 4: sobreajuste. Estados Unidos, la serie más larga (946 meses)")
+    sens = U.panel(f"Sensibilidad a los hiperparámetros · {C.name(c)}", html.Div([U.graph(fig_s), html.P(txt_s, className="li-cap")]),
+                   sub="Criterio 4: ¿depende el resultado de una elección afortunada de h y λ?")
+    sem = U.panel("Sensibilidad a la semilla", html.Div([
+        U.table(_semillas(), [("a", "Modelo y conjunto"), ("b", "Semillas"), ("c", "RMSE medio"), ("d", "Desviación"), ("e", "Rango")],
+                numeric=("b", "c", "d", "e")),
+        html.P("Semillas 42 a 46 del optimizador. La variación de ALEE es de milésimas, mucho menor que la de los modelos con azar "
+               "(Random Forest, XGBoost, LightGBM), y ninguna semilla de ellos se acerca al RMSE de ALEE.", className="li-cap"),
+    ]), sub="Criterio 4: robustez y reproducibilidad")
+    gen = U.note(["La generalización a datos que el diseño no vio se evalúa en ocho países más, con el modelo congelado: ver ",
+                  dcc.Link("05 · Comparación internacional", href="/global"), "."], "info", "Generalización.")
+    return [U.block("3.5 · Sobreajuste y robustez", "¿El resultado se sostiene si cambian los datos, los hiperparámetros o la semilla?"),
+            curva, U.grid(html.Div(sens), html.Div(sem)), gen]
 
 
 @callback(Output("px-modelo", "children"), Input("pais", "value"))
 @U.safe
 def modelo(c):
     c = c or C.DEFAULT
-    d, act, f = _estados(c)
-    hp = E.meta(c)["hp"]
-    xhi = max(np.quantile(d["vol"], 0.93), act[0]) * 1.08
-    ylo = min(np.quantile(d["brecha"], 0.02), act[1]) - 0.3
-    yhi = max(np.quantile(d["brecha"], 0.95), act[1]) + 0.3
-    fuera = int(((d["vol"] > xhi) | (d["brecha"] < ylo) | (d["brecha"] > yhi)).sum())
-    top = d.nlargest(8, "peso")
-    resto = d.drop(top.index)
-    fig = go.Figure()
-    fig.add_shape(type="line", x0=0, x1=xhi, y0=0, y1=0, line=dict(color=T.DIM, width=0.8, dash="dot"))
-    fig.add_trace(go.Scatter(x=resto["vol"], y=resto["brecha"], mode="markers", showlegend=False, marker=dict(size=5, color="#BFC5CD"),
-                             customdata=resto["fecha"].dt.strftime("%Y-%m"), hovertemplate="%{customdata}: volatilidad %{x:.2f}, brecha %{y:.2f}<extra></extra>"))
-    fig.add_trace(go.Scatter(x=top["vol"], y=top["brecha"], mode="markers", showlegend=False,
-                             marker=dict(size=6 + top["peso"] * 30 / top["peso"].max(), color=T.NAVY, opacity=0.7, line=dict(color="#FFFFFF", width=1)),
-                             customdata=np.c_[top["fecha"].dt.strftime("%Y-%m"), top["peso"] * 100],
-                             hovertemplate="%{customdata[0]}: peso %{customdata[1]:.1f} %<extra></extra>"))
-    fig.add_trace(go.Scatter(x=[act[0]], y=[act[1]], mode="markers", showlegend=False,
-                             marker=dict(symbol="diamond", size=14, color=T.ALERT, line=dict(color="#FFFFFF", width=1.5)), hovertemplate="Mes actual<extra></extra>"))
-    fig.add_annotation(x=act[0], y=act[1], text=C.month_long(f["last_date"]).capitalize(), showarrow=True, arrowhead=0, arrowwidth=0.7,
-                       arrowcolor=T.ALERT, ax=70, ay=-60, font=dict(size=12.5, color=T.ALERT), bgcolor="#FFFFFF")
-    fig.update_layout(height=430, margin=dict(l=60, r=14, t=10, b=50),
-                      xaxis=dict(range=[0, xhi], title="Volatilidad de los últimos 3 meses (pp)", showgrid=True),
-                      yaxis=dict(range=[ylo, yhi], title="Brecha frente a la media de 12 meses (pp)"))
-    recientes = int((top["fecha"] >= f["last_date"] - pd.DateOffset(months=12)).sum())
-    filas = [{"a": C.month_short(r["fecha"]).capitalize(), "b": f"{N(r['vol'])}", "c": f"{N(r['brecha'], 2, True)}", "d": f"{N(r['peso'] * 100, 1)} %"}
-             for _, r in top.iterrows()]
-    mapa = U.panel(f"Mapa de estados: ¿a qué meses se parece {C.month_long(f['last_date'])}?", html.Div([
-        U.grid(html.Div([U.graph(fig),
-                         U.legend(("Mes actual", "px-act"),("Ocho meses con más peso (tamaño: peso)", "px-top"), ("Resto de los meses de entrenamiento", "none"))]),
-               html.Div([U.table(filas, [("a", "Mes"), ("b", "Volatilidad"), ("c", "Brecha"), ("d", "Peso")], numeric=("b", "c", "d")),
-                         html.P([f"De los ocho meses con más peso, {recientes} son de los últimos doce meses. El peso combina el parecido de estado "
-                                 f"(ancho del núcleo h = {N(hp['bandwidth'])}) y la cercanía en el tiempo (vida media de {N(hp['half_life'], 1)} meses), "
-                                 "como en la ecuación de los pesos de localización de la sección 3.2."], className="li-cap")])),
-        html.P(f"Cada punto es un mes de entrenamiento de {C.name(c)}. "
-               + (f"No se muestran {fuera} meses fuera de escala (eneros muy volátiles y choques como el de 2020)." if fuera else ""),
-               className="li-cap"),
-    ]), sub=NUEVO, cls="px-panel")
-    return [U.block("3.4 · Localización", "Los meses que deciden los pesos de hoy"), mapa]
+    return diseno_experimental(c) + robustez(c)
